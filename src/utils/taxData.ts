@@ -31,6 +31,9 @@ export const fetchTaxData = async (): Promise<{ data: SkatteverketData[], years:
     const response = await fetch('https://skatteverket.entryscape.net/rowstore/dataset/c67b320b-ffee-4876-b073-dd9236cd2a99/json');
     const apiResponse: SkatteverketApiResponse = await response.json();
     
+    console.log('Raw API response:', apiResponse);
+    console.log('Number of results:', apiResponse.results?.length);
+    
     // Transform the API data to our expected format
     const data: SkatteverketData[] = apiResponse.results.map(item => ({
       KommunKod: '', // API doesn't provide kommun code in this format
@@ -39,11 +42,18 @@ export const fetchTaxData = async (): Promise<{ data: SkatteverketData[], years:
       År: parseInt(item.år)
     }));
     
-    // Get unique years from the data
-    const years = [...new Set(data.map(item => item.År))].sort((a, b) => b - a);
+    // Get unique years from the data and log them
+    const allYears = data.map(item => item.År);
+    console.log('All years in data:', allYears);
     
-    console.log('Fetched data:', data.slice(0, 5)); // Log first 5 items for debugging
-    console.log('Available years:', years);
+    const years = [...new Set(allYears)].sort((a, b) => b - a);
+    console.log('Unique years sorted:', years);
+    
+    console.log('Sample data items:', data.slice(0, 10));
+    console.log('Years distribution:', years.map(year => ({ 
+      year, 
+      count: data.filter(item => item.År === year).length 
+    })));
     
     return { data, years };
   } catch (error) {
