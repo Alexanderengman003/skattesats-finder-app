@@ -26,6 +26,14 @@ export interface SkattetabellData {
   InkomstFrån: number;
   InkomstTill: number;
   Skatt: number;
+  AntalDagar?: number;
+  Kolumn1?: string;
+  Kolumn2?: string;
+  Kolumn3?: string;
+  Kolumn4?: string;
+  Kolumn5?: string;
+  Kolumn6?: string;
+  Kolumn7?: string;
   [key: string]: any;
 }
 
@@ -55,7 +63,15 @@ interface SkattetabellApiResponse {
     'inkomst fr.o.m.': string;
     'inkomst t.o.m.': string;
     'skatt': string;
-    [key: string]: string;
+    'antal dgr'?: string;
+    'kolumn 1'?: string;
+    'kolumn 2'?: string;
+    'kolumn 3'?: string;
+    'kolumn 4'?: string;
+    'kolumn 5'?: string;
+    'kolumn 6'?: string;
+    'kolumn 7'?: string;
+    [key: string]: string | undefined;
   }>;
   resultCount: number;
   offset: number;
@@ -195,7 +211,21 @@ export const fetchSkattetabellData = async (year: number, tabell: number): Promi
         Tabell: parseInt(item.tabellnr),
         InkomstFrån: parseInt(item['inkomst fr.o.m.']),
         InkomstTill: parseInt(item['inkomst t.o.m.']),
-        Skatt: parseInt(item.skatt)
+        Skatt: parseInt(item.skatt),
+        AntalDagar: item['antal dgr'] ? parseInt(item['antal dgr']) : undefined,
+        Kolumn1: item['kolumn 1'] || undefined,
+        Kolumn2: item['kolumn 2'] || undefined,
+        Kolumn3: item['kolumn 3'] || undefined,
+        Kolumn4: item['kolumn 4'] || undefined,
+        Kolumn5: item['kolumn 5'] || undefined,
+        Kolumn6: item['kolumn 6'] || undefined,
+        Kolumn7: item['kolumn 7'] || undefined,
+        ...Object.keys(item).reduce((acc, key) => {
+          if (!['år', 'tabellnr', 'inkomst fr.o.m.', 'inkomst t.o.m.', 'skatt', 'antal dgr', 'kolumn 1', 'kolumn 2', 'kolumn 3', 'kolumn 4', 'kolumn 5', 'kolumn 6', 'kolumn 7'].includes(key)) {
+            acc[key] = item[key];
+          }
+          return acc;
+        }, {} as Record<string, any>)
       }));
 
       allData = [...allData, ...batchData];

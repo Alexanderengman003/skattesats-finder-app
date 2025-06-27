@@ -318,12 +318,47 @@ const Index = () => {
                 ) : skattetabellData.length > 0 ? (
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {skattetabellData.map((item, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded border">
-                        <div className="text-sm">
-                          <span className="font-medium">Inkomst:</span> {item.InkomstFrån.toLocaleString()} - {item.InkomstTill.toLocaleString()} kr
-                        </div>
-                        <div className="text-sm font-bold text-blue-600">
-                          Skatt: {item.Skatt.toLocaleString()} kr
+                      <div key={index} className="p-3 bg-gray-50 rounded border space-y-2">
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="font-medium text-gray-600">År:</span> {item.År}
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-600">Tabell:</span> {item.Tabell}
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-600">Inkomst från:</span> {item.InkomstFrån?.toLocaleString()} kr
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-600">Inkomst till:</span> {item.InkomstTill?.toLocaleString()} kr
+                          </div>
+                          <div className="col-span-2">
+                            <span className="font-medium text-gray-600">Skatt:</span> 
+                            <span className="font-bold text-blue-600 ml-1">{item.Skatt?.toLocaleString()} kr</span>
+                          </div>
+                          {item.AntalDagar && (
+                            <div>
+                              <span className="font-medium text-gray-600">Antal dagar:</span> {item.AntalDagar}
+                            </div>
+                          )}
+                          {[1, 2, 3, 4, 5, 6, 7].map(num => {
+                            const kolumnValue = item[`Kolumn${num}` as keyof SkattetabellData];
+                            return kolumnValue ? (
+                              <div key={num}>
+                                <span className="font-medium text-gray-600">Kolumn {num}:</span> {kolumnValue}
+                              </div>
+                            ) : null;
+                          })}
+                          {Object.keys(item).map(key => {
+                            if (!['År', 'Tabell', 'InkomstFrån', 'InkomstTill', 'Skatt', 'AntalDagar', 'Kolumn1', 'Kolumn2', 'Kolumn3', 'Kolumn4', 'Kolumn5', 'Kolumn6', 'Kolumn7'].includes(key) && item[key]) {
+                              return (
+                                <div key={key}>
+                                  <span className="font-medium text-gray-600">{key}:</span> {item[key]}
+                                </div>
+                              );
+                            }
+                            return null;
+                          })}
                         </div>
                       </div>
                     ))}
