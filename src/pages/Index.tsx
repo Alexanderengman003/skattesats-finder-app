@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import TaxRateTable from '@/components/TaxRateTable';
 import SkatteverketTable from '@/components/SkatteverketTable';
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
+import SkattetabellDisplay from '@/components/SkattetabellDisplay';
 import { 
   taxData, 
   fetchTaxData, 
@@ -251,6 +253,9 @@ const Index = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Skattetabell Display */}
+            <SkattetabellDisplay taxData={result} includeSvenskaKyrkan={includeSvenskaKyrkan} />
           </div>
 
           {/* Table Section */}
