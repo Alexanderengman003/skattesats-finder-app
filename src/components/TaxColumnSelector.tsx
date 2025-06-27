@@ -344,7 +344,7 @@ const TaxColumnSelector = ({
                           {Math.round(getNetSalary()).toLocaleString()} kr
                         </div>
                         <div className="text-lg font-medium text-gray-600 mt-1">
-                          Månadsinkomst (kr)
+                          Månadsinkomst
                         </div>
                       </div>
                     </div>

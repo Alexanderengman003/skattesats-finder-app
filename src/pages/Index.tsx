@@ -472,7 +472,7 @@ const Index = () => {
 
                   <div className="mt-4 p-4 bg-blue-100 border border-blue-300 rounded-xl">
                     <div className="text-center">
-                      <span className="text-sm font-medium text-blue-600">Du tillhör:</span>
+                      <span className="text-sm font-medium text-blue-600">Du tillhör</span>
                       <div className="text-2xl font-bold text-blue-800">
                         Skattekolumn {getCurrentTaxColumn()}
                       </div>
