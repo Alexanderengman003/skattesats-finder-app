@@ -122,7 +122,7 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
                   strokeDasharray="5 5"
                   label={{ 
                     value: "Din inkomst", 
-                    position: "topLeft",
+                    position: "top",
                     style: { fill: '#ef4444', fontWeight: 'bold' }
                   }}
                 />
