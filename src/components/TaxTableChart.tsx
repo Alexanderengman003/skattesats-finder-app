@@ -36,17 +36,42 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
     return parseFloat(taxValue.replace(/[^\d.-]/g, '')) || 0;
   };
 
+  const isPercentageValue = (value: number, income: number): boolean => {
+    // If the value is less than 100 and would make sense as a percentage
+    // (i.e., when applied to income, it gives a reasonable tax amount)
+    if (value <= 100) {
+      const potentialTaxAmount = (value / 100) * income;
+      // Check if this would be a reasonable tax amount (less than income)
+      return potentialTaxAmount < income && value > 0;
+    }
+    return false;
+  };
+
   const chartData = skattetabellData.map(item => {
     const midIncome = (item.InkomstFrån + item.InkomstTill) / 2;
     const taxAmount = getTaxFromColumn(item, selectedTaxColumn);
-    const taxPercentage = midIncome > 0 ? (taxAmount / midIncome) * 100 : 0;
+    
+    let taxPercentage: number;
+    
+    if (midIncome > 0 && taxAmount > 0) {
+      if (isPercentageValue(taxAmount, midIncome)) {
+        // Tax value is already a percentage
+        taxPercentage = taxAmount;
+      } else {
+        // Tax value is in kr, convert to percentage
+        taxPercentage = (taxAmount / midIncome) * 100;
+      }
+    } else {
+      taxPercentage = 0;
+    }
     
     return {
       income: midIncome,
       taxPercentage: parseFloat(taxPercentage.toFixed(2)),
-      taxAmount: taxAmount
+      taxAmount: taxAmount,
+      isPercentage: isPercentageValue(taxAmount, midIncome)
     };
-  }).filter(item => item.income > 0 && item.taxPercentage >= 0);
+  }).filter(item => item.income > 0 && item.taxPercentage >= 0 && item.taxPercentage <= 100);
 
   const chartConfig = {
     taxPercentage: {
@@ -96,10 +121,14 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
               <Tooltip 
                 content={({ active, payload, label }) => {
                   if (active && payload && payload[0]) {
+                    const data = payload[0].payload;
                     return (
                       <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
                         <p className="font-medium">{`Inkomst: ${Math.round(Number(label)).toLocaleString()} kr`}</p>
                         <p className="text-blue-600">{`Skatt: ${payload[0].value}%`}</p>
+                        <p className="text-gray-500 text-sm">
+                          {data.isPercentage ? 'Värde från tabell: procent' : 'Värde från tabell: kr'}
+                        </p>
                       </div>
                     );
                   }

@@ -223,8 +223,13 @@ const Index = () => {
 
   const handleTaxableBenefitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
-    setTaxableBenefit(numericValue);
+    // Allow empty string to be converted to 0, and handle leading zeros properly
+    if (value === '') {
+      setTaxableBenefit(0);
+    } else {
+      const numericValue = parseInt(value) || 0;
+      setTaxableBenefit(Math.max(0, numericValue)); // Ensure non-negative
+    }
   };
 
   const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -410,9 +415,9 @@ const Index = () => {
                     <Input
                       id="taxableBenefit"
                       type="number"
-                      value={taxableBenefit || ''}
+                      value={taxableBenefit === 0 ? '' : taxableBenefit}
                       onChange={handleTaxableBenefitChange}
-                      placeholder="Ange beskattningsbar förmån"
+                      placeholder="Ange beskattningsbar förmån (0 om ingen)"
                       min="0"
                     />
                   </div>

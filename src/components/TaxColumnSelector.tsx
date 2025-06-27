@@ -62,17 +62,47 @@ const TaxColumnSelector = ({
     return monthlyIncome + taxableBenefit;
   };
 
+  const isPercentageValue = (value: number, income: number): boolean => {
+    if (value <= 100) {
+      const potentialTaxAmount = (value / 100) * income;
+      return potentialTaxAmount < income && value > 0;
+    }
+    return false;
+  };
+
   const getTaxPercentage = (): string => {
     if (!taxAmount || getTotalIncome() === 0) return '0';
     const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
-    const percentage = (taxAmountNum / getTotalIncome()) * 100;
+    
+    let percentage: number;
+    if (isPercentageValue(taxAmountNum, getTotalIncome())) {
+      // Tax amount is already a percentage
+      percentage = taxAmountNum;
+    } else {
+      // Tax amount is in kr, convert to percentage
+      percentage = (taxAmountNum / getTotalIncome()) * 100;
+    }
+    
     return percentage.toFixed(1);
+  };
+
+  const getActualTaxAmount = (): number => {
+    if (!taxAmount || getTotalIncome() === 0) return 0;
+    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
+    
+    if (isPercentageValue(taxAmountNum, getTotalIncome())) {
+      // Convert percentage to actual amount
+      return (taxAmountNum / 100) * getTotalIncome();
+    } else {
+      // Already in kr
+      return taxAmountNum;
+    }
   };
 
   const getNetSalary = (): number => {
     if (!taxAmount || getTotalIncome() === 0) return getTotalIncome();
-    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
-    return getTotalIncome() - taxAmountNum;
+    const actualTaxAmount = getActualTaxAmount();
+    return getTotalIncome() - actualTaxAmount;
   };
 
   return (
@@ -127,7 +157,7 @@ const TaxColumnSelector = ({
                   Skatt för {getTotalIncome().toLocaleString()} kr/månad:
                 </div>
                 <div className="text-3xl font-bold text-green-800 mb-2">
-                  {taxAmount} kr
+                  {getActualTaxAmount().toLocaleString()} kr
                 </div>
                 <div className="text-lg font-medium text-green-600">
                   Du betalar {getTaxPercentage()}% i skatt
