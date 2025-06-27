@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -95,6 +96,38 @@ const Index = () => {
       setResult([]);
     }
   }, [kommun, selectedYear, apiData]);
+
+  // New useEffect for automatic tax calculation
+  useEffect(() => {
+    const performAutomaticLookup = () => {
+      if (!kommun.trim() || !selectedYear) {
+        return;
+      }
+
+      // If there are multiple församlingar, wait for one to be selected
+      if (availableForsamlingar.length > 1 && !forsamling) {
+        return;
+      }
+
+      setError('');
+      setResult([]);
+      setSkattetabellData([]);
+
+      const taxData = findTaxRateFromAPI(apiData, kommun.trim(), selectedYear, forsamling);
+      
+      if (taxData.length > 0) {
+        setResult(taxData);
+        const firstResult = taxData[0];
+        const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
+        const skattetabell = getSkattetabell(taxRate);
+        loadSkattetabellData(selectedYear, skattetabell);
+      } else {
+        setError('Ingen data hittad för den valda kombinationen.');
+      }
+    };
+
+    performAutomaticLookup();
+  }, [kommun, selectedYear, forsamling, availableForsamlingar, apiData, includeSvenskaKyrkan]);
 
   const loadSkattetabellData = async (year: number, tabell: number) => {
     setSkattetabellLoading(true);
@@ -202,34 +235,6 @@ const Index = () => {
       const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
       const skattetabell = getSkattetabell(taxRate);
       loadSkattetabellData(selectedYear, skattetabell);
-    }
-  };
-
-  const handleLookup = () => {
-    setError('');
-    setResult([]);
-    setSkattetabellData([]);
-
-    if (!kommun.trim() || !selectedYear) {
-      setError('Vänligen välj både kommun och år');
-      return;
-    }
-
-    if (availableForsamlingar.length > 1 && !forsamling) {
-      setError('Denna kommun har flera församlingar. Vänligen välj en församling.');
-      return;
-    }
-
-    const taxData = findTaxRateFromAPI(apiData, kommun.trim(), selectedYear, forsamling);
-    
-    if (taxData.length > 0) {
-      setResult(taxData);
-      const firstResult = taxData[0];
-      const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
-      const skattetabell = getSkattetabell(taxRate);
-      loadSkattetabellData(selectedYear, skattetabell);
-    } else {
-      setError('Ingen data hittad för den valda kombinationen.');
     }
   };
 
@@ -379,16 +384,6 @@ const Index = () => {
                     Medlem i svenska kyrkan
                   </label>
                 </div>
-
-                <Button 
-                  onClick={handleLookup} 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6"
-                  size="lg"
-                  disabled={loading || !kommun || !selectedYear || (availableForsamlingar.length > 1 && !forsamling)}
-                >
-                  <Search className="mr-2 h-5 w-5" />
-                  {loading ? 'Laddar...' : 'Sök Skattesats'}
-                </Button>
 
                 {/* Error */}
                 {error && (
