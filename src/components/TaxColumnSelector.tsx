@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator } from 'lucide-react';
+import { Calculator, HelpCircle } from 'lucide-react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { fetchEngangsbeskattningData } from '@/utils/taxData';
 
 interface SkattetabellData {
@@ -528,7 +529,30 @@ const TaxColumnSelector = ({
                     {/* Left Column - Input */}
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="engangsbeskattningAmount">Engångsbelopp (kr)</Label>
+                        <Label htmlFor="engangsbeskattningAmount" className="flex items-center gap-2">
+                          Engångsbelopp (kr)
+                          <TooltipProvider>
+                            <UITooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <p>Som engångsbelopp räknas ersättning för arbete som inte avser en bestämd tidsperiod eller inte betalas ut regelbundet.</p>
+                                <br />
+                                <p>Till sådana ersättningar räknas</p>
+                                <ul className="list-disc pl-4 mt-2">
+                                  <li>vissa slag av ackordsersättningar</li>
+                                  <li>retroaktiv lön</li>
+                                  <li>semesterersättning</li>
+                                  <li>tantiem (andel i vinst som tillägg till lön)</li>
+                                  <li>vissa provisioner och arvoden</li>
+                                  <li>avgångsvederlag</li>
+                                  <li>retroaktiv livränta</li>
+                                </ul>
+                              </TooltipContent>
+                            </UITooltip>
+                          </TooltipProvider>
+                        </Label>
                         <Input
                           id="engangsbeskattningAmount"
                           type="number"
@@ -541,7 +565,19 @@ const TaxColumnSelector = ({
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="additionalIncome">Övrig inkomst (kr)</Label>
+                        <Label htmlFor="additionalIncome" className="flex items-center gap-2">
+                          Övrig inkomst (kr)
+                          <TooltipProvider>
+                            <UITooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <p>Här kan du lägga till övrig inkomst under året som räknas in i din årslön enligt Skatteverket.</p>
+                              </TooltipContent>
+                            </UITooltip>
+                          </TooltipProvider>
+                        </Label>
                         <Input
                           id="additionalIncome"
                           type="number"
@@ -554,7 +590,19 @@ const TaxColumnSelector = ({
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="adjustedSalary">Justera lön (kr)</Label>
+                        <Label htmlFor="adjustedSalary" className="flex items-center gap-2">
+                          Justera lön (kr)
+                          <TooltipProvider>
+                            <UITooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <p>Om du har haft en annan lön än den du angav tidigare under året, kan du fylla i din tidigare lön för att få en så korrekt uträkning som möjligt. Fyll även i nedan hur många månader du hade den tidigare lönen.</p>
+                              </TooltipContent>
+                            </UITooltip>
+                          </TooltipProvider>
+                        </Label>
                         <Input
                           id="adjustedSalary"
                           type="number"
@@ -567,7 +615,19 @@ const TaxColumnSelector = ({
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="adjustedMonths">Antal månader</Label>
+                        <Label htmlFor="adjustedMonths" className="flex items-center gap-2">
+                          Antal månader
+                          <TooltipProvider>
+                            <UITooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <p>Här fyller du i hur många månader innevarande år som du hade din tidigare lön, för att få en så korrekt uträkning som möjligt</p>
+                              </TooltipContent>
+                            </UITooltip>
+                          </TooltipProvider>
+                        </Label>
                         <Input
                           id="adjustedMonths"
                           type="number"

@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Search, Coins, MapPin, Calendar, List } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Search, Coins, MapPin, Calendar, List, HelpCircle } from 'lucide-react';
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
 import TaxColumnSelector from '@/components/TaxColumnSelector';
@@ -322,6 +323,13 @@ const Index = () => {
               <p className="text-gray-600">Hitta din inkomstskatt på ett enklare sätt</p>
             </div>
           </div>
+          
+          {/* Info Text */}
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+            <p className="text-gray-700 leading-relaxed">
+              Processen att hitta och förstå den skatt man som anställd i Sverige betalar på sin inkomst kan vara komplicerad och frustrerande. Denna applikation hjälper dig att snabbt och enkelt hitta exakt hur mycket du ska betala i skatt, så att du slipper leta fram det själv.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -390,9 +398,19 @@ const Index = () => {
                   />
                   <label 
                     htmlFor="svenskaKyrkan" 
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
                   >
                     Medlem i svenska kyrkan
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Ditt medlemskap i Svenska Kyrkan kan du hitta här: https://www.svenskakyrkan.se/medlem</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </label>
                 </div>
 
@@ -411,7 +429,19 @@ const Index = () => {
                   </h3>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="birthday">Födelsedatum</Label>
+                    <Label htmlFor="birthday" className="flex items-center gap-2">
+                      Födelsedatum
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </Label>
                     <Input
                       id="birthday"
                       type="date"
