@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -23,6 +23,11 @@ interface TaxColumnSelectorProps {
   taxAmount: string | null;
   kommun: string;
   selectedTaxColumn: number;
+  result: any[];
+  includeSvenskaKyrkan: boolean;
+  selectedYear: number | null;
+  getSkattetabell: (taxRate: number) => number;
+  onTriggerCalculation: () => void;
 }
 
 const TaxColumnSelector = ({
@@ -36,7 +41,12 @@ const TaxColumnSelector = ({
   onBirthdayChange,
   taxAmount,
   kommun,
-  selectedTaxColumn
+  selectedTaxColumn,
+  result,
+  includeSvenskaKyrkan,
+  selectedYear,
+  getSkattetabell,
+  onTriggerCalculation
 }: TaxColumnSelectorProps) => {
   const getCurrentColumn = (): number => {
     if (!birthday) return 1;
@@ -82,6 +92,38 @@ const TaxColumnSelector = ({
     onMonthlyIncomeChange(numericValue);
   };
 
+  const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    // Basic validation for date format
+    if (value && value.length === 10) {
+      const date = new Date(value);
+      const year = date.getFullYear();
+      const currentYear = new Date().getFullYear();
+      
+      // Validate year is reasonable (between 1900 and current year)
+      if (year >= 1900 && year <= currentYear && !isNaN(date.getTime())) {
+        onBirthdayChange(value);
+      }
+    } else {
+      onBirthdayChange(value);
+    }
+  };
+
+  // Trigger calculation whenever relevant values change
+  useEffect(() => {
+    if (kommun && monthlyIncome > 0 && birthday) {
+      onTriggerCalculation();
+    }
+  }, [birthday, incomeType, isPensionContributing, monthlyIncome, kommun, onTriggerCalculation]);
+
+  const getTaxPercentage = (): string => {
+    if (!taxAmount || !monthlyIncome || monthlyIncome === 0) return '0';
+    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
+    const percentage = (taxAmountNum / monthlyIncome) * 100;
+    return percentage.toFixed(1);
+  };
+
   return (
     <Card className="shadow-lg">
       <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
@@ -97,8 +139,10 @@ const TaxColumnSelector = ({
             id="birthday"
             type="date"
             value={birthday}
-            onChange={(e) => onBirthdayChange(e.target.value)}
+            onChange={handleBirthdayChange}
             placeholder="Välj födelsedatum"
+            max={new Date().toISOString().split('T')[0]}
+            min="1900-01-01"
           />
         </div>
 
@@ -153,16 +197,50 @@ const TaxColumnSelector = ({
 
         {/* Tax Result Display */}
         <div className="mt-4">
+          {result.length > 0 && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h3 className="font-semibold text-green-800 mb-2">Skattesats för {result[0].Kommun}</h3>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span>Kommunal skatt:</span>
+                  <span className="font-medium">{result[0].KommunalSkatt}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Landstingsskatt:</span>
+                  <span className="font-medium">{result[0].LandstingsSkatt}%</span>
+                </div>
+                {includeSvenskaKyrkan && (
+                  <div className="flex justify-between">
+                    <span>Kyrkoavgift:</span>
+                    <span className="font-medium">{result[0].Kyrkoavgift}%</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t pt-1 mt-2">
+                  <span className="font-semibold">Total skattesats:</span>
+                  <span className="font-semibold text-green-700">
+                    {includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-semibold">Skattetabell:</span>
+                  <span className="font-semibold text-green-700">
+                    {getSkattetabell(includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {kommun && taxAmount && monthlyIncome > 0 ? (
             <div className="text-center p-8 bg-green-50 border border-green-200 rounded-lg">
               <div className="text-lg font-medium text-green-700 mb-2">
                 Skatt för {monthlyIncome.toLocaleString()} kr/månad:
               </div>
-              <div className="text-4xl font-bold text-green-800">
+              <div className="text-4xl font-bold text-green-800 mb-2">
                 {taxAmount} kr
               </div>
-              <div className="text-sm text-gray-600 mt-2">
-                Baserat på kolumn {selectedTaxColumn} för {kommun}
+              <div className="text-lg font-medium text-green-600">
+                Du betalar {getTaxPercentage()}% i skatt
               </div>
             </div>
           ) : (
