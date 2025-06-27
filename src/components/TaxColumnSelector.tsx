@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
@@ -66,6 +65,9 @@ const TaxColumnSelector = ({
   const [engangsbeskattningLoading, setEngangsbeskattningLoading] = useState(false);
   const [engangsbeskattningError, setEngangsbeskattningError] = useState<string | null>(null);
   const [engangsbeskattningAmount, setEngangsbeskattningAmount] = useState(10000);
+  const [additionalIncome, setAdditionalIncome] = useState(0);
+  const [adjustedSalary, setAdjustedSalary] = useState(0);
+  const [adjustedMonths, setAdjustedMonths] = useState(0);
 
   const getTotalIncomeForTax = (): number => {
     return monthlyIncome + taxableBenefit;
@@ -73,6 +75,23 @@ const TaxColumnSelector = ({
 
   const getBaseSalary = (): number => {
     return monthlyIncome;
+  };
+
+  const calculateYearlyIncome = (): number => {
+    const baseMonthlyIncome = monthlyIncome + taxableBenefit;
+    let yearlyIncome = 0;
+    
+    if (adjustedSalary > 0 && adjustedMonths > 0 && adjustedMonths <= 12) {
+      // Use adjusted salary for specified months, regular salary for remaining months
+      const remainingMonths = 12 - adjustedMonths;
+      yearlyIncome = (adjustedSalary * adjustedMonths) + (baseMonthlyIncome * remainingMonths);
+    } else {
+      // Use regular monthly income for all 12 months
+      yearlyIncome = baseMonthlyIncome * 12;
+    }
+    
+    // Add additional income and one-time amount
+    return yearlyIncome + additionalIncome + engangsbeskattningAmount;
   };
 
   const isPercentageValue = (value: number, income: number): boolean => {
@@ -246,13 +265,15 @@ const TaxColumnSelector = ({
     setEngangsbeskattningLoading(true);
     setEngangsbeskattningError(null);
     try {
-      // Calculate årslön according to Skatteverket: 
-      // (månadsinkomst + beskattningsbar förmån) * 12 + engångsbelopp
-      const yearlyIncome = (getTotalIncomeForTax() * 12) + engangsbeskattningAmount;
+      // Use the new calculation method for yearly income
+      const yearlyIncome = calculateYearlyIncome();
       console.log('Loading engångsbeskattning data:', { 
         selectedYear, 
         monthlyIncome: getTotalIncomeForTax(),
         engangsbeskattningAmount,
+        additionalIncome,
+        adjustedSalary,
+        adjustedMonths,
         calculatedYearlyIncome: yearlyIncome, 
         selectedTaxColumn 
       });
@@ -286,12 +307,33 @@ const TaxColumnSelector = ({
     setEngangsbeskattningAmount(cappedValue);
   };
 
+  const handleAdditionalIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+    const cappedValue = Math.min(numericValue, 1000000000);
+    setAdditionalIncome(cappedValue);
+  };
+
+  const handleAdjustedSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+    const cappedValue = Math.min(numericValue, 1000000000);
+    setAdjustedSalary(cappedValue);
+  };
+
+  const handleAdjustedMonthsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+    const cappedValue = Math.min(Math.max(0, numericValue), 12);
+    setAdjustedMonths(cappedValue);
+  };
+
   // Load engångsbeskattning data when relevant values change
   useEffect(() => {
     if (selectedYear && getTotalIncomeForTax() > 0 && selectedTaxColumn && engangsbeskattningAmount > 0) {
       loadEngangsbeskattningData();
     }
-  }, [selectedYear, monthlyIncome, taxableBenefit, selectedTaxColumn, engangsbeskattningAmount]);
+  }, [selectedYear, monthlyIncome, taxableBenefit, selectedTaxColumn, engangsbeskattningAmount, additionalIncome, adjustedSalary, adjustedMonths]);
 
   return (
     <div className="space-y-6">
@@ -356,7 +398,7 @@ const TaxColumnSelector = ({
                       Du betalar <span className="font-bold">{getTaxPercentage()}%</span> i skatt
                     </div>
                     <div className="text-sm font-medium text-black">
-                      Marginalskatt: <span className="font-bold">{getMarginalTaxRate()}%</span>
+                      Din marginalskatt är <span className="font-bold">{getMarginalTaxRate()}%</span>
                     </div>
                   </div>
                 </div>
@@ -458,6 +500,45 @@ const TaxColumnSelector = ({
                           max="1000000000"
                         />
                       </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="additionalIncome">Övrig inkomst (kr)</Label>
+                        <Input
+                          id="additionalIncome"
+                          type="number"
+                          value={additionalIncome || ''}
+                          onChange={handleAdditionalIncomeChange}
+                          placeholder="Ange övrig inkomst"
+                          min="0"
+                          max="1000000000"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="adjustedSalary">Justera lön (kr)</Label>
+                        <Input
+                          id="adjustedSalary"
+                          type="number"
+                          value={adjustedSalary || ''}
+                          onChange={handleAdjustedSalaryChange}
+                          placeholder="Ange justerad månadslön"
+                          min="0"
+                          max="1000000000"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="adjustedMonths">Antal månader</Label>
+                        <Input
+                          id="adjustedMonths"
+                          type="number"
+                          value={adjustedMonths || ''}
+                          onChange={handleAdjustedMonthsChange}
+                          placeholder="Antal månader med justerad lön"
+                          min="0"
+                          max="12"
+                        />
+                      </div>
                     </div>
 
                     {/* Right Column - Results */}
@@ -489,7 +570,7 @@ const TaxColumnSelector = ({
                               i skatt
                             </div>
                             <div className="text-xs text-gray-500 mt-2">
-                              Baserat på total årslön: {((getTotalIncomeForTax() * 12) + engangsbeskattningAmount).toLocaleString()} kr
+                              Baserat på total årslön: {calculateYearlyIncome().toLocaleString()} kr
                             </div>
                           </div>
                         </div>
