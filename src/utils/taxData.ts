@@ -166,7 +166,10 @@ export const fetchSkattetabellData = async (year: number, tabell: number): Promi
     console.log(`Starting to fetch skattetabell data for year ${year} and table ${tabell}...`);
 
     while (hasMoreData) {
-      const url = `https://skatteverket.entryscape.net/rowstore/dataset/88320397-5c32-4c16-ae79-d36d95b17b95?_limit=${limit}&_offset=${offset}&år=${year}&tabell=${tabell}`;
+      // Try different parameter formats to match the API
+      const url = `https://skatteverket.entryscape.net/rowstore/dataset/88320397-5c32-4c16-ae79-d36d95b17b95?_limit=${limit}&_offset=${offset}&_q=år:${year} AND tabell:${tabell}`;
+      
+      console.log(`Fetching skattetabell with URL: ${url}`);
       
       const response = await fetch(url, {
         headers: {
@@ -175,7 +178,52 @@ export const fetchSkattetabellData = async (year: number, tabell: number): Promi
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.error(`HTTP error! status: ${response.status}, url: ${url}`);
+        // Try alternative parameter format
+        const altUrl = `https://skatteverket.entryscape.net/rowstore/dataset/88320397-5c32-4c16-ae79-d36d95b17b95?_limit=${limit}&_offset=${offset}&_q=*`;
+        console.log(`Trying alternative URL: ${altUrl}`);
+        
+        const altResponse = await fetch(altUrl, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!altResponse.ok) {
+          throw new Error(`HTTP error! status: ${altResponse.status}`);
+        }
+        
+        const altApiResponse: SkattetabellApiResponse = await altResponse.json();
+        
+        // Filter the results manually
+        const filteredResults = altApiResponse.results.filter(item => 
+          parseInt(item.år) === year && parseInt(item.tabell) === tabell
+        );
+        
+        console.log(`Fetched skattetabell batch (filtered): offset=${offset}, limit=${limit}, results=${filteredResults.length}, total=${altApiResponse.resultCount}`);
+        
+        if (filteredResults.length === 0) {
+          hasMoreData = false;
+          break;
+        }
+
+        const batchData: SkattetabellData[] = filteredResults.map(item => ({
+          År: parseInt(item.år),
+          Tabell: parseInt(item.tabell),
+          InkomstFrån: parseInt(item['inkomst från']),
+          InkomstTill: parseInt(item['inkomst till']),
+          Skatt: parseInt(item.skatt)
+        }));
+
+        allData = [...allData, ...batchData];
+        
+        if (filteredResults.length < limit) {
+          hasMoreData = false;
+        } else {
+          offset += limit;
+        }
+        
+        continue;
       }
       
       const apiResponse: SkattetabellApiResponse = await response.json();
