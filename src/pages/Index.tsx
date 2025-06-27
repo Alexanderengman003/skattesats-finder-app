@@ -5,7 +5,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
 import { Search, Coins, MapPin, Calendar, List } from 'lucide-react';
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
@@ -219,7 +218,8 @@ const Index = () => {
   const handleIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
-    setMonthlyIncome(numericValue);
+    const cappedValue = Math.min(numericValue, 1000000000);
+    setMonthlyIncome(cappedValue);
   };
 
   const handleTaxableBenefitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,19 +248,6 @@ const Index = () => {
       setBirthday(value);
     }
   };
-
-  // Convert linear value to logarithmic for slider
-  const valueToLog = (value: number): number => {
-    if (value <= 0) return 0;
-    return Math.log(value + 1);
-  };
-
-  // Convert logarithmic value back to linear
-  const logToValue = (log: number): number => {
-    return Math.max(0, Math.round(Math.exp(log) - 1));
-  };
-
-  const maxLog = valueToLog(1500000);
 
   const getTotalIncome = (): number => {
     return monthlyIncome + taxableBenefit;
@@ -412,7 +399,7 @@ const Index = () => {
                     />
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     <Label htmlFor="monthlyIncome">Månadsinkomst</Label>
                     <Input
                       id="monthlyIncome"
@@ -421,14 +408,7 @@ const Index = () => {
                       onChange={handleIncomeChange}
                       placeholder="Ange månadsinkomst"
                       min="0"
-                    />
-                    <Slider
-                      value={[valueToLog(monthlyIncome)]}
-                      onValueChange={(value) => setMonthlyIncome(logToValue(value[0]))}
-                      max={maxLog}
-                      min={0}
-                      step={0.01}
-                      className="w-full"
+                      max="1000000000"
                     />
                   </div>
 

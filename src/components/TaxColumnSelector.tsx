@@ -116,25 +116,22 @@ const TaxColumnSelector = ({
     
     if (!currentBracket) return '0';
     
-    const currentIndex = skattetabellData.indexOf(currentBracket);
+    // Find the next bracket (income bracket immediately above current)
+    const nextBracket = skattetabellData.find(item => 
+      item.InkomstFrån === currentBracket.InkomstTill + 1
+    );
     
-    // Find previous bracket to calculate marginal rate
-    const previousBracket = currentIndex > 0 ? skattetabellData[currentIndex - 1] : null;
-    
-    if (!previousBracket) {
-      // If no previous bracket, return 0
-      return '0';
-    }
+    if (!nextBracket) return '0';
     
     // Get tax values for both brackets
     const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
-    const previousTaxValue = parseFloat(previousBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    const nextTaxValue = parseFloat(nextBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
     
-    // Calculate income difference between brackets
-    const incomeDiff = currentBracket.InkomstFrån - previousBracket.InkomstTill;
+    // Calculate income and tax differences
+    const incomeDiff = nextBracket.InkomstFrån - currentBracket.InkomstFrån;
     
     let currentTaxAmount = 0;
-    let previousTaxAmount = 0;
+    let nextTaxAmount = 0;
     
     // Convert to actual tax amounts if they are percentages
     if (isPercentageValue(currentTaxValue, currentBracket.InkomstFrån)) {
@@ -143,13 +140,13 @@ const TaxColumnSelector = ({
       currentTaxAmount = currentTaxValue;
     }
     
-    if (isPercentageValue(previousTaxValue, previousBracket.InkomstTill)) {
-      previousTaxAmount = (previousTaxValue / 100) * previousBracket.InkomstTill;
+    if (isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
+      nextTaxAmount = (nextTaxValue / 100) * nextBracket.InkomstFrån;
     } else {
-      previousTaxAmount = previousTaxValue;
+      nextTaxAmount = nextTaxValue;
     }
     
-    const taxDiff = currentTaxAmount - previousTaxAmount;
+    const taxDiff = nextTaxAmount - currentTaxAmount;
     
     if (incomeDiff > 0 && taxDiff >= 0) {
       const marginalRate = (taxDiff / incomeDiff) * 100;
@@ -160,8 +157,8 @@ const TaxColumnSelector = ({
   };
 
   const getPieChartData = () => {
-    const netSalary = getNetSalary();
-    const taxAmount = getActualTaxAmount();
+    const netSalary = Math.round(getNetSalary());
+    const taxAmount = Math.round(getActualTaxAmount());
     
     return [
       {
@@ -178,6 +175,22 @@ const TaxColumnSelector = ({
   };
 
   const COLORS = ['#3b82f6', '#ef4444'];
+
+  // Calculate required size based on largest value
+  const getChartSize = () => {
+    const netSalary = Math.round(getNetSalary());
+    const maxDigits = netSalary.toLocaleString().length;
+    
+    // Base size + extra space for larger numbers
+    const baseSize = 200;
+    let extraSize = 0;
+    
+    if (maxDigits > 6) {
+      extraSize = (maxDigits - 6) * 8;
+    }
+    
+    return Math.max(baseSize, baseSize + extraSize);
+  };
 
   return (
     <div className="space-y-6">
@@ -228,10 +241,10 @@ const TaxColumnSelector = ({
             <div className="space-y-4">
               <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
                 <div className="text-lg font-medium text-blue-700 mb-2">
-                  Skatt för {monthlyIncome.toLocaleString()} kr/månad:
+                  Skatt för {Math.round(monthlyIncome).toLocaleString()} kr/månad:
                 </div>
                 <div className="text-3xl font-bold text-blue-800 mb-2">
-                  {getActualTaxAmount().toLocaleString()} kr
+                  {Math.round(getActualTaxAmount()).toLocaleString()} kr
                 </div>
                 <div className="text-lg font-medium text-blue-600 mb-2">
                   Du betalar {getTaxPercentage()}% i skatt
@@ -246,18 +259,19 @@ const TaxColumnSelector = ({
                   Netto efter skatt:
                 </div>
                 <div className="flex items-center justify-center gap-6">
-                  <div className="relative w-48 h-48">
+                  <div className="relative" style={{ width: getChartSize(), height: getChartSize() }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPieChart>
                         <Pie
                           data={getPieChartData()}
                           cx="50%"
                           cy="50%"
-                          innerRadius={60}
-                          outerRadius={90}
+                          innerRadius={getChartSize() * 0.3}
+                          outerRadius={getChartSize() * 0.45}
                           paddingAngle={2}
                           dataKey="value"
                           stroke="none"
+                          cornerRadius={8}
                         >
                           {getPieChartData().map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -265,16 +279,23 @@ const TaxColumnSelector = ({
                         </Pie>
                         <Tooltip 
                           formatter={(value: number, name: string) => [
-                            `${value.toLocaleString()} kr`,
-                            name
+                            `${name}: ${value.toLocaleString()} kr`,
+                            ''
                           ]}
+                          labelFormatter={() => ''}
+                          contentStyle={{
+                            backgroundColor: 'white',
+                            border: '1px solid #3b82f6',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                          }}
                         />
                       </RechartsPieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-blue-800">
-                          {getNetSalary().toLocaleString()}
+                          {Math.round(getNetSalary()).toLocaleString()}
                         </div>
                         <div className="text-sm text-blue-600">
                           kr
