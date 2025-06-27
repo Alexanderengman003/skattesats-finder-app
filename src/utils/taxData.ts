@@ -1,11 +1,61 @@
-
 export interface TaxRate {
   kommun: string;
   under18: number;
   age18to64: number;
   over65: number;
+  year?: number;
 }
 
+export interface SkatteverketData {
+  KommunKod: string;
+  Kommun: string;
+  Skattesats: number;
+  År: number;
+}
+
+export const fetchTaxData = async (): Promise<{ data: SkatteverketData[], years: number[] }> => {
+  try {
+    const response = await fetch('https://skatteverket.entryscape.net/rowstore/dataset/c67b320b-ffee-4876-b073-dd9236cd2a99');
+    const data: SkatteverketData[] = await response.json();
+    
+    // Get unique years from the data
+    const years = [...new Set(data.map(item => item.År))].sort((a, b) => b - a);
+    
+    return { data, years };
+  } catch (error) {
+    console.error('Error fetching tax data:', error);
+    return { data: [], years: [] };
+  }
+};
+
+export const findTaxRateFromAPI = (
+  data: SkatteverketData[], 
+  kommun: string, 
+  year: number
+): { rate: number; kommun: string; year: number } | null => {
+  const municipalityData = data.find(
+    item => item.Kommun.toLowerCase().includes(kommun.toLowerCase()) && item.År === year
+  );
+
+  if (!municipalityData) {
+    return null;
+  }
+
+  return {
+    rate: municipalityData.Skattesats,
+    kommun: municipalityData.Kommun,
+    year: municipalityData.År
+  };
+};
+
+export const getAvailableMunicipalities = (data: SkatteverketData[], year: number): string[] => {
+  return [...new Set(data
+    .filter(item => item.År === year)
+    .map(item => item.Kommun)
+  )].sort();
+};
+
+// Keep the existing static data as fallback
 export const taxData: TaxRate[] = [
   { kommun: 'Stockholm', under18: 0, age18to64: 32.07, over65: 29.52 },
   { kommun: 'Göteborg', under18: 0, age18to64: 33.35, over65: 30.80 },
