@@ -33,7 +33,7 @@ const SkatteverketTable = ({ data, selectedYear }: SkatteverketTableProps) => {
         <TableBody>
           {filteredData.map((row, index) => (
             <TableRow 
-              key={`${row.KommunKod}-${row.År}`}
+              key={`${row.Kommun}-${row.År}-${index}`}
               className={`hover:bg-blue-50 transition-colors ${
                 index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
               }`}
