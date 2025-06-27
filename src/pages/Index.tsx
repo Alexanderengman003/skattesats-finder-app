@@ -283,8 +283,8 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <Calculator className="h-8 w-8 text-blue-600" />
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Skattesats Lookup</h1>
-              <p className="text-gray-600">Hitta din kommuns skattesats med riktig data från Skatteverket</p>
+              <h1 className="text-3xl font-bold text-gray-900">Min skatt</h1>
+              <p className="text-gray-600">Hitta din inkomstskatt på ett enklare sätt</p>
             </div>
           </div>
         </div>
@@ -298,7 +298,7 @@ const Index = () => {
               <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
                 <CardTitle className="flex items-center gap-2">
                   <Search className="h-5 w-5" />
-                  Sök Skattesats & Beräkning
+                  Skattesats
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">

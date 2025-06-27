@@ -71,7 +71,7 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
       taxAmount: taxAmount,
       isPercentage: isPercentageValue(taxAmount, midIncome)
     };
-  }).filter(item => item.income > 0 && item.taxPercentage >= 0 && item.taxPercentage <= 100);
+  }).filter(item => item.income > 0 && item.taxPercentage >= 0 && item.taxPercentage <= 50);
 
   const chartConfig = {
     taxPercentage: {
@@ -86,13 +86,23 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
 
   // Get the maximum income for x-axis formatting
   const maxIncome = Math.max(...chartData.map(item => item.income));
+  
+  // Generate x-axis ticks
+  const generateXTicks = (max: number) => {
+    const ticks = [];
+    const step = Math.ceil(max / 10 / 1000) * 1000; // Round to nearest thousand
+    for (let i = 0; i <= max; i += step) {
+      ticks.push(i);
+    }
+    return ticks;
+  };
 
   return (
     <Card className="mt-4">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          Skattetabell Visualisering - Kolumn {selectedTaxColumn}
+          Kolumn {selectedTaxColumn}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -107,13 +117,14 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
                 dataKey="income" 
                 type="number"
                 domain={[0, maxIncome]}
+                ticks={generateXTicks(maxIncome)}
                 tickFormatter={(value) => `${Math.round(value / 1000)}k`}
                 stroke="#6b7280"
                 fontSize={12}
               />
               <YAxis 
-                domain={[0, 100]}
-                ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+                domain={[0, 50]}
+                ticks={[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]}
                 tickFormatter={(value) => `${value}%`}
                 stroke="#6b7280"
                 fontSize={12}
@@ -139,9 +150,9 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
                 type="monotone" 
                 dataKey="taxPercentage" 
                 stroke="#2563eb" 
-                strokeWidth={3}
-                dot={{ fill: '#2563eb', r: 4 }}
-                activeDot={{ r: 6, fill: '#1d4ed8' }}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, fill: '#1d4ed8' }}
               />
               {currentIncome > 0 && (
                 <ReferenceLine 
