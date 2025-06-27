@@ -293,7 +293,7 @@ export const fetchEngangsbeskattningData = async (
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status} - Data not available for year ${year}`);
       }
       
       const apiResponse: EngangsbeskattningApiResponse = await response.json();
@@ -330,15 +330,23 @@ export const fetchEngangsbeskattningData = async (
     
     console.log(`Total engångsbeskattning data fetched: ${allData.length} records`);
     
+    if (allData.length === 0) {
+      throw new Error(`No engångsbeskattning data available for year ${year}`);
+    }
+    
     // Filter for the specific yearly income range
     const filteredData = allData.filter(item => 
       yearlyIncome >= item.ÅrslönIKrLägst && yearlyIncome <= item.ÅrslönIKrHögst
     );
     
+    if (filteredData.length === 0) {
+      throw new Error(`No engångsbeskattning data available for income ${yearlyIncome} kr in year ${year}`);
+    }
+    
     return filteredData;
   } catch (error) {
     console.error('Error fetching engångsbeskattning data:', error);
-    return [];
+    throw error; // Re-throw the error so the component can handle it
   }
 };
 

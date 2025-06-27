@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
@@ -63,6 +62,7 @@ const TaxColumnSelector = ({
 }: TaxColumnSelectorProps) => {
   const [engangsbeskattningData, setEngangsbeskattningData] = useState<any[]>([]);
   const [engangsbeskattningLoading, setEngangsbeskattningLoading] = useState(false);
+  const [engangsbeskattningError, setEngangsbeskattningError] = useState<string | null>(null);
 
   const getTotalIncomeForTax = (): number => {
     return monthlyIncome + taxableBenefit;
@@ -230,10 +230,6 @@ const TaxColumnSelector = ({
     return taxValue;
   };
 
-  // Use the filtered data with fallback to last bracket
-  const filteredTaxData = getFilteredSkattetabellData();
-  const currentTaxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
-
   const loadEngangsbeskattningData = async () => {
     if (!selectedYear || getTotalIncomeForTax() === 0) {
       console.log('Missing required data for engångsbeskattning:', { selectedYear, totalIncome: getTotalIncomeForTax() });
@@ -241,14 +237,16 @@ const TaxColumnSelector = ({
     }
     
     setEngangsbeskattningLoading(true);
+    setEngangsbeskattningError(null);
     try {
       const yearlyIncome = getTotalIncomeForTax() * 12;
       console.log('Loading engångsbeskattning data:', { selectedYear, yearlyIncome, selectedTaxColumn });
       const data = await fetchEngangsbeskattningData(selectedYear, yearlyIncome, selectedTaxColumn);
       console.log('Engångsbeskattning data received:', data);
       setEngangsbeskattningData(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load engångsbeskattning data:', error);
+      setEngangsbeskattningError(error.message || 'Failed to load data');
       setEngangsbeskattningData([]);
     } finally {
       setEngangsbeskattningLoading(false);
@@ -423,6 +421,11 @@ const TaxColumnSelector = ({
                     </div>
                     {engangsbeskattningLoading ? (
                       <div className="text-gray-500">Beräknar...</div>
+                    ) : engangsbeskattningError ? (
+                      <div className="text-red-600">
+                        <div className="font-medium mb-1">Fel vid hämtning av data</div>
+                        <div className="text-sm">{engangsbeskattningError}</div>
+                      </div>
                     ) : engangsbeskattningData.length > 0 ? (
                       <div>
                         <div className="text-sm font-medium text-black mb-1">
@@ -446,10 +449,7 @@ const TaxColumnSelector = ({
                       </div>
                     ) : (
                       <div className="text-gray-500">
-                        Ingen data tillgänglig
-                        <div className="text-xs text-gray-400 mt-1">
-                          Debug: År: {selectedYear}, Inkomst: {getTotalIncomeForTax()}, Kolumn: {selectedTaxColumn}
-                        </div>
+                        Ingen data tillgänglig för år {selectedYear}
                       </div>
                     )}
                   </div>
