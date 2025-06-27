@@ -12,6 +12,13 @@ export interface SkatteverketData {
   Kommun: string;
   Skattesats: number;
   År: number;
+  Församling: string;
+  FörsamlingsKod: string;
+  KommunalSkatt: number;
+  LandstingsSkatt: number;
+  Kyrkoavgift: number;
+  BegravningsAvgift: number;
+  SummaInklKyrkoavgift: number;
 }
 
 interface SkatteverketApiResponse {
@@ -19,6 +26,13 @@ interface SkatteverketApiResponse {
     'kommun': string;
     'år': string;
     'summa, exkl. kyrkoavgift': string;
+    'summa, inkl. kyrkoavgift': string;
+    'församling': string;
+    'församlings-kod': string;
+    'kommunal-skatt': string;
+    'landstings-skatt': string;
+    'kyrkoavgift': string;
+    'begravnings-avgift': string;
     [key: string]: string;
   }>;
   resultCount: number;
@@ -30,13 +44,13 @@ export const fetchTaxData = async (): Promise<{ data: SkatteverketData[], years:
   try {
     let allData: SkatteverketData[] = [];
     let offset = 0;
-    const limit = 500; // Maximum allowed limit
+    const limit = 500;
     let hasMoreData = true;
 
     console.log('Starting to fetch tax data with pagination...');
 
     while (hasMoreData) {
-      const url = `https://skatteverket.entryscape.net/rowstore/dataset/c67b320b-ffee-4876-b073-dd9236cd2a99/json?_limit=${limit}&_offset=${offset}`;
+      const url = `https://skatteverket.entryscape.net/rowstore/dataset/c67b320b-ffee-4876-b073-dd9236cd2a99?_limit=${limit}&_offset=${offset}`;
       
       const response = await fetch(url, {
         headers: {
@@ -57,17 +71,22 @@ export const fetchTaxData = async (): Promise<{ data: SkatteverketData[], years:
         break;
       }
 
-      // Transform the API data to our expected format
       const batchData: SkatteverketData[] = apiResponse.results.map(item => ({
-        KommunKod: item['församlings-kod'] || '', // Use församlings-kod as a fallback for kommun code
+        KommunKod: item['församlings-kod']?.substring(0, 4) || '',
         Kommun: item.kommun.toUpperCase(),
         Skattesats: parseFloat(item['summa, exkl. kyrkoavgift']),
-        År: parseInt(item.år)
+        År: parseInt(item.år),
+        Församling: item.församling,
+        FörsamlingsKod: item['församlings-kod'],
+        KommunalSkatt: parseFloat(item['kommunal-skatt'] || '0'),
+        LandstingsSkatt: parseFloat(item['landstings-skatt'] || '0'),
+        Kyrkoavgift: parseFloat(item['kyrkoavgift'] || '0'),
+        BegravningsAvgift: parseFloat(item['begravnings-avgift'] || '0'),
+        SummaInklKyrkoavgift: parseFloat(item['summa, inkl. kyrkoavgift'] || '0')
       }));
 
       allData = [...allData, ...batchData];
       
-      // Check if we've fetched all data
       if (apiResponse.results.length < limit || offset + limit >= apiResponse.resultCount) {
         hasMoreData = false;
       } else {
@@ -77,15 +96,10 @@ export const fetchTaxData = async (): Promise<{ data: SkatteverketData[], years:
     
     console.log(`Total data fetched: ${allData.length} records`);
     
-    // Get unique years from all data
     const allYears = allData.map(item => item.År);
     const years = [...new Set(allYears)].sort((a, b) => b - a);
     
     console.log('All unique years found:', years);
-    console.log('Years distribution:', years.map(year => ({ 
-      year, 
-      count: allData.filter(item => item.År === year).length 
-    })));
     
     return { data: allData, years };
   } catch (error) {
@@ -97,19 +111,26 @@ export const fetchTaxData = async (): Promise<{ data: SkatteverketData[], years:
 export const findTaxRateFromAPI = (
   data: SkatteverketData[], 
   kommun: string, 
-  year: number
-): SkatteverketData | null => {
-  const municipalityData = data.find(
-    item => item.Kommun === kommun && item.År === year
+  year: number,
+  församling?: string
+): SkatteverketData[] => {
+  return data.filter(
+    item => item.Kommun === kommun && item.År === year && 
+    (församling ? item.Församling === församling : true)
   );
-
-  return municipalityData || null;
 };
 
 export const getAvailableMunicipalities = (data: SkatteverketData[], year: number): string[] => {
   return [...new Set(data
     .filter(item => item.År === year)
     .map(item => item.Kommun)
+  )].sort();
+};
+
+export const getAvailableForsamlingar = (data: SkatteverketData[], kommun: string, year: number): string[] => {
+  return [...new Set(data
+    .filter(item => item.Kommun === kommun && item.År === year)
+    .map(item => item.Församling)
   )].sort();
 };
 
