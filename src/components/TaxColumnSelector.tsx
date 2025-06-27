@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator, PieChart } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import TaxTableChart from './TaxTableChart';
 
@@ -162,11 +162,10 @@ const TaxColumnSelector = ({
   const getPieChartData = () => {
     const netSalary = Math.round(getNetSalary());
     const taxAmount = Math.round(getActualTaxAmount());
-    const fees = Math.round(monthlyIncome * 0.1); // Example: 10% for fees (you can adjust this logic)
     
     return [
       {
-        name: 'Netto efter skatt',
+        name: 'Nettoinkomst',
         value: netSalary,
         color: '#8b5cf6'
       },
@@ -174,16 +173,11 @@ const TaxColumnSelector = ({
         name: 'Skatt',
         value: taxAmount,
         color: '#06b6d4'
-      },
-      {
-        name: 'Avgifter',
-        value: fees,
-        color: '#f59e0b'
       }
     ];
   };
 
-  const COLORS = ['#8b5cf6', '#06b6d4', '#f59e0b'];
+  const COLORS = ['#8b5cf6', '#06b6d4'];
 
   // Fixed chart size based on maximum possible value (1 billion + "kr")
   const getChartSize = () => {
@@ -317,7 +311,7 @@ const TaxColumnSelector = ({
                           data={getPieChartData()}
                           cx="50%"
                           cy="50%"
-                          innerRadius={100}
+                          innerRadius={120}
                           outerRadius={140}
                           paddingAngle={2}
                           dataKey="value"
@@ -356,7 +350,7 @@ const TaxColumnSelector = ({
                   </div>
                   
                   {/* Legend */}
-                  <div className="grid grid-cols-3 gap-8 text-center">
+                  <div className="grid grid-cols-2 gap-8 text-center">
                     {getPieChartData().map((entry, index) => (
                       <div key={entry.name} className="flex flex-col items-center">
                         <div className="flex items-center gap-2 mb-1">
