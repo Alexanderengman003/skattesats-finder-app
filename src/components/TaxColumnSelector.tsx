@@ -230,6 +230,10 @@ const TaxColumnSelector = ({
     return taxValue;
   };
 
+  // Use the filtered data with fallback to last bracket
+  const filteredTaxData = getFilteredSkattetabellData();
+  const currentTaxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
+
   const loadEngangsbeskattningData = async () => {
     if (!selectedYear || getTotalIncomeForTax() === 0) {
       console.log('Missing required data for engångsbeskattning:', { selectedYear, totalIncome: getTotalIncomeForTax() });
