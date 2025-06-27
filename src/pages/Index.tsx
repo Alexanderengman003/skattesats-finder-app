@@ -170,7 +170,7 @@ const Index = () => {
                   <Checkbox 
                     id="svenskaKyrkan" 
                     checked={includeSvenskaKyrkan}
-                    onCheckedChange={setIncludeSvenskaKyrkan}
+                    onCheckedChange={(checked) => setIncludeSvenskaKyrkan(checked === true)}
                   />
                   <label 
                     htmlFor="svenskaKyrkan" 
