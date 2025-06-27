@@ -36,6 +36,7 @@ const Index = () => {
   const [isPensionContributing, setIsPensionContributing] = useState(false);
   const [birthYear, setBirthYear] = useState(1990);
   const [selectedTaxColumn, setSelectedTaxColumn] = useState(1);
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
 
   const getSkattetabell = (taxRate: number): number => {
     // Round to nearest integer according to Swedish tax authority rules
@@ -144,6 +145,14 @@ const Index = () => {
     return item[columnKey] || 'Ej tillgänglig';
   };
 
+  const getFilteredSkattetabellData = (): SkattetabellData | null => {
+    if (skattetabellData.length === 0 || monthlyIncome === 0) return null;
+    
+    return skattetabellData.find(item => 
+      monthlyIncome >= item.InkomstFrån && monthlyIncome <= item.InkomstTill
+    ) || null;
+  };
+
   const handleLookup = () => {
     setError('');
     setResult([]);
@@ -171,6 +180,9 @@ const Index = () => {
       setError('Ingen data hittad för den valda kombinationen.');
     }
   };
+
+  const filteredTaxData = getFilteredSkattetabellData();
+  const taxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -268,68 +280,6 @@ const Index = () => {
                   {loading ? 'Laddar...' : 'Sök Skattesats'}
                 </Button>
 
-                {/* Results */}
-                {result.length > 0 && (
-                  <div className="mt-6 space-y-4">
-                    {result.map((item, index) => {
-                      const taxRate = includeSvenskaKyrkan ? item.SummaInklKyrkoavgift : item.Skattesats;
-                      const skattetabell = getSkattetabell(taxRate);
-                      
-                      return (
-                        <div key={index} className="p-6 bg-green-50 border border-green-200 rounded-lg">
-                          <h3 className="text-lg font-semibold text-green-800 mb-4 text-center">
-                            {item.Kommun} - {item.Församling} ({item.År})
-                          </h3>
-                          <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <span className="font-medium text-gray-600">Kommun:</span>
-                              <div className="text-lg font-bold text-green-700">{item.Kommun}</div>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-600">Församling:</span>
-                              <div className="text-lg font-bold text-green-700">{item.Församling}</div>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-600">Skattetabell:</span>
-                              <div className="text-lg font-bold text-green-700">{skattetabell}</div>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-600">Kommunkod:</span>
-                              <div className="text-lg font-bold text-green-700">{item.KommunKod}</div>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-600">Församlingskod:</span>
-                              <div className="text-lg font-bold text-green-700">{item.FörsamlingsKod}</div>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-600">Total skatt {includeSvenskaKyrkan ? '(inkl. kyrkoavgift)' : '(exkl. kyrkoavgift)'}:</span>
-                              <div className="text-2xl font-bold text-green-700">
-                                {taxRate}%
-                              </div>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-600">Kommunal skatt:</span>
-                              <div className="text-lg font-bold text-blue-700">{item.KommunalSkatt}%</div>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-600">Landstingsskatt:</span>
-                              <div className="text-lg font-bold text-blue-700">{item.LandstingsSkatt}%</div>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-600">Kyrkoavgift:</span>
-                              <div className="text-lg font-bold text-purple-700">{item.Kyrkoavgift}%</div>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-600">Begravningsavgift:</span>
-                              <div className="text-lg font-bold text-purple-700">{item.BegravningsAvgift}%</div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
                 {/* Error */}
                 {error && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -351,81 +301,42 @@ const Index = () => {
               onPensionContributingChange={setIsPensionContributing}
               birthYear={birthYear}
               onBirthYearChange={setBirthYear}
+              monthlyIncome={monthlyIncome}
+              onMonthlyIncomeChange={setMonthlyIncome}
             />
           </div>
 
-          {/* Skattetabell Section */}
+          {/* Tax Result */}
           <div>
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <List className="h-5 w-5" />
-                  Skattetabell Data
+                  <Calculator className="h-5 w-5" />
+                  Skatteberäkning
                 </CardTitle>
-                <p className="text-sm text-gray-600">
-                  {result.length > 0 && selectedYear 
-                    ? `Skattetabell ${getSkattetabell(includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats)} för år ${selectedYear} - Kolumn ${selectedTaxColumn}`
-                    : 'Gör en sökning för att se skattetabell data'
-                  }
-                </p>
               </CardHeader>
-              <CardContent className="p-4">
-                {skattetabellLoading ? (
-                  <div className="text-center text-gray-500 py-8">Laddar skattetabell data...</div>
-                ) : skattetabellData.length > 0 ? (
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {skattetabellData.map((item, index) => (
-                      <div key={index} className="p-3 bg-gray-50 rounded border space-y-2">
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div>
-                            <span className="font-medium text-gray-600">År:</span> {item.År}
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Tabell:</span> {item.Tabell}
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Inkomst från:</span> {item.InkomstFrån?.toLocaleString()} kr
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Inkomst till:</span> {item.InkomstTill?.toLocaleString()} kr
-                          </div>
-                          <div className="col-span-2">
-                            <span className="font-medium text-gray-600">Skatt (Kolumn {selectedTaxColumn}):</span> 
-                            <span className="font-bold text-blue-600 ml-1">
-                              {getTaxFromColumn(item, selectedTaxColumn)} kr
-                            </span>
-                          </div>
-                          {item.AntalDagar && (
-                            <div>
-                              <span className="font-medium text-gray-600">Antal dagar:</span> {item.AntalDagar}
-                            </div>
-                          )}
-                          {[1, 2, 3, 4, 5, 6, 7].map(num => {
-                            const kolumnValue = item[`Kolumn${num}` as keyof SkattetabellData];
-                            return kolumnValue ? (
-                              <div key={num}>
-                                <span className="font-medium text-gray-600">Kolumn {num}:</span> {kolumnValue}
-                              </div>
-                            ) : null;
-                          })}
-                          {Object.keys(item).map(key => {
-                            if (!['År', 'Tabell', 'InkomstFrån', 'InkomstTill', 'Skatt', 'AntalDagar', 'Kolumn1', 'Kolumn2', 'Kolumn3', 'Kolumn4', 'Kolumn5', 'Kolumn6', 'Kolumn7'].includes(key) && item[key]) {
-                              return (
-                                <div key={key}>
-                                  <span className="font-medium text-gray-600">{key}:</span> {item[key]}
-                                </div>
-                              );
-                            }
-                            return null;
-                          })}
-                        </div>
-                      </div>
-                    ))}
+              <CardContent className="p-6">
+                {result.length > 0 && filteredTaxData && taxAmount ? (
+                  <div className="text-center p-8 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="text-lg font-medium text-green-700 mb-2">
+                      Skatt för {monthlyIncome.toLocaleString()} kr/månad:
+                    </div>
+                    <div className="text-4xl font-bold text-green-800">
+                      {taxAmount} kr
+                    </div>
+                    <div className="text-sm text-gray-600 mt-2">
+                      Baserat på kolumn {selectedTaxColumn} för {result[0].Kommun}
+                    </div>
                   </div>
-                ) : result.length > 0 ? (
-                  <div className="text-center text-gray-500 py-8">Ingen skattetabell data hittades</div>
                 ) : (
-                  <div className="text-center text-gray-500 py-8">Gör en sökning för att se skattetabell data</div>
+                  <div className="text-center text-gray-500 py-8">
+                    {!result.length 
+                      ? 'Gör en skattesats-sökning först'
+                      : !monthlyIncome 
+                      ? 'Ange månadsinkomst för att se skatteberäkning'
+                      : 'Ingen matchande inkomstgrupp hittades'
+                    }
+                  </div>
                 )}
               </CardContent>
             </Card>

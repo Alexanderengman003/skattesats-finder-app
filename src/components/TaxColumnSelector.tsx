@@ -16,6 +16,8 @@ interface TaxColumnSelectorProps {
   onPensionContributingChange: (contributing: boolean) => void;
   birthYear: number;
   onBirthYearChange: (year: number) => void;
+  monthlyIncome: number;
+  onMonthlyIncomeChange: (income: number) => void;
 }
 
 const TaxColumnSelector = ({
@@ -26,7 +28,9 @@ const TaxColumnSelector = ({
   isPensionContributing,
   onPensionContributingChange,
   birthYear,
-  onBirthYearChange
+  onBirthYearChange,
+  monthlyIncome,
+  onMonthlyIncomeChange
 }: TaxColumnSelectorProps) => {
   const getCurrentColumn = (): number => {
     const isOver66 = age >= 66;
@@ -93,6 +97,18 @@ const TaxColumnSelector = ({
               max={new Date().getFullYear()}
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
+          <Input
+            id="monthlyIncome"
+            type="number"
+            value={monthlyIncome}
+            onChange={(e) => onMonthlyIncomeChange(parseInt(e.target.value) || 0)}
+            placeholder="Ange månadsinkomst"
+            min="0"
+          />
         </div>
 
         <div className="space-y-2">
