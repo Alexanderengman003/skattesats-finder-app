@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -82,8 +81,7 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
   
   const generateXTicks = (max: number) => {
     const ticks = [];
-    const step = Math.ceil(max / 15 / 1000) * 1000; // More ticks by dividing by 15 instead of 10
-    for (let i = 0; i <= max; i += step) {
+    for (let i = 0; i <= max; i += 10000) {
       ticks.push(i);
     }
     return ticks;

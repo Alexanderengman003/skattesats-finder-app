@@ -59,8 +59,12 @@ const TaxColumnSelector = ({
   taxableBenefit,
   skattetabellData
 }: TaxColumnSelectorProps) => {
-  const getTotalIncome = (): number => {
+  const getTotalIncomeForTax = (): number => {
     return monthlyIncome + taxableBenefit;
+  };
+
+  const getBaseSalary = (): number => {
+    return monthlyIncome;
   };
 
   const isPercentageValue = (value: number, income: number): boolean => {
@@ -72,42 +76,42 @@ const TaxColumnSelector = ({
   };
 
   const getTaxPercentage = (): string => {
-    if (!taxAmount || getTotalIncome() === 0) return '0';
+    if (!taxAmount || getTotalIncomeForTax() === 0) return '0';
     const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
     
     let percentage: number;
-    if (isPercentageValue(taxAmountNum, getTotalIncome())) {
+    if (isPercentageValue(taxAmountNum, getTotalIncomeForTax())) {
       percentage = taxAmountNum;
     } else {
-      percentage = (taxAmountNum / getTotalIncome()) * 100;
+      percentage = (taxAmountNum / getTotalIncomeForTax()) * 100;
     }
     
     return percentage.toFixed(1);
   };
 
   const getActualTaxAmount = (): number => {
-    if (!taxAmount || getTotalIncome() === 0) return 0;
+    if (!taxAmount || getTotalIncomeForTax() === 0) return 0;
     const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
     
-    if (isPercentageValue(taxAmountNum, getTotalIncome())) {
-      return (taxAmountNum / 100) * getTotalIncome();
+    if (isPercentageValue(taxAmountNum, getTotalIncomeForTax())) {
+      return (taxAmountNum / 100) * getTotalIncomeForTax();
     } else {
       return taxAmountNum;
     }
   };
 
   const getNetSalary = (): number => {
-    if (!taxAmount || getTotalIncome() === 0) return getTotalIncome();
+    if (!taxAmount || getTotalIncomeForTax() === 0) return getBaseSalary();
     const actualTaxAmount = getActualTaxAmount();
-    return getTotalIncome() - actualTaxAmount;
+    return getBaseSalary() - actualTaxAmount;
   };
 
   const getMarginalTaxRate = (): string => {
-    if (skattetabellData.length === 0 || getTotalIncome() === 0) return '0';
+    if (skattetabellData.length === 0 || getTotalIncomeForTax() === 0) return '0';
     
     // Find current tax bracket
     const currentBracket = skattetabellData.find(item => 
-      getTotalIncome() >= item.InkomstFrån && getTotalIncome() <= item.InkomstTill
+      getTotalIncomeForTax() >= item.InkomstFrån && getTotalIncomeForTax() <= item.InkomstTill
     );
     
     if (!currentBracket) return '0';
@@ -120,7 +124,7 @@ const TaxColumnSelector = ({
     if (!nextBracket) {
       // If no next bracket, use current bracket rate
       const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
-      if (isPercentageValue(currentTaxValue, getTotalIncome())) {
+      if (isPercentageValue(currentTaxValue, getTotalIncomeForTax())) {
         return currentTaxValue.toFixed(1);
       }
       return '0';
@@ -216,11 +220,11 @@ const TaxColumnSelector = ({
             </div>
           )}
 
-          {kommun && taxAmount && getTotalIncome() > 0 ? (
+          {kommun && taxAmount && getTotalIncomeForTax() > 0 ? (
             <div className="space-y-4">
               <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
                 <div className="text-lg font-medium text-blue-700 mb-2">
-                  Skatt för {getTotalIncome().toLocaleString()} kr/månad:
+                  Skatt för {getTotalIncomeForTax().toLocaleString()} kr/månad:
                 </div>
                 <div className="text-3xl font-bold text-blue-800 mb-2">
                   {getActualTaxAmount().toLocaleString()} kr
@@ -271,7 +275,7 @@ const TaxColumnSelector = ({
             <div className="text-center text-gray-500 py-8 bg-blue-100 border border-blue-300 rounded-xl">
               {!kommun 
                 ? 'Gör en skattesats-sökning först'
-                : getTotalIncome() === 0
+                : getTotalIncomeForTax() === 0
                 ? 'Ange månadsinkomst för att se skatteberäkning'
                 : 'Ingen matchande inkomstgrupp hittades'
               }
@@ -281,11 +285,11 @@ const TaxColumnSelector = ({
       </Card>
 
       {/* Tax Table Chart */}
-      {skattetabellData.length > 0 && getTotalIncome() > 0 && (
+      {skattetabellData.length > 0 && getTotalIncomeForTax() > 0 && (
         <TaxTableChart 
           skattetabellData={skattetabellData}
           selectedTaxColumn={selectedTaxColumn}
-          currentIncome={getTotalIncome()}
+          currentIncome={getTotalIncomeForTax()}
         />
       )}
     </div>

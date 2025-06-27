@@ -404,7 +404,7 @@ const Index = () => {
                     <Slider
                       value={[monthlyIncome]}
                       onValueChange={(value) => setMonthlyIncome(value[0])}
-                      max={150000}
+                      max={1500000}
                       min={0}
                       step={1000}
                       className="w-full"
