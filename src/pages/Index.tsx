@@ -306,7 +306,7 @@ const Index = () => {
                 <div className="space-y-2">
                   <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
                     <Calendar className="h-4 w-4" />
-                    År
+                    Inkomstår
                   </label>
                   <Select 
                     onValueChange={(value) => setSelectedYear(parseInt(value))}

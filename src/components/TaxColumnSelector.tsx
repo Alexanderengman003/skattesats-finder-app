@@ -109,29 +109,33 @@ const TaxColumnSelector = ({
   const getMarginalTaxRate = (): string => {
     if (skattetabellData.length === 0 || getTotalIncomeForTax() === 0) return '0';
     
-    // Find current tax bracket
-    const currentBracket = skattetabellData.find(item => 
+    // Find current tax bracket or use the last one if income exceeds maximum
+    let currentBracket = skattetabellData.find(item => 
       getTotalIncomeForTax() >= item.InkomstFrån && getTotalIncomeForTax() <= item.InkomstTill
     );
     
+    // If no bracket found (income too high), use the last bracket
+    if (!currentBracket) {
+      currentBracket = skattetabellData[skattetabellData.length - 1];
+    }
+    
     if (!currentBracket) return '0';
     
-    // Find the next bracket (income bracket immediately above current)
-    const nextBracket = skattetabellData.find(item => 
-      item.InkomstFrån === currentBracket.InkomstTill + 1
-    );
+    // Find the previous bracket
+    const currentIndex = skattetabellData.indexOf(currentBracket);
+    if (currentIndex <= 0) return '0';
     
-    if (!nextBracket) return '0';
+    const previousBracket = skattetabellData[currentIndex - 1];
     
     // Get tax values for both brackets
     const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
-    const nextTaxValue = parseFloat(nextBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    const previousTaxValue = parseFloat(previousBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
     
     // Calculate income and tax differences
-    const incomeDiff = nextBracket.InkomstFrån - currentBracket.InkomstFrån;
+    const incomeDiff = currentBracket.InkomstFrån - previousBracket.InkomstFrån;
     
     let currentTaxAmount = 0;
-    let nextTaxAmount = 0;
+    let previousTaxAmount = 0;
     
     // Convert to actual tax amounts if they are percentages
     if (isPercentageValue(currentTaxValue, currentBracket.InkomstFrån)) {
@@ -140,13 +144,13 @@ const TaxColumnSelector = ({
       currentTaxAmount = currentTaxValue;
     }
     
-    if (isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
-      nextTaxAmount = (nextTaxValue / 100) * nextBracket.InkomstFrån;
+    if (isPercentageValue(previousTaxValue, previousBracket.InkomstFrån)) {
+      previousTaxAmount = (previousTaxValue / 100) * previousBracket.InkomstFrån;
     } else {
-      nextTaxAmount = nextTaxValue;
+      previousTaxAmount = previousTaxValue;
     }
     
-    const taxDiff = nextTaxAmount - currentTaxAmount;
+    const taxDiff = currentTaxAmount - previousTaxAmount;
     
     if (incomeDiff > 0 && taxDiff >= 0) {
       const marginalRate = (taxDiff / incomeDiff) * 100;
@@ -179,18 +183,46 @@ const TaxColumnSelector = ({
   // Calculate required size based on largest value
   const getChartSize = () => {
     const netSalary = Math.round(getNetSalary());
-    const maxDigits = netSalary.toLocaleString().length;
+    const taxAmount = Math.round(getActualTaxAmount());
+    const maxValue = Math.max(netSalary, taxAmount);
+    const maxValueString = `${maxValue.toLocaleString()} kr`;
     
     // Base size + extra space for larger numbers
-    const baseSize = 200;
-    let extraSize = 0;
-    
-    if (maxDigits > 6) {
-      extraSize = (maxDigits - 6) * 8;
-    }
+    const baseSize = 250;
+    const charWidth = 12; // Approximate character width
+    const extraSize = Math.max(0, (maxValueString.length - 8) * charWidth);
     
     return Math.max(baseSize, baseSize + extraSize);
   };
+
+  // Get filtered tax data, using last bracket if income exceeds maximum
+  const getFilteredSkattetabellData = () => {
+    if (skattetabellData.length === 0) return null;
+    
+    const totalIncome = getTotalIncomeForTax();
+    if (totalIncome === 0) return null;
+    
+    // Find matching bracket or use the last one
+    let matchingBracket = skattetabellData.find(item => 
+      totalIncome >= item.InkomstFrån && totalIncome <= item.InkomstTill
+    );
+    
+    // If no bracket found (income too high), use the last bracket
+    if (!matchingBracket) {
+      matchingBracket = skattetabellData[skattetabellData.length - 1];
+    }
+    
+    return matchingBracket;
+  };
+
+  const getTaxFromColumn = (item: any, column: number): string => {
+    const columnKey = `Kolumn${column}`;
+    return item[columnKey] || 'Ej tillgänglig';
+  };
+
+  // Use the filtered data with fallback to last bracket
+  const filteredTaxData = getFilteredSkattetabellData();
+  const currentTaxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
 
   return (
     <div className="space-y-6">
@@ -237,7 +269,7 @@ const TaxColumnSelector = ({
             </div>
           )}
 
-          {kommun && taxAmount && getTotalIncomeForTax() > 0 ? (
+          {kommun && currentTaxAmount && getTotalIncomeForTax() > 0 ? (
             <div className="space-y-4">
               <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
                 <div className="text-lg font-medium text-blue-700 mb-2">
@@ -266,12 +298,12 @@ const TaxColumnSelector = ({
                           data={getPieChartData()}
                           cx="50%"
                           cy="50%"
-                          innerRadius={getChartSize() * 0.3}
-                          outerRadius={getChartSize() * 0.45}
+                          innerRadius={getChartSize() * 0.35}
+                          outerRadius={getChartSize() * 0.47}
                           paddingAngle={2}
                           dataKey="value"
                           stroke="none"
-                          cornerRadius={8}
+                          cornerRadius={12}
                         >
                           {getPieChartData().map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -279,8 +311,8 @@ const TaxColumnSelector = ({
                         </Pie>
                         <Tooltip 
                           formatter={(value: number, name: string) => [
-                            `${name}: ${value.toLocaleString()} kr`,
-                            ''
+                            `${value.toLocaleString()} kr`,
+                            name
                           ]}
                           labelFormatter={() => ''}
                           contentStyle={{
@@ -312,7 +344,7 @@ const TaxColumnSelector = ({
                 ? 'Gör en skattesats-sökning först'
                 : getTotalIncomeForTax() === 0
                 ? 'Ange månadsinkomst för att se skatteberäkning'
-                : 'Ingen matchande inkomstgrupp hittades'
+                : 'Beräknar skatt...'
               }
             </div>
           )}
