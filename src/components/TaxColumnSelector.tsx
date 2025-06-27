@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import TaxTableChart from './TaxTableChart';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { fetchEngangsbeskattningData } from '@/utils/taxData';
 
 interface SkattetabellData {
@@ -63,6 +64,7 @@ const TaxColumnSelector = ({
   const [engangsbeskattningData, setEngangsbeskattningData] = useState<any[]>([]);
   const [engangsbeskattningLoading, setEngangsbeskattningLoading] = useState(false);
   const [engangsbeskattningError, setEngangsbeskattningError] = useState<string | null>(null);
+  const [engangsbeskattningAmount, setEngangsbeskattningAmount] = useState(10000);
 
   const getTotalIncomeForTax = (): number => {
     return monthlyIncome + taxableBenefit;
@@ -230,10 +232,6 @@ const TaxColumnSelector = ({
     return taxValue;
   };
 
-  // Use the filtered data with fallback to last bracket
-  const filteredTaxData = getFilteredSkattetabellData();
-  const currentTaxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
-
   const loadEngangsbeskattningData = async () => {
     if (!selectedYear || getTotalIncomeForTax() === 0) {
       console.log('Missing required data for engångsbeskattning:', { selectedYear, totalIncome: getTotalIncomeForTax() });
@@ -266,6 +264,13 @@ const TaxColumnSelector = ({
   const calculateEngangsbeskattning = (amount: number): number => {
     const rate = getEngangsbeskattningRate();
     return (amount * rate) / 100;
+  };
+
+  const handleEngangsbeskattningAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+    const cappedValue = Math.min(numericValue, 1000000000);
+    setEngangsbeskattningAmount(cappedValue);
   };
 
   // Load engångsbeskattning data when relevant values change
@@ -419,43 +424,61 @@ const TaxColumnSelector = ({
               {/* Engångsbeskattning Card */}
               <Card className="shadow-lg rounded-xl">
                 <CardContent className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-blue-800 mb-3">
-                      Beskattning på engångsbelopp
-                    </div>
-                    {engangsbeskattningLoading ? (
-                      <div className="text-gray-500">Beräknar...</div>
-                    ) : engangsbeskattningError ? (
-                      <div className="text-red-600">
-                        <div className="font-medium mb-1">Fel vid hämtning av data</div>
-                        <div className="text-sm">{engangsbeskattningError}</div>
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="text-lg font-semibold text-blue-800 mb-3">
+                        Beskattning på engångsbelopp
                       </div>
-                    ) : engangsbeskattningData.length > 0 ? (
-                      <div>
-                        <div className="text-sm font-medium text-black mb-1">
-                          Du betalar
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="engangsbeskattningAmount">Engångsbelopp (kr)</Label>
+                      <Input
+                        id="engangsbeskattningAmount"
+                        type="number"
+                        value={engangsbeskattningAmount || ''}
+                        onChange={handleEngangsbeskattningAmountChange}
+                        placeholder="Ange engångsbelopp"
+                        min="0"
+                        max="1000000000"
+                      />
+                    </div>
+
+                    <div className="text-center">
+                      {engangsbeskattningLoading ? (
+                        <div className="text-gray-500">Beräknar...</div>
+                      ) : engangsbeskattningError ? (
+                        <div className="text-red-600">
+                          <div className="font-medium mb-1">Fel vid hämtning av data</div>
+                          <div className="text-sm">{engangsbeskattningError}</div>
                         </div>
-                        <div className="text-2xl font-bold text-black mb-1">
-                          {getEngangsbeskattningRate()}%
-                        </div>
-                        <div className="text-sm font-medium text-black">
-                          I engångsskatt
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-blue-300">
-                          <div className="text-sm text-gray-600">
-                            På ett engångsbelopp om 10 000 kr betalar du{' '}
-                            <span className="font-bold">
-                              {Math.round(calculateEngangsbeskattning(10000)).toLocaleString()} kr
-                            </span>{' '}
-                            i skatt
+                      ) : engangsbeskattningData.length > 0 ? (
+                        <div>
+                          <div className="text-sm font-medium text-black mb-1">
+                            Du betalar
+                          </div>
+                          <div className="text-2xl font-bold text-black mb-1">
+                            {getEngangsbeskattningRate()}%
+                          </div>
+                          <div className="text-sm font-medium text-black">
+                            I engångsskatt
+                          </div>
+                          <div className="mt-3 pt-3 border-t border-blue-300">
+                            <div className="text-sm text-gray-600">
+                              På ett engångsbelopp om {engangsbeskattningAmount.toLocaleString()} kr betalar du{' '}
+                              <span className="font-bold">
+                                {Math.round(calculateEngangsbeskattning(engangsbeskattningAmount)).toLocaleString()} kr
+                              </span>{' '}
+                              i skatt
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="text-gray-500">
-                        Ingen data tillgänglig för år {selectedYear}
-                      </div>
-                    )}
+                      ) : (
+                        <div className="text-gray-500">
+                          Ingen data tillgänglig för år {selectedYear}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -472,15 +495,6 @@ const TaxColumnSelector = ({
           )}
         </CardContent>
       </Card>
-
-      {/* Tax Table Chart */}
-      {skattetabellData.length > 0 && getTotalIncomeForTax() > 0 && (
-        <TaxTableChart 
-          skattetabellData={skattetabellData}
-          selectedTaxColumn={selectedTaxColumn}
-          currentIncome={getTotalIncomeForTax()}
-        />
-      )}
     </div>
   );
 };
