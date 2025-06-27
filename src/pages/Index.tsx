@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Search, Calculator, MapPin, Calendar, List } from 'lucide-react';
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
@@ -213,6 +215,58 @@ const Index = () => {
     }
   };
 
+  const handleIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+    setMonthlyIncome(numericValue);
+  };
+
+  const handleTaxableBenefitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+    setTaxableBenefit(numericValue);
+  };
+
+  const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    if (value && value.length === 10) {
+      const date = new Date(value);
+      const year = date.getFullYear();
+      const currentYear = new Date().getFullYear();
+      
+      if (year >= 1900 && year <= currentYear && !isNaN(date.getTime())) {
+        setBirthday(value);
+      }
+    } else {
+      setBirthday(value);
+    }
+  };
+
+  const getTotalIncome = (): number => {
+    return monthlyIncome + taxableBenefit;
+  };
+
+  const getTaxPercentage = (): string => {
+    if (!taxAmount || getTotalIncome() === 0) return '0';
+    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
+    const percentage = (taxAmountNum / getTotalIncome()) * 100;
+    return percentage.toFixed(1);
+  };
+
+  const getNetSalary = (): number => {
+    if (!taxAmount || getTotalIncome() === 0) return getTotalIncome();
+    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
+    return getTotalIncome() - taxAmountNum;
+  };
+
+  // Trigger calculation whenever relevant values change
+  useEffect(() => {
+    if (kommun && (monthlyIncome > 0 || taxableBenefit > 0) && birthday) {
+      triggerTaxCalculation();
+    }
+  }, [birthday, incomeType, isPensionContributing, monthlyIncome, taxableBenefit, kommun]);
+
   const filteredTaxData = getFilteredSkattetabellData();
   const taxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
 
@@ -239,7 +293,7 @@ const Index = () => {
               <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
                 <CardTitle className="flex items-center gap-2">
                   <Search className="h-5 w-5" />
-                  Sök Skattesats
+                  Sök Skattesats & Beräkning
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -312,47 +366,100 @@ const Index = () => {
                   {loading ? 'Laddar...' : 'Sök Skattesats'}
                 </Button>
 
-                {/* Results display */}
-                {result.length > 0 && (
-                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h3 className="font-semibold text-green-800 mb-2">Skattesats för {result[0].Kommun}</h3>
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span>Kommunal skatt:</span>
-                        <span className="font-medium">{result[0].KommunalSkatt}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Landstingsskatt:</span>
-                        <span className="font-medium">{result[0].LandstingsSkatt}%</span>
-                      </div>
-                      {includeSvenskaKyrkan && (
-                        <div className="flex justify-between">
-                          <span>Kyrkoavgift:</span>
-                          <span className="font-medium">{result[0].Kyrkoavgift}%</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between border-t pt-1 mt-2">
-                        <span className="font-semibold">Total skattesats:</span>
-                        <span className="font-semibold text-green-700">
-                          {includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {/* Error */}
                 {error && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
                     {error}
                   </div>
                 )}
+
+                {/* Income Input Fields */}
+                <div className="border-t pt-4 space-y-4">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Calculator className="h-4 w-4" />
+                    Inkomstuppgifter
+                  </h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="birthday">Födelsedatum</Label>
+                    <Input
+                      id="birthday"
+                      type="date"
+                      value={birthday}
+                      onChange={handleBirthdayChange}
+                      placeholder="Välj födelsedatum"
+                      max={new Date().toISOString().split('T')[0]}
+                      min="1900-01-01"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
+                    <Input
+                      id="monthlyIncome"
+                      type="number"
+                      value={monthlyIncome || ''}
+                      onChange={handleIncomeChange}
+                      placeholder="Ange månadsinkomst"
+                      min="0"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="taxableBenefit">Beskattningsbar förmån (kr)</Label>
+                    <Input
+                      id="taxableBenefit"
+                      type="number"
+                      value={taxableBenefit || ''}
+                      onChange={handleTaxableBenefitChange}
+                      placeholder="Ange beskattningsbar förmån"
+                      min="0"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="incomeType">Typ av inkomst</Label>
+                    <Select onValueChange={setIncomeType} value={incomeType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Välj inkomsttyp" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="salary">Lön, arvode och liknande ersättningar</SelectItem>
+                        <SelectItem value="pension">Pension och andra ersättningar</SelectItem>
+                        <SelectItem value="disability">Sjuk- och aktivitetsersättning</SelectItem>
+                        <SelectItem value="unemployment">Ersättning från arbetslöshetskassa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {incomeType === 'unemployment' && (
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="pensionContributing" 
+                        checked={isPensionContributing}
+                        onCheckedChange={(checked) => setIsPensionContributing(checked === true)}
+                      />
+                      <Label htmlFor="pensionContributing">
+                        Utgör grund för allmän pensionsavgift
+                      </Label>
+                    </div>
+                  )}
+
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="text-center">
+                      <span className="text-sm font-medium text-blue-600">Använd skattekolumn:</span>
+                      <div className="text-2xl font-bold text-blue-800">
+                        Kolumn {getCurrentTaxColumn()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Tax Column Selector with Tax Result */}
-          <div>
+          {/* Results Section */}
+          <div className="space-y-6">
             <TaxColumnSelector
               age={0}
               onAgeChange={() => {}}

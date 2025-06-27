@@ -46,18 +46,21 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
       taxPercentage: parseFloat(taxPercentage.toFixed(2)),
       taxAmount: taxAmount
     };
-  }).filter(item => item.income > 0 && item.taxPercentage > 0);
+  }).filter(item => item.income > 0 && item.taxPercentage >= 0);
 
   const chartConfig = {
     taxPercentage: {
       label: "Skatt (%)",
-      color: "hsl(var(--chart-1))",
+      color: "#2563eb",
     },
   };
 
   if (chartData.length === 0) {
     return null;
   }
+
+  // Get the maximum income for x-axis formatting
+  const maxIncome = Math.max(...chartData.map(item => item.income));
 
   return (
     <Card className="mt-4">
@@ -69,37 +72,47 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart 
+              data={chartData} 
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
               <XAxis 
                 dataKey="income" 
                 type="number"
-                domain={['dataMin', 'dataMax']}
+                domain={[0, maxIncome]}
                 tickFormatter={(value) => `${Math.round(value / 1000)}k`}
+                stroke="#6b7280"
+                fontSize={12}
               />
               <YAxis 
-                domain={['dataMin', 'dataMax']}
+                domain={[0, 100]}
+                ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
                 tickFormatter={(value) => `${value}%`}
+                stroke="#6b7280"
+                fontSize={12}
               />
-              <ChartTooltip 
-                content={
-                  <ChartTooltipContent 
-                    formatter={(value, name) => [
-                      `${value}%`,
-                      'Skatt (%)'
-                    ]}
-                    labelFormatter={(value) => `Inkomst: ${Math.round(Number(value)).toLocaleString()} kr`}
-                  />
-                }
+              <Tooltip 
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload[0]) {
+                    return (
+                      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+                        <p className="font-medium">{`Inkomst: ${Math.round(Number(label)).toLocaleString()} kr`}</p>
+                        <p className="text-blue-600">{`Skatt: ${payload[0].value}%`}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
               />
               <Line 
                 type="monotone" 
                 dataKey="taxPercentage" 
-                stroke="var(--color-taxPercentage)" 
-                strokeWidth={2}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
+                stroke="#2563eb" 
+                strokeWidth={3}
+                dot={{ fill: '#2563eb', r: 4 }}
+                activeDot={{ r: 6, fill: '#1d4ed8' }}
               />
               {currentIncome > 0 && (
                 <ReferenceLine 
@@ -107,7 +120,11 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
                   stroke="#ef4444" 
                   strokeWidth={2}
                   strokeDasharray="5 5"
-                  label={{ value: "Din inkomst", position: "top" }}
+                  label={{ 
+                    value: "Din inkomst", 
+                    position: "topLeft",
+                    style: { fill: '#ef4444', fontWeight: 'bold' }
+                  }}
                 />
               )}
             </LineChart>
