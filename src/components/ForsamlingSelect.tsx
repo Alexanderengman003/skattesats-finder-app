@@ -31,7 +31,6 @@ const ForsamlingSelect = ({
           <SelectValue placeholder="Välj församling" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="unknown">Vet inte - visa alla</SelectItem>
           {forsamlingar.map((forsamling) => (
             <SelectItem key={forsamling} value={forsamling}>
               {forsamling}

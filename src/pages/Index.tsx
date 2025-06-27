@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Search, Calculator, MapPin, Calendar, List } from 'lucide-react';
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
+import TaxColumnSelector from '@/components/TaxColumnSelector';
 import { 
   fetchTaxData, 
   findTaxRateFromAPI, 
@@ -30,6 +31,11 @@ const Index = () => {
   const [availableMunicipalities, setAvailableMunicipalities] = useState<string[]>([]);
   const [availableForsamlingar, setAvailableForsamlingar] = useState<string[]>([]);
   const [includeSvenskaKyrkan, setIncludeSvenskaKyrkan] = useState(false);
+  const [age, setAge] = useState(30);
+  const [incomeType, setIncomeType] = useState('salary');
+  const [isPensionContributing, setIsPensionContributing] = useState(false);
+  const [birthYear, setBirthYear] = useState(1990);
+  const [selectedTaxColumn, setSelectedTaxColumn] = useState(1);
 
   const getSkattetabell = (taxRate: number): number => {
     // Round to nearest integer according to Swedish tax authority rules
@@ -99,6 +105,45 @@ const Index = () => {
     }
   };
 
+  const getCurrentTaxColumn = (): number => {
+    const isOver66 = age >= 66;
+    const isBorn1937OrEarlier = birthYear <= 1937;
+    const isBorn1938OrLater = birthYear >= 1938;
+
+    switch (incomeType) {
+      case 'salary':
+        if (!isOver66) {
+          return 1;
+        } else {
+          return 3;
+        }
+      case 'pension':
+        if (isOver66) {
+          return 2;
+        } else {
+          return 6;
+        }
+      case 'disability':
+        return 4;
+      case 'unemployment':
+        if (isBorn1938OrLater && isPensionContributing) {
+          return 5;
+        }
+        return 1;
+      default:
+        return 1;
+    }
+  };
+
+  useEffect(() => {
+    setSelectedTaxColumn(getCurrentTaxColumn());
+  }, [age, incomeType, isPensionContributing, birthYear]);
+
+  const getTaxFromColumn = (item: any, column: number): string => {
+    const columnKey = `Kolumn${column}`;
+    return item[columnKey] || 'Ej tillgänglig';
+  };
+
   const handleLookup = () => {
     setError('');
     setResult([]);
@@ -110,16 +155,14 @@ const Index = () => {
     }
 
     if (availableForsamlingar.length > 1 && !forsamling) {
-      setError('Denna kommun har flera församlingar. Vänligen välj en församling eller "Vet inte - visa alla"');
+      setError('Denna kommun har flera församlingar. Vänligen välj en församling.');
       return;
     }
 
-    const selectedForsamling = forsamling === 'unknown' ? undefined : forsamling;
-    const taxData = findTaxRateFromAPI(apiData, kommun.trim(), selectedYear, selectedForsamling);
+    const taxData = findTaxRateFromAPI(apiData, kommun.trim(), selectedYear, forsamling);
     
     if (taxData.length > 0) {
       setResult(taxData);
-      // Load skattetabell data for the first result
       const firstResult = taxData[0];
       const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
       const skattetabell = getSkattetabell(taxRate);
@@ -145,7 +188,7 @@ const Index = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8">
           {/* Input Section */}
           <div className="space-y-6">
             <Card className="shadow-lg">
@@ -219,7 +262,7 @@ const Index = () => {
                   onClick={handleLookup} 
                   className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6"
                   size="lg"
-                  disabled={loading || !kommun || !selectedYear}
+                  disabled={loading || !kommun || !selectedYear || (availableForsamlingar.length > 1 && !forsamling)}
                 >
                   <Search className="mr-2 h-5 w-5" />
                   {loading ? 'Laddar...' : 'Sök Skattesats'}
@@ -297,6 +340,20 @@ const Index = () => {
             </Card>
           </div>
 
+          {/* Tax Column Selector */}
+          <div>
+            <TaxColumnSelector
+              age={age}
+              onAgeChange={setAge}
+              incomeType={incomeType}
+              onIncomeTypeChange={setIncomeType}
+              isPensionContributing={isPensionContributing}
+              onPensionContributingChange={setIsPensionContributing}
+              birthYear={birthYear}
+              onBirthYearChange={setBirthYear}
+            />
+          </div>
+
           {/* Skattetabell Section */}
           <div>
             <Card className="shadow-lg">
@@ -307,7 +364,7 @@ const Index = () => {
                 </CardTitle>
                 <p className="text-sm text-gray-600">
                   {result.length > 0 && selectedYear 
-                    ? `Skattetabell ${getSkattetabell(includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats)} för år ${selectedYear}`
+                    ? `Skattetabell ${getSkattetabell(includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats)} för år ${selectedYear} - Kolumn ${selectedTaxColumn}`
                     : 'Gör en sökning för att se skattetabell data'
                   }
                 </p>
@@ -333,8 +390,10 @@ const Index = () => {
                             <span className="font-medium text-gray-600">Inkomst till:</span> {item.InkomstTill?.toLocaleString()} kr
                           </div>
                           <div className="col-span-2">
-                            <span className="font-medium text-gray-600">Skatt:</span> 
-                            <span className="font-bold text-blue-600 ml-1">{item.Skatt?.toLocaleString()} kr</span>
+                            <span className="font-medium text-gray-600">Skatt (Kolumn {selectedTaxColumn}):</span> 
+                            <span className="font-bold text-blue-600 ml-1">
+                              {getTaxFromColumn(item, selectedTaxColumn)} kr
+                            </span>
                           </div>
                           {item.AntalDagar && (
                             <div>
