@@ -235,15 +235,21 @@ const TaxColumnSelector = ({
   const currentTaxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
 
   const loadEngangsbeskattningData = async () => {
-    if (!selectedYear || getTotalIncomeForTax() === 0) return;
+    if (!selectedYear || getTotalIncomeForTax() === 0) {
+      console.log('Missing required data for engångsbeskattning:', { selectedYear, totalIncome: getTotalIncomeForTax() });
+      return;
+    }
     
     setEngangsbeskattningLoading(true);
     try {
       const yearlyIncome = getTotalIncomeForTax() * 12;
+      console.log('Loading engångsbeskattning data:', { selectedYear, yearlyIncome, selectedTaxColumn });
       const data = await fetchEngangsbeskattningData(selectedYear, yearlyIncome, selectedTaxColumn);
+      console.log('Engångsbeskattning data received:', data);
       setEngangsbeskattningData(data);
     } catch (error) {
       console.error('Failed to load engångsbeskattning data:', error);
+      setEngangsbeskattningData([]);
     } finally {
       setEngangsbeskattningLoading(false);
     }
@@ -413,7 +419,7 @@ const TaxColumnSelector = ({
                 <CardContent className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
                   <div className="text-center">
                     <div className="text-lg font-semibold text-blue-800 mb-3">
-                      Engångsbeskattning
+                      Beskattning på engångsbelopp
                     </div>
                     {engangsbeskattningLoading ? (
                       <div className="text-gray-500">Beräknar...</div>
@@ -426,7 +432,7 @@ const TaxColumnSelector = ({
                           {getEngangsbeskattningRate()}%
                         </div>
                         <div className="text-sm font-medium text-black">
-                          I engångskatt
+                          I engångsskatt
                         </div>
                         <div className="mt-3 pt-3 border-t border-blue-300">
                           <div className="text-sm text-gray-600">
@@ -439,7 +445,12 @@ const TaxColumnSelector = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="text-gray-500">Ingen data tillgänglig</div>
+                      <div className="text-gray-500">
+                        Ingen data tillgänglig
+                        <div className="text-xs text-gray-400 mt-1">
+                          Debug: År: {selectedYear}, Inkomst: {getTotalIncomeForTax()}, Kolumn: {selectedTaxColumn}
+                        </div>
+                      </div>
                     )}
                   </div>
                 </CardContent>
