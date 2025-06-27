@@ -284,12 +284,12 @@ const Index = () => {
     return getTotalIncome() - taxAmountNum;
   };
 
-  // Trigger calculation whenever relevant values change
+  // Trigger calculation whenever relevant values change, including includeSvenskaKyrkan
   useEffect(() => {
     if (kommun && (monthlyIncome > 0 || taxableBenefit > 0) && birthday) {
       triggerTaxCalculation();
     }
-  }, [birthday, incomeType, isPensionContributing, monthlyIncome, taxableBenefit, kommun]);
+  }, [birthday, incomeType, isPensionContributing, monthlyIncome, taxableBenefit, kommun, includeSvenskaKyrkan]);
 
   const filteredTaxData = getFilteredSkattetabellData();
   const taxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;

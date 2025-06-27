@@ -1,9 +1,9 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import TaxTableChart from './TaxTableChart';
+import { fetchEngangsbeskattningData } from '@/utils/taxData';
 
 interface SkattetabellData {
   År: number;
@@ -55,10 +55,14 @@ const TaxColumnSelector = ({
   selectedTaxColumn,
   result,
   includeSvenskaKyrkan,
+  selectedYear,
   getSkattetabell,
   taxableBenefit,
   skattetabellData
 }: TaxColumnSelectorProps) => {
+  const [engangsbeskattningData, setEngangsbeskattningData] = useState<any[]>([]);
+  const [engangsbeskattningLoading, setEngangsbeskattningLoading] = useState(false);
+
   const getTotalIncomeForTax = (): number => {
     return monthlyIncome + taxableBenefit;
   };
@@ -91,7 +95,7 @@ const TaxColumnSelector = ({
 
   const getActualTaxAmount = (): number => {
     if (!taxAmount || getTotalIncomeForTax() === 0) return 0;
-    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
+    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, '));
     
     if (isPercentageValue(taxAmountNum, getTotalIncomeForTax())) {
       return (taxAmountNum / 100) * getTotalIncomeForTax();
@@ -228,6 +232,39 @@ const TaxColumnSelector = ({
   // Use the filtered data with fallback to last bracket
   const filteredTaxData = getFilteredSkattetabellData();
   const currentTaxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
+
+  const loadEngangsbeskattningData = async () => {
+    if (!selectedYear || getTotalIncomeForTax() === 0) return;
+    
+    setEngangsbeskattningLoading(true);
+    try {
+      const yearlyIncome = getTotalIncomeForTax() * 12;
+      const data = await fetchEngangsbeskattningData(selectedYear, yearlyIncome, selectedTaxColumn);
+      setEngangsbeskattningData(data);
+    } catch (error) {
+      console.error('Failed to load engångsbeskattning data:', error);
+    } finally {
+      setEngangsbeskattningLoading(false);
+    }
+  };
+
+  const getEngangsbeskattningRate = (): number => {
+    if (engangsbeskattningData.length === 0) return 0;
+    const data = engangsbeskattningData[0];
+    return data.PreliminärtSkatteavdragIProcent || 0;
+  };
+
+  const calculateEngangsbeskattning = (amount: number): number => {
+    const rate = getEngangsbeskattningRate();
+    return (amount * rate) / 100;
+  };
+
+  // Load engångsbeskattning data when relevant values change
+  useEffect(() => {
+    if (selectedYear && getTotalIncomeForTax() > 0 && selectedTaxColumn) {
+      loadEngangsbeskattningData();
+    }
+  }, [selectedYear, monthlyIncome, taxableBenefit, selectedTaxColumn]);
 
   return (
     <div className="space-y-6">
@@ -369,6 +406,43 @@ const TaxColumnSelector = ({
                   </div>
                 </div>
               </div>
+
+              {/* Engångsbeskattning Card */}
+              <Card className="shadow-lg rounded-xl">
+                <CardContent className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
+                  <div className="text-center">
+                    <div className="text-lg font-semibold text-blue-800 mb-3">
+                      Engångsbeskattning
+                    </div>
+                    {engangsbeskattningLoading ? (
+                      <div className="text-gray-500">Beräknar...</div>
+                    ) : engangsbeskattningData.length > 0 ? (
+                      <div>
+                        <div className="text-sm font-medium text-black mb-1">
+                          Du betalar
+                        </div>
+                        <div className="text-2xl font-bold text-black mb-1">
+                          {getEngangsbeskattningRate()}%
+                        </div>
+                        <div className="text-sm font-medium text-black">
+                          I engångskatt
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-blue-300">
+                          <div className="text-sm text-gray-600">
+                            På ett engångsbelopp om 10 000 kr betalar du{' '}
+                            <span className="font-bold">
+                              {Math.round(calculateEngangsbeskattning(10000)).toLocaleString()} kr
+                            </span>{' '}
+                            i skatt
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-gray-500">Ingen data tillgänglig</div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           ) : (
             <div className="text-center text-gray-500 py-8 bg-blue-100 border border-blue-300 rounded-xl">

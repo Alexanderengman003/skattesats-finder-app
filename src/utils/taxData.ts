@@ -78,6 +78,29 @@ interface SkattetabellApiResponse {
   limit: number;
 }
 
+interface EngangsbeskattningData {
+  År: number;
+  ÅrslönIKrLägst: number;
+  ÅrslönIKrHögst: number;
+  PreliminärtSkatteavdragIProcent: number;
+  Kolumn: number;
+  [key: string]: any;
+}
+
+interface EngangsbeskattningApiResponse {
+  results: Array<{
+    'år': string;
+    'årslön i kr lägst': string;
+    'årslön i kr högst': string;
+    'preliminärt skatteavdrag i procent av engångsbeloppet': string;
+    'kolumn': string;
+    [key: string]: string;
+  }>;
+  resultCount: number;
+  offset: number;
+  limit: number;
+}
+
 export const fetchTaxData = async (): Promise<{ data: SkatteverketData[], years: number[] }> => {
   try {
     let allData: SkatteverketData[] = [];
@@ -241,6 +264,80 @@ export const fetchSkattetabellData = async (year: number, tabell: number): Promi
     return allData;
   } catch (error) {
     console.error('Error fetching skattetabell data:', error);
+    return [];
+  }
+};
+
+export const fetchEngangsbeskattningData = async (
+  year: number, 
+  yearlyIncome: number, 
+  column: number
+): Promise<EngangsbeskattningData[]> => {
+  try {
+    let allData: EngangsbeskattningData[] = [];
+    let offset = 0;
+    const limit = 500;
+    let hasMoreData = true;
+
+    console.log(`Fetching engångsbeskattning data for year ${year}, income ${yearlyIncome}, column ${column}...`);
+
+    while (hasMoreData) {
+      const url = `https://skatteverket.entryscape.net/rowstore/dataset/b75e9fa2-3684-46bf-9360-bdc0ef2b5525?_limit=${limit}&_offset=${offset}&år=${year}&kolumn=${column}`;
+      
+      console.log(`Fetching engångsbeskattning with URL: ${url}`);
+      
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const apiResponse: EngangsbeskattningApiResponse = await response.json();
+      
+      console.log(`Fetched engångsbeskattning batch: offset=${offset}, limit=${limit}, results=${apiResponse.results?.length}, total=${apiResponse.resultCount}`);
+      
+      if (!apiResponse.results || apiResponse.results.length === 0) {
+        hasMoreData = false;
+        break;
+      }
+
+      const batchData: EngangsbeskattningData[] = apiResponse.results.map(item => ({
+        År: parseInt(item.år),
+        ÅrslönIKrLägst: parseInt(item['årslön i kr lägst']),
+        ÅrslönIKrHögst: parseInt(item['årslön i kr högst']),
+        PreliminärtSkatteavdragIProcent: parseFloat(item['preliminärt skatteavdrag i procent av engångsbeloppet']),
+        Kolumn: parseInt(item.kolumn),
+        ...Object.keys(item).reduce((acc, key) => {
+          if (!['år', 'årslön i kr lägst', 'årslön i kr högst', 'preliminärt skatteavdrag i procent av engångsbeloppet', 'kolumn'].includes(key)) {
+            acc[key] = item[key];
+          }
+          return acc;
+        }, {} as Record<string, any>)
+      }));
+
+      allData = [...allData, ...batchData];
+      
+      if (apiResponse.results.length < limit || offset + limit >= apiResponse.resultCount) {
+        hasMoreData = false;
+      } else {
+        offset += limit;
+      }
+    }
+    
+    console.log(`Total engångsbeskattning data fetched: ${allData.length} records`);
+    
+    // Filter for the specific yearly income range
+    const filteredData = allData.filter(item => 
+      yearlyIncome >= item.ÅrslönIKrLägst && yearlyIncome <= item.ÅrslönIKrHögst
+    );
+    
+    return filteredData;
+  } catch (error) {
+    console.error('Error fetching engångsbeskattning data:', error);
     return [];
   }
 };
