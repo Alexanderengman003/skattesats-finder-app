@@ -90,7 +90,7 @@ const TaxColumnSelector = ({
 
   const getActualTaxAmount = (): number => {
     if (!taxAmount || getTotalIncomeForTax() === 0) return 0;
-    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
+    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, '));
     
     if (isPercentageValue(taxAmountNum, getTotalIncomeForTax())) {
       return (taxAmountNum / 100) * getTotalIncomeForTax();
@@ -278,17 +278,17 @@ const TaxColumnSelector = ({
               {kommun && currentTaxAmount && getTotalIncomeForTax() > 0 && (
                 <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
                   <div className="text-center">
-                    <div className="text-sm font-medium text-blue-700 mb-1">
-                      Skatt för {Math.round(monthlyIncome).toLocaleString()} kr/månad:
-                    </div>
-                    <div className="text-2xl font-bold text-blue-800 mb-2">
+                    <div className="text-2xl font-bold text-blue-800 mb-1">
                       {Math.round(getActualTaxAmount()).toLocaleString()} kr
                     </div>
+                    <div className="text-sm font-medium text-blue-700 mb-2">
+                      Skatt för inkomst {Math.round(monthlyIncome).toLocaleString()} kr
+                    </div>
                     <div className="text-sm font-medium text-blue-600 mb-1">
-                      Du betalar {getTaxPercentage()}% i skatt
+                      Du betalar <span className="font-bold">{getTaxPercentage()}%</span> i skatt
                     </div>
                     <div className="text-sm font-medium text-blue-600">
-                      Marginalskatt: {getMarginalTaxRate()}%
+                      Marginalskatt: <span className="font-bold">{getMarginalTaxRate()}%</span>
                     </div>
                   </div>
                 </div>
@@ -299,8 +299,8 @@ const TaxColumnSelector = ({
           {kommun && currentTaxAmount && getTotalIncomeForTax() > 0 ? (
             <div className="space-y-4">
               {/* Net Salary Display with Pie Chart */}
-              <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
-                <div className="flex flex-col items-center gap-6">
+              <div className="text-center p-4 bg-blue-100 border border-blue-300 rounded-xl">
+                <div className="flex flex-col items-center gap-4">
                   <div className="relative" style={{ width: 320, height: 320 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPieChart>
@@ -371,7 +371,7 @@ const TaxColumnSelector = ({
               {!kommun 
                 ? 'Gör en skattesats-sökning först'
                 : getTotalIncomeForTax() === 0
-                ? 'Ange månadsinkomst för att se skatteberäkning'
+                ? 'Ange månadsinkomst (kr) för att se skatteberäkning'
                 : 'Beräknar skatt...'
               }
             </div>
