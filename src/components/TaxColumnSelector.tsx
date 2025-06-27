@@ -157,8 +157,24 @@ const TaxColumnSelector = ({
     // Find the next bracket (one income level higher)
     const currentIndex = skattetabellData.indexOf(currentBracket);
     
-    // If we're in the last bracket, marginal rate equals the current tax rate
+    // If we're in the last bracket, check if the next tax table has percentage values
     if (currentIndex >= skattetabellData.length - 1) {
+      // Try to get the next tax table (higher table number)
+      const nextTableNumber = currentBracket.Tabell + 1;
+      const nextTableData = skattetabellData.filter(item => item.Tabell === nextTableNumber);
+      
+      if (nextTableData.length > 0) {
+        // Find the first bracket in the next table
+        const firstBracketNextTable = nextTableData.sort((a, b) => a.InkomstFrån - b.InkomstFrån)[0];
+        const nextTableTaxValue = parseFloat(firstBracketNextTable[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+        
+        // If the next table value is a percentage (typically values <= 100), use it directly
+        if (nextTableTaxValue <= 100 && nextTableTaxValue > 0) {
+          return nextTableTaxValue.toFixed(1);
+        }
+      }
+      
+      // Fallback: if we can't find next table or it's not percentage, use current tax rate
       if (isPercentageValue(currentTaxValue, currentIncome)) {
         return currentTaxValue.toFixed(1);
       } else {
@@ -170,6 +186,11 @@ const TaxColumnSelector = ({
     
     const nextBracket = skattetabellData[currentIndex + 1];
     const nextTaxValue = parseFloat(nextBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    
+    // If the next bracket has a percentage value, use it directly as marginal rate
+    if (isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
+      return nextTaxValue.toFixed(1);
+    }
     
     // Calculate actual tax amounts for both brackets
     let currentTaxAmount = 0;
