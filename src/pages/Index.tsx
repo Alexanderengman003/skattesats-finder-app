@@ -1,21 +1,19 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Search, Calculator, MapPin, Calendar, Database } from 'lucide-react';
-import TaxRateTable from '@/components/TaxRateTable';
-import SkatteverketTable from '@/components/SkatteverketTable';
+import { Search, Calculator, MapPin, Calendar, List } from 'lucide-react';
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
 import { 
-  taxData, 
   fetchTaxData, 
   findTaxRateFromAPI, 
   getAvailableMunicipalities,
   getAvailableForsamlingar,
-  SkatteverketData 
+  fetchSkattetabellData,
+  SkatteverketData,
+  SkattetabellData
 } from '@/utils/taxData';
 
 const Index = () => {
@@ -23,8 +21,10 @@ const Index = () => {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [forsamling, setForsamling] = useState('');
   const [result, setResult] = useState<SkatteverketData[]>([]);
+  const [skattetabellData, setSkattetabellData] = useState<SkattetabellData[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [skattetabellLoading, setSkattetabellLoading] = useState(false);
   const [apiData, setApiData] = useState<SkatteverketData[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [availableMunicipalities, setAvailableMunicipalities] = useState<string[]>([]);
@@ -87,9 +87,22 @@ const Index = () => {
     }
   }, [kommun, selectedYear, apiData]);
 
+  const loadSkattetabellData = async (year: number, tabell: number) => {
+    setSkattetabellLoading(true);
+    try {
+      const data = await fetchSkattetabellData(year, tabell);
+      setSkattetabellData(data);
+    } catch (error) {
+      console.error('Failed to load skattetabell data:', error);
+    } finally {
+      setSkattetabellLoading(false);
+    }
+  };
+
   const handleLookup = () => {
     setError('');
     setResult([]);
+    setSkattetabellData([]);
 
     if (!kommun.trim() || !selectedYear) {
       setError('Vänligen välj både kommun och år');
@@ -106,6 +119,11 @@ const Index = () => {
     
     if (taxData.length > 0) {
       setResult(taxData);
+      // Load skattetabell data for the first result
+      const firstResult = taxData[0];
+      const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
+      const skattetabell = getSkattetabell(taxRate);
+      loadSkattetabellData(selectedYear, skattetabell);
     } else {
       setError('Ingen data hittad för den valda kombinationen.');
     }
@@ -279,23 +297,41 @@ const Index = () => {
             </Card>
           </div>
 
-          {/* Table Section */}
+          {/* Skattetabell Section */}
           <div>
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
-                  Skatteverkets Data
+                  <List className="h-5 w-5" />
+                  Skattetabell Data
                 </CardTitle>
                 <p className="text-sm text-gray-600">
-                  Officiell data från Skatteverket {selectedYear ? `för år ${selectedYear}` : ''}
+                  {result.length > 0 && selectedYear 
+                    ? `Skattetabell ${getSkattetabell(includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats)} för år ${selectedYear}`
+                    : 'Gör en sökning för att se skattetabell data'
+                  }
                 </p>
               </CardHeader>
-              <CardContent className="p-0">
-                {selectedYear ? (
-                  <SkatteverketTable data={apiData} selectedYear={selectedYear} />
+              <CardContent className="p-4">
+                {skattetabellLoading ? (
+                  <div className="text-center text-gray-500 py-8">Laddar skattetabell data...</div>
+                ) : skattetabellData.length > 0 ? (
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {skattetabellData.map((item, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded border">
+                        <div className="text-sm">
+                          <span className="font-medium">Inkomst:</span> {item.InkomstFrån.toLocaleString()} - {item.InkomstTill.toLocaleString()} kr
+                        </div>
+                        <div className="text-sm font-bold text-blue-600">
+                          Skatt: {item.Skatt.toLocaleString()} kr
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : result.length > 0 ? (
+                  <div className="text-center text-gray-500 py-8">Ingen skattetabell data hittades</div>
                 ) : (
-                  <div className="p-4 text-center text-gray-500">Välj ett år för att se data</div>
+                  <div className="text-center text-gray-500 py-8">Gör en sökning för att se skattetabell data</div>
                 )}
               </CardContent>
             </Card>

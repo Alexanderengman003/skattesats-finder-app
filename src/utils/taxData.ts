@@ -1,4 +1,3 @@
-
 export interface TaxRate {
   kommun: string;
   under18: number;
@@ -21,6 +20,15 @@ export interface SkatteverketData {
   SummaInklKyrkoavgift: number;
 }
 
+export interface SkattetabellData {
+  År: number;
+  Tabell: number;
+  InkomstFrån: number;
+  InkomstTill: number;
+  Skatt: number;
+  [key: string]: any;
+}
+
 interface SkatteverketApiResponse {
   results: Array<{
     'kommun': string;
@@ -33,6 +41,20 @@ interface SkatteverketApiResponse {
     'landstings-skatt': string;
     'kyrkoavgift': string;
     'begravnings-avgift': string;
+    [key: string]: string;
+  }>;
+  resultCount: number;
+  offset: number;
+  limit: number;
+}
+
+interface SkattetabellApiResponse {
+  results: Array<{
+    'år': string;
+    'tabell': string;
+    'inkomst från': string;
+    'inkomst till': string;
+    'skatt': string;
     [key: string]: string;
   }>;
   resultCount: number;
@@ -132,6 +154,62 @@ export const getAvailableForsamlingar = (data: SkatteverketData[], kommun: strin
     .filter(item => item.Kommun === kommun && item.År === year)
     .map(item => item.Församling)
   )].sort();
+};
+
+export const fetchSkattetabellData = async (year: number, tabell: number): Promise<SkattetabellData[]> => {
+  try {
+    let allData: SkattetabellData[] = [];
+    let offset = 0;
+    const limit = 500;
+    let hasMoreData = true;
+
+    console.log(`Starting to fetch skattetabell data for year ${year} and table ${tabell}...`);
+
+    while (hasMoreData) {
+      const url = `https://skatteverket.entryscape.net/rowstore/dataset/88320397-5c32-4c16-ae79-d36d95b17b95?_limit=${limit}&_offset=${offset}&år=${year}&tabell=${tabell}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const apiResponse: SkattetabellApiResponse = await response.json();
+      
+      console.log(`Fetched skattetabell batch: offset=${offset}, limit=${limit}, results=${apiResponse.results?.length}, total=${apiResponse.resultCount}`);
+      
+      if (!apiResponse.results || apiResponse.results.length === 0) {
+        hasMoreData = false;
+        break;
+      }
+
+      const batchData: SkattetabellData[] = apiResponse.results.map(item => ({
+        År: parseInt(item.år),
+        Tabell: parseInt(item.tabell),
+        InkomstFrån: parseInt(item['inkomst från']),
+        InkomstTill: parseInt(item['inkomst till']),
+        Skatt: parseInt(item.skatt)
+      }));
+
+      allData = [...allData, ...batchData];
+      
+      if (apiResponse.results.length < limit || offset + limit >= apiResponse.resultCount) {
+        hasMoreData = false;
+      } else {
+        offset += limit;
+      }
+    }
+    
+    console.log(`Total skattetabell data fetched: ${allData.length} records`);
+    return allData;
+  } catch (error) {
+    console.error('Error fetching skattetabell data:', error);
+    return [];
+  }
 };
 
 // Keep the existing static data as fallback
