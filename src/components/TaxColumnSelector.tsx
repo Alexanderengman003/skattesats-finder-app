@@ -239,58 +239,67 @@ const TaxColumnSelector = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 bg-blue-50 rounded-b-xl">
-          {/* Tax Result Display */}
+          {/* Tax Result Display - Side by Side Layout */}
           {result.length > 0 && (
-            <div className="mb-4 p-4 bg-blue-100 border border-blue-300 rounded-xl">
-              <h3 className="font-semibold text-blue-800 mb-2">Skattesats för {result[0].Kommun}</h3>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span>Kommunal skatt:</span>
-                  <span className="font-medium">{result[0].KommunalSkatt}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Landstingsskatt:</span>
-                  <span className="font-medium">{result[0].LandstingsSkatt}%</span>
-                </div>
-                {includeSvenskaKyrkan && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {/* Tax Rate Display */}
+              <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
+                <h3 className="font-semibold text-blue-800 mb-2">Skattesats för {result[0].Kommun}</h3>
+                <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span>Kyrkoavgift:</span>
-                    <span className="font-medium">{result[0].Kyrkoavgift}%</span>
+                    <span>Kommunal skatt:</span>
+                    <span className="font-medium">{result[0].KommunalSkatt}%</span>
                   </div>
-                )}
-                <div className="flex justify-between border-t pt-1 mt-2">
-                  <span className="font-semibold">Total skattesats:</span>
-                  <span className="font-semibold text-blue-700">
-                    {includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats}%
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-semibold">Skattetabell:</span>
-                  <span className="font-semibold text-blue-700">
-                    {getSkattetabell(includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats)}
-                  </span>
+                  <div className="flex justify-between">
+                    <span>Landstingsskatt:</span>
+                    <span className="font-medium">{result[0].LandstingsSkatt}%</span>
+                  </div>
+                  {includeSvenskaKyrkan && (
+                    <div className="flex justify-between">
+                      <span>Kyrkoavgift:</span>
+                      <span className="font-medium">{result[0].Kyrkoavgift}%</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between border-t pt-1 mt-2">
+                    <span className="font-semibold">Total skattesats:</span>
+                    <span className="font-semibold text-blue-700">
+                      {includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Skattetabell:</span>
+                    <span className="font-semibold text-blue-700">
+                      {getSkattetabell(includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats)}
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              {/* Tax Calculation Display */}
+              {kommun && currentTaxAmount && getTotalIncomeForTax() > 0 && (
+                <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-blue-700 mb-2">
+                      Skatt för {Math.round(monthlyIncome).toLocaleString()} kr/månad:
+                    </div>
+                    <div className="text-2xl font-bold text-blue-800 mb-2">
+                      {Math.round(getActualTaxAmount()).toLocaleString()} kr
+                    </div>
+                    <div className="text-sm font-medium text-blue-600 mb-1">
+                      Du betalar {getTaxPercentage()}% i skatt
+                    </div>
+                    <div className="text-sm font-medium text-blue-600">
+                      Marginalskatt: {getMarginalTaxRate()}%
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {kommun && currentTaxAmount && getTotalIncomeForTax() > 0 ? (
             <div className="space-y-4">
-              <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
-                <div className="text-lg font-medium text-blue-700 mb-2">
-                  Skatt för {Math.round(monthlyIncome).toLocaleString()} kr/månad:
-                </div>
-                <div className="text-3xl font-bold text-blue-800 mb-2">
-                  {Math.round(getActualTaxAmount()).toLocaleString()} kr
-                </div>
-                <div className="text-lg font-medium text-blue-600 mb-2">
-                  Du betalar {getTaxPercentage()}% i skatt
-                </div>
-                <div className="text-md font-medium text-blue-600">
-                  Marginalskatt: {getMarginalTaxRate()}%
-                </div>
-              </div>
-              
+              {/* Net Salary Display with Pie Chart */}
               <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
                 <div className="text-lg font-medium text-blue-700 mb-4">
                   Netto efter skatt:
