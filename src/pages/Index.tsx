@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Search, Calculator, MapPin, Calendar, Database } from 'lucide-react';
 import TaxRateTable from '@/components/TaxRateTable';
 import SkatteverketTable from '@/components/SkatteverketTable';
@@ -27,6 +28,7 @@ const Index = () => {
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [availableMunicipalities, setAvailableMunicipalities] = useState<string[]>([]);
   const [availableForsamlingar, setAvailableForsamlingar] = useState<string[]>([]);
+  const [includeSvenskaKyrkan, setIncludeSvenskaKyrkan] = useState(false);
 
   useEffect(() => {
     const loadApiData = async () => {
@@ -164,6 +166,20 @@ const Index = () => {
                   />
                 )}
 
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox 
+                    id="svenskaKyrkan" 
+                    checked={includeSvenskaKyrkan}
+                    onCheckedChange={setIncludeSvenskaKyrkan}
+                  />
+                  <label 
+                    htmlFor="svenskaKyrkan" 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Medlem i svenska kyrkan
+                  </label>
+                </div>
+
                 <Button 
                   onClick={handleLookup} 
                   className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6"
@@ -199,13 +215,11 @@ const Index = () => {
                             <span className="font-medium text-gray-600">Församlingskod:</span>
                             <div className="text-lg font-bold text-green-700">{item.FörsamlingsKod}</div>
                           </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Total skatt (exkl. kyrka):</span>
-                            <div className="text-2xl font-bold text-green-700">{item.Skattesats}%</div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Total skatt (inkl. kyrka):</span>
-                            <div className="text-2xl font-bold text-green-700">{item.SummaInklKyrkoavgift}%</div>
+                          <div className="col-span-2">
+                            <span className="font-medium text-gray-600">Total skatt:</span>
+                            <div className="text-2xl font-bold text-green-700">
+                              {includeSvenskaKyrkan ? item.SummaInklKyrkoavgift : item.Skattesats}%
+                            </div>
                           </div>
                           <div>
                             <span className="font-medium text-gray-600">Kommunal skatt:</span>
