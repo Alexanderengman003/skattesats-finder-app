@@ -335,20 +335,30 @@ export const fetchEngangsbeskattningData = async (
       throw new Error(`No engångsbeskattning data available for year ${year}`);
     }
     
-    // Filter for the specific column and yearly income range
-    const filteredData = allData.filter(item => 
-      item.Kolumn === column &&
-      yearlyIncome >= item.ÅrslönIKrLägst && 
-      yearlyIncome <= item.ÅrslönIKrHögst
-    );
+    // Filter for the specific column first
+    const columnData = allData.filter(item => item.Kolumn === column);
     
-    console.log(`Filtered data for column ${column} and income ${yearlyIncome}:`, filteredData);
-    
-    if (filteredData.length === 0) {
-      throw new Error(`No engångsbeskattning data available for column ${column} and income ${yearlyIncome} kr in year ${year}`);
+    if (columnData.length === 0) {
+      throw new Error(`No engångsbeskattning data available for column ${column} in year ${year}`);
     }
     
-    return filteredData;
+    // Sort by income range to find the correct bracket
+    columnData.sort((a, b) => a.ÅrslönIKrLägst - b.ÅrslönIKrLägst);
+    
+    // Find matching bracket or use the highest one if income exceeds maximum
+    let matchingBracket = columnData.find(item => 
+      yearlyIncome >= item.ÅrslönIKrLägst && yearlyIncome <= item.ÅrslönIKrHögst
+    );
+    
+    // If no bracket found (income too high), use the last/highest bracket
+    if (!matchingBracket) {
+      matchingBracket = columnData[columnData.length - 1];
+      console.log(`Income ${yearlyIncome} exceeds maximum range, using highest tax bracket:`, matchingBracket);
+    }
+    
+    console.log(`Selected bracket for column ${column} and income ${yearlyIncome}:`, matchingBracket);
+    
+    return [matchingBracket];
   } catch (error) {
     console.error('Error fetching engångsbeskattning data:', error);
     throw error; // Re-throw the error so the component can handle it
