@@ -118,7 +118,7 @@ const TaxColumnSelector = ({
 
   const getActualTaxAmount = (): number => {
     if (!taxAmount || getTotalIncomeForTax() === 0) return 0;
-    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
+    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, '));
     
     if (isPercentageValue(taxAmountNum, getTotalIncomeForTax())) {
       return (taxAmountNum / 100) * getTotalIncomeForTax();
@@ -153,11 +153,11 @@ const TaxColumnSelector = ({
     // Get the tax value for current bracket
     const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
     
-    // Find the previous bracket (one income level lower)
+    // Find the next bracket (one income level higher)
     const currentIndex = skattetabellData.indexOf(currentBracket);
     
-    // If we're in the first bracket, marginal rate equals the tax rate
-    if (currentIndex <= 0) {
+    // If we're in the last bracket, marginal rate equals the current tax rate
+    if (currentIndex >= skattetabellData.length - 1) {
       if (isPercentageValue(currentTaxValue, currentIncome)) {
         return currentTaxValue.toFixed(1);
       } else {
@@ -167,12 +167,12 @@ const TaxColumnSelector = ({
       }
     }
     
-    const previousBracket = skattetabellData[currentIndex - 1];
-    const previousTaxValue = parseFloat(previousBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    const nextBracket = skattetabellData[currentIndex + 1];
+    const nextTaxValue = parseFloat(nextBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
     
     // Calculate actual tax amounts for both brackets
     let currentTaxAmount = 0;
-    let previousTaxAmount = 0;
+    let nextTaxAmount = 0;
     
     if (isPercentageValue(currentTaxValue, currentBracket.InkomstFrån)) {
       currentTaxAmount = (currentTaxValue / 100) * currentBracket.InkomstFrån;
@@ -180,15 +180,15 @@ const TaxColumnSelector = ({
       currentTaxAmount = currentTaxValue;
     }
     
-    if (isPercentageValue(previousTaxValue, previousBracket.InkomstFrån)) {
-      previousTaxAmount = (previousTaxValue / 100) * previousBracket.InkomstFrån;
+    if (isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
+      nextTaxAmount = (nextTaxValue / 100) * nextBracket.InkomstFrån;
     } else {
-      previousTaxAmount = previousTaxValue;
+      nextTaxAmount = nextTaxValue;
     }
     
     // Calculate the marginal rate: difference in tax divided by difference in income
-    const incomeDiff = currentBracket.InkomstFrån - previousBracket.InkomstFrån;
-    const taxDiff = currentTaxAmount - previousTaxAmount;
+    const incomeDiff = nextBracket.InkomstFrån - currentBracket.InkomstFrån;
+    const taxDiff = nextTaxAmount - currentTaxAmount;
     
     if (incomeDiff > 0) {
       const marginalRate = (taxDiff / incomeDiff) * 100;
