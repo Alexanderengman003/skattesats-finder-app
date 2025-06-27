@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, PieChart } from 'lucide-react';
@@ -163,22 +162,28 @@ const TaxColumnSelector = ({
   const getPieChartData = () => {
     const netSalary = Math.round(getNetSalary());
     const taxAmount = Math.round(getActualTaxAmount());
+    const fees = Math.round(monthlyIncome * 0.1); // Example: 10% for fees (you can adjust this logic)
     
     return [
       {
         name: 'Netto efter skatt',
         value: netSalary,
-        color: '#3b82f6'
+        color: '#8b5cf6'
       },
       {
         name: 'Skatt',
         value: taxAmount,
-        color: '#ef4444'
+        color: '#06b6d4'
+      },
+      {
+        name: 'Avgifter',
+        value: fees,
+        color: '#f59e0b'
       }
     ];
   };
 
-  const COLORS = ['#3b82f6', '#ef4444'];
+  const COLORS = ['#8b5cf6', '#06b6d4', '#f59e0b'];
 
   // Fixed chart size based on maximum possible value (1 billion + "kr")
   const getChartSize = () => {
@@ -304,16 +309,16 @@ const TaxColumnSelector = ({
                 <div className="text-lg font-medium text-blue-700 mb-4">
                   Netto efter skatt:
                 </div>
-                <div className="flex items-center justify-center gap-6">
-                  <div className="relative" style={{ width: getChartSize(), height: getChartSize() }}>
+                <div className="flex flex-col items-center gap-6">
+                  <div className="relative" style={{ width: 320, height: 320 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPieChart>
                         <Pie
                           data={getPieChartData()}
                           cx="50%"
                           cy="50%"
-                          innerRadius={getChartSize() * 0.25}
-                          outerRadius={getChartSize() * 0.35}
+                          innerRadius={100}
+                          outerRadius={140}
                           paddingAngle={2}
                           dataKey="value"
                           stroke="none"
@@ -340,14 +345,32 @@ const TaxColumnSelector = ({
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-800">
-                          {Math.round(getNetSalary()).toLocaleString()}
+                        <div className="text-lg font-medium text-gray-600 mb-1">
+                          Net salary
                         </div>
-                        <div className="text-sm text-blue-600">
-                          kr
+                        <div className="text-3xl font-bold text-gray-900">
+                          {Math.round(getNetSalary()).toLocaleString()}
                         </div>
                       </div>
                     </div>
+                  </div>
+                  
+                  {/* Legend */}
+                  <div className="grid grid-cols-3 gap-8 text-center">
+                    {getPieChartData().map((entry, index) => (
+                      <div key={entry.name} className="flex flex-col items-center">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: COLORS[index] }}
+                          ></div>
+                          <span className="text-sm font-medium text-gray-600">{entry.name}</span>
+                        </div>
+                        <div className="text-xl font-bold text-gray-900">
+                          {entry.value.toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
