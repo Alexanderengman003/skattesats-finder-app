@@ -180,19 +180,14 @@ const TaxColumnSelector = ({
 
   const COLORS = ['#3b82f6', '#ef4444'];
 
-  // Calculate required size based on largest value
+  // Fixed chart size based on maximum possible value (1 billion + "kr")
   const getChartSize = () => {
-    const netSalary = Math.round(getNetSalary());
-    const taxAmount = Math.round(getActualTaxAmount());
-    const maxValue = Math.max(netSalary, taxAmount);
-    const maxValueString = `${maxValue.toLocaleString()} kr`;
-    
-    // Base size + extra space for larger numbers
-    const baseSize = 250;
+    const maxValueString = `1,000,000,000 kr`;
     const charWidth = 12; // Approximate character width
-    const extraSize = Math.max(0, (maxValueString.length - 8) * charWidth);
+    const baseSize = 280;
+    const extraSize = maxValueString.length * charWidth;
     
-    return Math.max(baseSize, baseSize + extraSize);
+    return Math.max(baseSize, baseSize + extraSize * 0.8);
   };
 
   // Get filtered tax data, using last bracket if income exceeds maximum
@@ -217,7 +212,17 @@ const TaxColumnSelector = ({
 
   const getTaxFromColumn = (item: any, column: number): string => {
     const columnKey = `Kolumn${column}`;
-    return item[columnKey] || 'Ej tillgänglig';
+    const taxValue = item[columnKey];
+    if (!taxValue || taxValue === 'Ej tillgänglig') {
+      // If no tax value found and this is for high income, use the highest available tax rate
+      if (skattetabellData.length > 0) {
+        const lastBracket = skattetabellData[skattetabellData.length - 1];
+        const lastTaxValue = lastBracket[columnKey];
+        return lastTaxValue || 'Ej tillgänglig';
+      }
+      return 'Ej tillgänglig';
+    }
+    return taxValue;
   };
 
   // Use the filtered data with fallback to last bracket
@@ -298,8 +303,8 @@ const TaxColumnSelector = ({
                           data={getPieChartData()}
                           cx="50%"
                           cy="50%"
-                          innerRadius={getChartSize() * 0.35}
-                          outerRadius={getChartSize() * 0.47}
+                          innerRadius={getChartSize() * 0.25}
+                          outerRadius={getChartSize() * 0.35}
                           paddingAngle={2}
                           dataKey="value"
                           stroke="none"

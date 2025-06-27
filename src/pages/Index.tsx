@@ -151,7 +151,17 @@ const Index = () => {
 
   const getTaxFromColumn = (item: any, column: number): string => {
     const columnKey = `Kolumn${column}`;
-    return item[columnKey] || 'Ej tillgänglig';
+    const taxValue = item[columnKey];
+    if (!taxValue || taxValue === 'Ej tillgänglig') {
+      // If no tax value found and this is for high income, use the highest available tax rate
+      if (skattetabellData.length > 0) {
+        const lastBracket = skattetabellData[skattetabellData.length - 1];
+        const lastTaxValue = lastBracket[columnKey];
+        return lastTaxValue || 'Ej tillgänglig';
+      }
+      return 'Ej tillgänglig';
+    }
+    return taxValue;
   };
 
   const getFilteredSkattetabellData = (): SkattetabellData | null => {
@@ -160,9 +170,17 @@ const Index = () => {
     const totalIncome = monthlyIncome + taxableBenefit;
     if (totalIncome === 0) return null;
     
-    return skattetabellData.find(item => 
+    // Find matching bracket or use the last one if income exceeds maximum
+    let matchingBracket = skattetabellData.find(item => 
       totalIncome >= item.InkomstFrån && totalIncome <= item.InkomstTill
-    ) || null;
+    );
+    
+    // If no bracket found (income too high), use the last bracket
+    if (!matchingBracket) {
+      matchingBracket = skattetabellData[skattetabellData.length - 1];
+    }
+    
+    return matchingBracket;
   };
 
   const triggerTaxCalculation = () => {
@@ -454,9 +472,9 @@ const Index = () => {
 
                   <div className="mt-4 p-4 bg-blue-100 border border-blue-300 rounded-xl">
                     <div className="text-center">
-                      <span className="text-sm font-medium text-blue-600">Använd skattekolumn:</span>
+                      <span className="text-sm font-medium text-blue-600">Du tillhör:</span>
                       <div className="text-2xl font-bold text-blue-800">
-                        Kolumn {getCurrentTaxColumn()}
+                        Skattekolumn {getCurrentTaxColumn()}
                       </div>
                     </div>
                   </div>
