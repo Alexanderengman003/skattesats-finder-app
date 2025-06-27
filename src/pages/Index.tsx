@@ -31,12 +31,11 @@ const Index = () => {
   const [availableMunicipalities, setAvailableMunicipalities] = useState<string[]>([]);
   const [availableForsamlingar, setAvailableForsamlingar] = useState<string[]>([]);
   const [includeSvenskaKyrkan, setIncludeSvenskaKyrkan] = useState(false);
-  const [age, setAge] = useState(30);
   const [incomeType, setIncomeType] = useState('salary');
   const [isPensionContributing, setIsPensionContributing] = useState(false);
-  const [birthYear, setBirthYear] = useState(1990);
   const [selectedTaxColumn, setSelectedTaxColumn] = useState(1);
   const [monthlyIncome, setMonthlyIncome] = useState(0);
+  const [birthday, setBirthday] = useState('');
 
   const getSkattetabell = (taxRate: number): number => {
     // Round to nearest integer according to Swedish tax authority rules
@@ -107,6 +106,13 @@ const Index = () => {
   };
 
   const getCurrentTaxColumn = (): number => {
+    if (!birthday) return 1;
+    
+    const birthDate = new Date(birthday);
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthDate.getFullYear();
+    const birthYear = birthDate.getFullYear();
+    
     const isOver66 = age >= 66;
     const isBorn1937OrEarlier = birthYear <= 1937;
     const isBorn1938OrLater = birthYear >= 1938;
@@ -138,7 +144,7 @@ const Index = () => {
 
   useEffect(() => {
     setSelectedTaxColumn(getCurrentTaxColumn());
-  }, [age, incomeType, isPensionContributing, birthYear]);
+  }, [birthday, incomeType, isPensionContributing]);
 
   const getTaxFromColumn = (item: any, column: number): string => {
     const columnKey = `Kolumn${column}`;
@@ -200,7 +206,7 @@ const Index = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8">
           {/* Input Section */}
           <div className="space-y-6">
             <Card className="shadow-lg">
@@ -319,56 +325,25 @@ const Index = () => {
             </Card>
           </div>
 
-          {/* Tax Column Selector */}
+          {/* Tax Column Selector with Tax Result */}
           <div>
             <TaxColumnSelector
-              age={age}
-              onAgeChange={setAge}
+              age={0}
+              onAgeChange={() => {}}
               incomeType={incomeType}
               onIncomeTypeChange={setIncomeType}
               isPensionContributing={isPensionContributing}
               onPensionContributingChange={setIsPensionContributing}
-              birthYear={birthYear}
-              onBirthYearChange={setBirthYear}
+              birthYear={0}
+              onBirthYearChange={() => {}}
               monthlyIncome={monthlyIncome}
               onMonthlyIncomeChange={setMonthlyIncome}
+              birthday={birthday}
+              onBirthdayChange={setBirthday}
+              taxAmount={taxAmount}
+              kommun={result.length > 0 ? result[0].Kommun : ''}
+              selectedTaxColumn={selectedTaxColumn}
             />
-          </div>
-
-          {/* Tax Result */}
-          <div>
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="h-5 w-5" />
-                  Skatteberäkning
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                {result.length > 0 && filteredTaxData && taxAmount ? (
-                  <div className="text-center p-8 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="text-lg font-medium text-green-700 mb-2">
-                      Skatt för {monthlyIncome.toLocaleString()} kr/månad:
-                    </div>
-                    <div className="text-4xl font-bold text-green-800">
-                      {taxAmount} kr
-                    </div>
-                    <div className="text-sm text-gray-600 mt-2">
-                      Baserat på kolumn {selectedTaxColumn} för {result[0].Kommun}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center text-gray-500 py-8">
-                    {!result.length 
-                      ? 'Gör en skattesats-sökning först'
-                      : !monthlyIncome 
-                      ? 'Ange månadsinkomst för att se skatteberäkning'
-                      : 'Ingen matchande inkomstgrupp hittades'
-                    }
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

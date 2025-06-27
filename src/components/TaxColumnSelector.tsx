@@ -18,21 +18,34 @@ interface TaxColumnSelectorProps {
   onBirthYearChange: (year: number) => void;
   monthlyIncome: number;
   onMonthlyIncomeChange: (income: number) => void;
+  birthday: string;
+  onBirthdayChange: (birthday: string) => void;
+  taxAmount: string | null;
+  kommun: string;
+  selectedTaxColumn: number;
 }
 
 const TaxColumnSelector = ({
-  age,
-  onAgeChange,
   incomeType,
   onIncomeTypeChange,
   isPensionContributing,
   onPensionContributingChange,
-  birthYear,
-  onBirthYearChange,
   monthlyIncome,
-  onMonthlyIncomeChange
+  onMonthlyIncomeChange,
+  birthday,
+  onBirthdayChange,
+  taxAmount,
+  kommun,
+  selectedTaxColumn
 }: TaxColumnSelectorProps) => {
   const getCurrentColumn = (): number => {
+    if (!birthday) return 1;
+    
+    const birthDate = new Date(birthday);
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthDate.getFullYear();
+    const birthYear = birthDate.getFullYear();
+    
     const isOver66 = age >= 66;
     const isBorn1937OrEarlier = birthYear <= 1937;
     const isBorn1938OrLater = birthYear >= 1938;
@@ -62,41 +75,31 @@ const TaxColumnSelector = ({
     }
   };
 
+  const handleIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Remove leading zeros and convert to number
+    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+    onMonthlyIncomeChange(numericValue);
+  };
+
   return (
     <Card className="shadow-lg">
       <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
         <CardTitle className="flex items-center gap-2">
           <Calculator className="h-5 w-5" />
-          Bestäm Skattekolumn
+          Bestäm Skattekolumn & Beräkning
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="age">Ålder vid årets ingång</Label>
-            <Input
-              id="age"
-              type="number"
-              value={age}
-              onChange={(e) => onAgeChange(parseInt(e.target.value) || 0)}
-              placeholder="Ange ålder"
-              min="0"
-              max="120"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="birthYear">Födelseår</Label>
-            <Input
-              id="birthYear"
-              type="number"
-              value={birthYear}
-              onChange={(e) => onBirthYearChange(parseInt(e.target.value) || new Date().getFullYear())}
-              placeholder="Ange födelseår"
-              min="1900"
-              max={new Date().getFullYear()}
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="birthday">Födelsedatum</Label>
+          <Input
+            id="birthday"
+            type="date"
+            value={birthday}
+            onChange={(e) => onBirthdayChange(e.target.value)}
+            placeholder="Välj födelsedatum"
+          />
         </div>
 
         <div className="space-y-2">
@@ -104,8 +107,8 @@ const TaxColumnSelector = ({
           <Input
             id="monthlyIncome"
             type="number"
-            value={monthlyIncome}
-            onChange={(e) => onMonthlyIncomeChange(parseInt(e.target.value) || 0)}
+            value={monthlyIncome || ''}
+            onChange={handleIncomeChange}
             placeholder="Ange månadsinkomst"
             min="0"
           />
@@ -146,6 +149,32 @@ const TaxColumnSelector = ({
               Kolumn {getCurrentColumn()}
             </div>
           </div>
+        </div>
+
+        {/* Tax Result Display */}
+        <div className="mt-4">
+          {kommun && taxAmount && monthlyIncome > 0 ? (
+            <div className="text-center p-8 bg-green-50 border border-green-200 rounded-lg">
+              <div className="text-lg font-medium text-green-700 mb-2">
+                Skatt för {monthlyIncome.toLocaleString()} kr/månad:
+              </div>
+              <div className="text-4xl font-bold text-green-800">
+                {taxAmount} kr
+              </div>
+              <div className="text-sm text-gray-600 mt-2">
+                Baserat på kolumn {selectedTaxColumn} för {kommun}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8 bg-gray-50 border border-gray-200 rounded-lg">
+              {!kommun 
+                ? 'Gör en skattesats-sökning först'
+                : !monthlyIncome 
+                ? 'Ange månadsinkomst för att se skatteberäkning'
+                : 'Ingen matchande inkomstgrupp hittades'
+              }
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
