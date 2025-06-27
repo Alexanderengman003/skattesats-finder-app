@@ -2,8 +2,7 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface SkattetabellData {
   År: number;
@@ -37,11 +36,8 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
   };
 
   const isPercentageValue = (value: number, income: number): boolean => {
-    // If the value is less than 100 and would make sense as a percentage
-    // (i.e., when applied to income, it gives a reasonable tax amount)
     if (value <= 100) {
       const potentialTaxAmount = (value / 100) * income;
-      // Check if this would be a reasonable tax amount (less than income)
       return potentialTaxAmount < income && value > 0;
     }
     return false;
@@ -55,10 +51,8 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
     
     if (midIncome > 0 && taxAmount > 0) {
       if (isPercentageValue(taxAmount, midIncome)) {
-        // Tax value is already a percentage
         taxPercentage = taxAmount;
       } else {
-        // Tax value is in kr, convert to percentage
         taxPercentage = (taxAmount / midIncome) * 100;
       }
     } else {
@@ -84,13 +78,11 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
     return null;
   }
 
-  // Get the maximum income for x-axis formatting
   const maxIncome = Math.max(...chartData.map(item => item.income));
   
-  // Generate x-axis ticks
   const generateXTicks = (max: number) => {
     const ticks = [];
-    const step = Math.ceil(max / 10 / 1000) * 1000; // Round to nearest thousand
+    const step = Math.ceil(max / 10 / 1000) * 1000;
     for (let i = 0; i <= max; i += step) {
       ticks.push(i);
     }
@@ -99,13 +91,7 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
 
   return (
     <Card className="mt-4">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
-          Kolumn {selectedTaxColumn}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height={400}>
             <LineChart 
@@ -172,7 +158,6 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
         </ChartContainer>
         <div className="mt-2 text-sm text-gray-600">
           Grafen visar skatteprocent baserat på inkomst för skattetabell kolumn {selectedTaxColumn}.
-          {currentIncome > 0 && " Den röda linjen visar din nuvarande inkomst."}
         </div>
       </CardContent>
     </Card>

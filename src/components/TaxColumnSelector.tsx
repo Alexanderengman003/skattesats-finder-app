@@ -76,10 +76,8 @@ const TaxColumnSelector = ({
     
     let percentage: number;
     if (isPercentageValue(taxAmountNum, getTotalIncome())) {
-      // Tax amount is already a percentage
       percentage = taxAmountNum;
     } else {
-      // Tax amount is in kr, convert to percentage
       percentage = (taxAmountNum / getTotalIncome()) * 100;
     }
     
@@ -91,10 +89,8 @@ const TaxColumnSelector = ({
     const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
     
     if (isPercentageValue(taxAmountNum, getTotalIncome())) {
-      // Convert percentage to actual amount
       return (taxAmountNum / 100) * getTotalIncome();
     } else {
-      // Already in kr
       return taxAmountNum;
     }
   };
@@ -105,13 +101,19 @@ const TaxColumnSelector = ({
     return getTotalIncome() - actualTaxAmount;
   };
 
+  const getMarginalTaxRate = (): string => {
+    if (result.length === 0) return '0';
+    const taxRate = includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats;
+    return taxRate.toFixed(1);
+  };
+
   return (
     <div className="space-y-6">
       <Card className="shadow-lg">
         <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Skatteberäkning Resultat
+            Skatteberäkning
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -159,8 +161,11 @@ const TaxColumnSelector = ({
                 <div className="text-3xl font-bold text-green-800 mb-2">
                   {getActualTaxAmount().toLocaleString()} kr
                 </div>
-                <div className="text-lg font-medium text-green-600">
+                <div className="text-lg font-medium text-green-600 mb-2">
                   Du betalar {getTaxPercentage()}% i skatt
+                </div>
+                <div className="text-md font-medium text-green-600">
+                  Marginalskatt: {getMarginalTaxRate()}%
                 </div>
               </div>
               

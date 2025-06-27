@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Search, Calculator, MapPin, Calendar, List } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Search, Coins, MapPin, Calendar, List } from 'lucide-react';
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
 import TaxColumnSelector from '@/components/TaxColumnSelector';
@@ -281,7 +283,7 @@ const Index = () => {
       <div className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-3">
-            <Calculator className="h-8 w-8 text-blue-600" />
+            <Coins className="h-8 w-8 text-blue-600" />
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Min skatt</h1>
               <p className="text-gray-600">Hitta din inkomstskatt på ett enklare sätt</p>
@@ -381,7 +383,7 @@ const Index = () => {
                 {/* Income Input Fields */}
                 <div className="border-t pt-4 space-y-4">
                   <h3 className="font-semibold flex items-center gap-2">
-                    <Calculator className="h-4 w-4" />
+                    <Coins className="h-4 w-4" />
                     Inkomstuppgifter
                   </h3>
                   
@@ -398,8 +400,16 @@ const Index = () => {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
+                  <div className="space-y-4">
+                    <Label htmlFor="monthlyIncome">Månadsinkomst: {monthlyIncome.toLocaleString()} kr</Label>
+                    <Slider
+                      value={[monthlyIncome]}
+                      onValueChange={(value) => setMonthlyIncome(value[0])}
+                      max={150000}
+                      min={0}
+                      step={1000}
+                      className="w-full"
+                    />
                     <Input
                       id="monthlyIncome"
                       type="number"
@@ -407,6 +417,7 @@ const Index = () => {
                       onChange={handleIncomeChange}
                       placeholder="Ange månadsinkomst"
                       min="0"
+                      className="mt-2"
                     />
                   </div>
 
