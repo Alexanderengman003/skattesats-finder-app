@@ -424,7 +424,7 @@ const Index = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="monthlyIncome">Månadsinkomst</Label>
+                    <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
                     <Input
                       id="monthlyIncome"
                       type="number"
