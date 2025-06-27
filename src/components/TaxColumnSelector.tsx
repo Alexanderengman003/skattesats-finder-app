@@ -136,9 +136,11 @@ const TaxColumnSelector = ({
   const getMarginalTaxRate = (): string => {
     if (skattetabellData.length === 0 || getTotalIncomeForTax() === 0) return '0';
     
-    // Find current tax bracket or use the last one if income exceeds maximum
+    const currentIncome = getTotalIncomeForTax();
+    
+    // Find current tax bracket
     let currentBracket = skattetabellData.find(item => 
-      getTotalIncomeForTax() >= item.InkomstFrån && getTotalIncomeForTax() <= item.InkomstTill
+      currentIncome >= item.InkomstFrån && currentIncome <= item.InkomstTill
     );
     
     // If no bracket found (income too high), use the last bracket
@@ -148,23 +150,30 @@ const TaxColumnSelector = ({
     
     if (!currentBracket) return '0';
     
-    // Find the previous bracket
+    // Get the tax value for current bracket
+    const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    
+    // Find the previous bracket (one income level lower)
     const currentIndex = skattetabellData.indexOf(currentBracket);
-    if (currentIndex <= 0) return '0';
+    
+    // If we're in the first bracket, marginal rate equals the tax rate
+    if (currentIndex <= 0) {
+      if (isPercentageValue(currentTaxValue, currentIncome)) {
+        return currentTaxValue.toFixed(1);
+      } else {
+        // Convert absolute tax amount to percentage
+        const percentage = (currentTaxValue / currentIncome) * 100;
+        return percentage.toFixed(1);
+      }
+    }
     
     const previousBracket = skattetabellData[currentIndex - 1];
-    
-    // Get tax values for both brackets
-    const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
     const previousTaxValue = parseFloat(previousBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
     
-    // Calculate income and tax differences
-    const incomeDiff = currentBracket.InkomstFrån - previousBracket.InkomstFrån;
-    
+    // Calculate actual tax amounts for both brackets
     let currentTaxAmount = 0;
     let previousTaxAmount = 0;
     
-    // Convert to actual tax amounts if they are percentages
     if (isPercentageValue(currentTaxValue, currentBracket.InkomstFrån)) {
       currentTaxAmount = (currentTaxValue / 100) * currentBracket.InkomstFrån;
     } else {
@@ -177,14 +186,22 @@ const TaxColumnSelector = ({
       previousTaxAmount = previousTaxValue;
     }
     
+    // Calculate the marginal rate: difference in tax divided by difference in income
+    const incomeDiff = currentBracket.InkomstFrån - previousBracket.InkomstFrån;
     const taxDiff = currentTaxAmount - previousTaxAmount;
     
-    if (incomeDiff > 0 && taxDiff >= 0) {
+    if (incomeDiff > 0) {
       const marginalRate = (taxDiff / incomeDiff) * 100;
       return Math.max(0, marginalRate).toFixed(1);
     }
     
-    return '0';
+    // Fallback: if we can't calculate marginal rate, return the current tax rate
+    if (isPercentageValue(currentTaxValue, currentIncome)) {
+      return currentTaxValue.toFixed(1);
+    } else {
+      const percentage = (currentTaxValue / currentIncome) * 100;
+      return percentage.toFixed(1);
+    }
   };
 
   const getPieChartData = () => {
