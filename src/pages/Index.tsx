@@ -376,6 +376,7 @@ const Index = () => {
               onTriggerCalculation={triggerTaxCalculation}
               taxableBenefit={taxableBenefit}
               onTaxableBenefitChange={setTaxableBenefit}
+              skattetabellData={skattetabellData}
             />
           </div>
         </div>
