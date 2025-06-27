@@ -282,7 +282,7 @@ export const fetchEngangsbeskattningData = async (
     console.log(`Fetching engångsbeskattning data for year ${year}, income ${yearlyIncome}, column ${column}...`);
 
     while (hasMoreData) {
-      const url = `https://skatteverket.entryscape.net/rowstore/dataset/b75e9fa2-3684-46bf-9360-bdc0ef2b5525?_limit=${limit}&_offset=${offset}&år=${year}&kolumn=${column}`;
+      const url = `https://skatteverket.entryscape.net/rowstore/dataset/91940080-6456-44fe-a10d-abee79196c48?_limit=${limit}&_offset=${offset}&år=${year}`;
       
       console.log(`Fetching engångsbeskattning with URL: ${url}`);
       
@@ -329,18 +329,23 @@ export const fetchEngangsbeskattningData = async (
     }
     
     console.log(`Total engångsbeskattning data fetched: ${allData.length} records`);
+    console.log('Sample data:', allData.slice(0, 3));
     
     if (allData.length === 0) {
       throw new Error(`No engångsbeskattning data available for year ${year}`);
     }
     
-    // Filter for the specific yearly income range
+    // Filter for the specific column and yearly income range
     const filteredData = allData.filter(item => 
-      yearlyIncome >= item.ÅrslönIKrLägst && yearlyIncome <= item.ÅrslönIKrHögst
+      item.Kolumn === column &&
+      yearlyIncome >= item.ÅrslönIKrLägst && 
+      yearlyIncome <= item.ÅrslönIKrHögst
     );
     
+    console.log(`Filtered data for column ${column} and income ${yearlyIncome}:`, filteredData);
+    
     if (filteredData.length === 0) {
-      throw new Error(`No engångsbeskattning data available for income ${yearlyIncome} kr in year ${year}`);
+      throw new Error(`No engångsbeskattning data available for column ${column} and income ${yearlyIncome} kr in year ${year}`);
     }
     
     return filteredData;
