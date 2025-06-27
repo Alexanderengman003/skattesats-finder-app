@@ -36,6 +36,7 @@ const Index = () => {
   const [selectedTaxColumn, setSelectedTaxColumn] = useState(1);
   const [monthlyIncome, setMonthlyIncome] = useState(0);
   const [birthday, setBirthday] = useState('');
+  const [taxableBenefit, setTaxableBenefit] = useState(0);
 
   const getSkattetabell = (taxRate: number): number => {
     // Round to nearest integer according to Swedish tax authority rules
@@ -152,15 +153,20 @@ const Index = () => {
   };
 
   const getFilteredSkattetabellData = (): SkattetabellData | null => {
-    if (skattetabellData.length === 0 || monthlyIncome === 0) return null;
+    if (skattetabellData.length === 0) return null;
+    
+    const totalIncome = monthlyIncome + taxableBenefit;
+    if (totalIncome === 0) return null;
     
     return skattetabellData.find(item => 
-      monthlyIncome >= item.InkomstFrån && monthlyIncome <= item.InkomstTill
+      totalIncome >= item.InkomstFrån && totalIncome <= item.InkomstTill
     ) || null;
   };
 
   const triggerTaxCalculation = () => {
-    if (!kommun.trim() || !selectedYear || !monthlyIncome || monthlyIncome === 0) {
+    const totalIncome = monthlyIncome + taxableBenefit;
+    
+    if (!kommun.trim() || !selectedYear || totalIncome === 0) {
       return;
     }
 
@@ -171,6 +177,7 @@ const Index = () => {
     const taxData = findTaxRateFromAPI(apiData, kommun.trim(), selectedYear, forsamling);
     
     if (taxData.length > 0) {
+      setResult(taxData);
       const firstResult = taxData[0];
       const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
       const skattetabell = getSkattetabell(taxRate);
@@ -305,6 +312,35 @@ const Index = () => {
                   {loading ? 'Laddar...' : 'Sök Skattesats'}
                 </Button>
 
+                {/* Results display */}
+                {result.length > 0 && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h3 className="font-semibold text-green-800 mb-2">Skattesats för {result[0].Kommun}</h3>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span>Kommunal skatt:</span>
+                        <span className="font-medium">{result[0].KommunalSkatt}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Landstingsskatt:</span>
+                        <span className="font-medium">{result[0].LandstingsSkatt}%</span>
+                      </div>
+                      {includeSvenskaKyrkan && (
+                        <div className="flex justify-between">
+                          <span>Kyrkoavgift:</span>
+                          <span className="font-medium">{result[0].Kyrkoavgift}%</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between border-t pt-1 mt-2">
+                        <span className="font-semibold">Total skattesats:</span>
+                        <span className="font-semibold text-green-700">
+                          {includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Error */}
                 {error && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -338,6 +374,8 @@ const Index = () => {
               selectedYear={selectedYear}
               getSkattetabell={getSkattetabell}
               onTriggerCalculation={triggerTaxCalculation}
+              taxableBenefit={taxableBenefit}
+              onTaxableBenefitChange={setTaxableBenefit}
             />
           </div>
         </div>

@@ -28,6 +28,8 @@ interface TaxColumnSelectorProps {
   selectedYear: number | null;
   getSkattetabell: (taxRate: number) => number;
   onTriggerCalculation: () => void;
+  taxableBenefit: number;
+  onTaxableBenefitChange: (benefit: number) => void;
 }
 
 const TaxColumnSelector = ({
@@ -46,7 +48,9 @@ const TaxColumnSelector = ({
   includeSvenskaKyrkan,
   selectedYear,
   getSkattetabell,
-  onTriggerCalculation
+  onTriggerCalculation,
+  taxableBenefit,
+  onTaxableBenefitChange
 }: TaxColumnSelectorProps) => {
   const getCurrentColumn = (): number => {
     if (!birthday) return 1;
@@ -92,6 +96,13 @@ const TaxColumnSelector = ({
     onMonthlyIncomeChange(numericValue);
   };
 
+  const handleTaxableBenefitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Remove leading zeros and convert to number
+    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+    onTaxableBenefitChange(numericValue);
+  };
+
   const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     
@@ -112,16 +123,26 @@ const TaxColumnSelector = ({
 
   // Trigger calculation whenever relevant values change
   useEffect(() => {
-    if (kommun && monthlyIncome > 0 && birthday) {
+    if (kommun && (monthlyIncome > 0 || taxableBenefit > 0) && birthday) {
       onTriggerCalculation();
     }
-  }, [birthday, incomeType, isPensionContributing, monthlyIncome, kommun, onTriggerCalculation]);
+  }, [birthday, incomeType, isPensionContributing, monthlyIncome, taxableBenefit, kommun, onTriggerCalculation]);
+
+  const getTotalIncome = (): number => {
+    return monthlyIncome + taxableBenefit;
+  };
 
   const getTaxPercentage = (): string => {
-    if (!taxAmount || !monthlyIncome || monthlyIncome === 0) return '0';
+    if (!taxAmount || getTotalIncome() === 0) return '0';
     const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
-    const percentage = (taxAmountNum / monthlyIncome) * 100;
+    const percentage = (taxAmountNum / getTotalIncome()) * 100;
     return percentage.toFixed(1);
+  };
+
+  const getNetSalary = (): number => {
+    if (!taxAmount || getTotalIncome() === 0) return getTotalIncome();
+    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
+    return getTotalIncome() - taxAmountNum;
   };
 
   return (
@@ -154,6 +175,18 @@ const TaxColumnSelector = ({
             value={monthlyIncome || ''}
             onChange={handleIncomeChange}
             placeholder="Ange månadsinkomst"
+            min="0"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="taxableBenefit">Beskattningsbar förmån (kr)</Label>
+          <Input
+            id="taxableBenefit"
+            type="number"
+            value={taxableBenefit || ''}
+            onChange={handleTaxableBenefitChange}
+            placeholder="Ange beskattningsbar förmån"
             min="0"
           />
         </div>
@@ -231,23 +264,34 @@ const TaxColumnSelector = ({
             </div>
           )}
 
-          {kommun && taxAmount && monthlyIncome > 0 ? (
-            <div className="text-center p-8 bg-green-50 border border-green-200 rounded-lg">
-              <div className="text-lg font-medium text-green-700 mb-2">
-                Skatt för {monthlyIncome.toLocaleString()} kr/månad:
+          {kommun && taxAmount && getTotalIncome() > 0 ? (
+            <div className="space-y-4">
+              <div className="text-center p-6 bg-green-50 border border-green-200 rounded-lg">
+                <div className="text-lg font-medium text-green-700 mb-2">
+                  Skatt för {getTotalIncome().toLocaleString()} kr/månad:
+                </div>
+                <div className="text-3xl font-bold text-green-800 mb-2">
+                  {taxAmount} kr
+                </div>
+                <div className="text-lg font-medium text-green-600">
+                  Du betalar {getTaxPercentage()}% i skatt
+                </div>
               </div>
-              <div className="text-4xl font-bold text-green-800 mb-2">
-                {taxAmount} kr
-              </div>
-              <div className="text-lg font-medium text-green-600">
-                Du betalar {getTaxPercentage()}% i skatt
+              
+              <div className="text-center p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="text-lg font-medium text-blue-700 mb-2">
+                  Netto (efter skatt):
+                </div>
+                <div className="text-3xl font-bold text-blue-800">
+                  {getNetSalary().toLocaleString()} kr
+                </div>
               </div>
             </div>
           ) : (
             <div className="text-center text-gray-500 py-8 bg-gray-50 border border-gray-200 rounded-lg">
               {!kommun 
                 ? 'Gör en skattesats-sökning först'
-                : !monthlyIncome 
+                : getTotalIncome() === 0
                 ? 'Ange månadsinkomst för att se skatteberäkning'
                 : 'Ingen matchande inkomstgrupp hittades'
               }
