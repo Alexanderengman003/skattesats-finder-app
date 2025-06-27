@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,6 @@ import TaxRateTable from '@/components/TaxRateTable';
 import SkatteverketTable from '@/components/SkatteverketTable';
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
-import SkattetabellDisplay from '@/components/SkattetabellDisplay';
 import { 
   taxData, 
   fetchTaxData, 
@@ -31,6 +29,22 @@ const Index = () => {
   const [availableMunicipalities, setAvailableMunicipalities] = useState<string[]>([]);
   const [availableForsamlingar, setAvailableForsamlingar] = useState<string[]>([]);
   const [includeSvenskaKyrkan, setIncludeSvenskaKyrkan] = useState(false);
+
+  const getSkattetabell = (taxRate: number): number => {
+    // Round to nearest integer according to Swedish tax authority rules
+    // 0.50 and above rounds up, below 0.50 rounds down
+    const decimal = taxRate % 1;
+    let roundedRate: number;
+    
+    if (decimal >= 0.50) {
+      roundedRate = Math.ceil(taxRate);
+    } else {
+      roundedRate = Math.floor(taxRate);
+    }
+    
+    // Ensure the table number is within the valid range (29-34)
+    return Math.max(29, Math.min(34, roundedRate));
+  };
 
   useEffect(() => {
     const loadApiData = async () => {
@@ -195,53 +209,58 @@ const Index = () => {
                 {/* Results */}
                 {result.length > 0 && (
                   <div className="mt-6 space-y-4">
-                    {result.map((item, index) => (
-                      <div key={index} className="p-6 bg-green-50 border border-green-200 rounded-lg">
-                        <h3 className="text-lg font-semibold text-green-800 mb-4 text-center">
-                          {item.Kommun} - {item.Församling} ({item.År})
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="font-medium text-gray-600">Kommun:</span>
-                            <div className="text-lg font-bold text-green-700">{item.Kommun}</div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Församling:</span>
-                            <div className="text-lg font-bold text-green-700">{item.Församling}</div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Kommunkod:</span>
-                            <div className="text-lg font-bold text-green-700">{item.KommunKod}</div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Församlingskod:</span>
-                            <div className="text-lg font-bold text-green-700">{item.FörsamlingsKod}</div>
-                          </div>
-                          <div className="col-span-2">
-                            <span className="font-medium text-gray-600">Total skatt:</span>
-                            <div className="text-2xl font-bold text-green-700">
-                              {includeSvenskaKyrkan ? item.SummaInklKyrkoavgift : item.Skattesats}%
+                    {result.map((item, index) => {
+                      const taxRate = includeSvenskaKyrkan ? item.SummaInklKyrkoavgift : item.Skattesats;
+                      const skattetabell = getSkattetabell(taxRate);
+                      
+                      return (
+                        <div key={index} className="p-6 bg-green-50 border border-green-200 rounded-lg">
+                          <h3 className="text-lg font-semibold text-green-800 mb-4 text-center">
+                            {item.Kommun} - {item.Församling} ({item.År})
+                          </h3>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="font-medium text-gray-600">Kommun:</span>
+                              <div className="text-lg font-bold text-green-700">{item.Kommun}</div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-600">Församling:</span>
+                              <div className="text-lg font-bold text-green-700">{item.Församling}</div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-600">Kommunkod:</span>
+                              <div className="text-lg font-bold text-green-700">{item.KommunKod}</div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-600">Församlingskod:</span>
+                              <div className="text-lg font-bold text-green-700">{item.FörsamlingsKod}</div>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="font-medium text-gray-600">Total skatt / Skattetabell {includeSvenskaKyrkan ? '(inkl. kyrkoavgift)' : '(exkl. kyrkoavgift)'}:</span>
+                              <div className="text-2xl font-bold text-green-700">
+                                {taxRate}% / {skattetabell}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-600">Kommunal skatt:</span>
+                              <div className="text-lg font-bold text-blue-700">{item.KommunalSkatt}%</div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-600">Landstingsskatt:</span>
+                              <div className="text-lg font-bold text-blue-700">{item.LandstingsSkatt}%</div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-600">Kyrkoavgift:</span>
+                              <div className="text-lg font-bold text-purple-700">{item.Kyrkoavgift}%</div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-600">Begravningsavgift:</span>
+                              <div className="text-lg font-bold text-purple-700">{item.BegravningsAvgift}%</div>
                             </div>
                           </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Kommunal skatt:</span>
-                            <div className="text-lg font-bold text-blue-700">{item.KommunalSkatt}%</div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Landstingsskatt:</span>
-                            <div className="text-lg font-bold text-blue-700">{item.LandstingsSkatt}%</div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Kyrkoavgift:</span>
-                            <div className="text-lg font-bold text-purple-700">{item.Kyrkoavgift}%</div>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Begravningsavgift:</span>
-                            <div className="text-lg font-bold text-purple-700">{item.BegravningsAvgift}%</div>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
@@ -253,9 +272,6 @@ const Index = () => {
                 )}
               </CardContent>
             </Card>
-
-            {/* Skattetabell Display */}
-            <SkattetabellDisplay taxData={result} includeSvenskaKyrkan={includeSvenskaKyrkan} />
           </div>
 
           {/* Table Section */}
