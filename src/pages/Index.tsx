@@ -443,7 +443,7 @@ const Index = () => {
                       type="number"
                       value={taxableBenefit === 0 ? '' : taxableBenefit}
                       onChange={handleTaxableBenefitChange}
-                      placeholder="Ange beskattningsbar förmån (0 om ingen)"
+                      placeholder="Ange beskattningsbar förmån"
                       min="0"
                     />
                   </div>
