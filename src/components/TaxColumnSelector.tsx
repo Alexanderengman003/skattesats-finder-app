@@ -172,12 +172,12 @@ const TaxColumnSelector = ({
       {
         name: 'Skatt',
         value: taxAmount,
-        color: '#1e40af'
+        color: '#60a5fa'
       }
     ];
   };
 
-  const COLORS = ['#3b82f6', '#1e40af'];
+  const COLORS = ['#3b82f6', '#60a5fa'];
 
   // Fixed chart size based on maximum possible value (1 billion + "kr")
   const getChartSize = () => {
@@ -278,7 +278,7 @@ const TaxColumnSelector = ({
               {kommun && currentTaxAmount && getTotalIncomeForTax() > 0 && (
                 <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-800 mb-1">
+                    <div className="text-2xl font-bold text-blue-800 mb-2">
                       {Math.round(getActualTaxAmount()).toLocaleString()} kr
                     </div>
                     <div className="text-sm font-medium text-blue-700 mb-2">
@@ -300,16 +300,16 @@ const TaxColumnSelector = ({
             <div className="space-y-4">
               {/* Net Salary Display with Pie Chart */}
               <div className="text-center p-4 bg-blue-100 border border-blue-300 rounded-xl">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="relative" style={{ width: 320, height: 320 }}>
+                <div className="flex flex-col items-center gap-3">
+                  <div className="relative" style={{ width: 320, height: 300 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPieChart>
                         <Pie
                           data={getPieChartData()}
                           cx="50%"
                           cy="50%"
-                          innerRadius={120}
-                          outerRadius={140}
+                          innerRadius={110}
+                          outerRadius={130}
                           paddingAngle={0}
                           dataKey="value"
                           stroke="none"
@@ -340,7 +340,7 @@ const TaxColumnSelector = ({
                           {Math.round(getNetSalary()).toLocaleString()} kr
                         </div>
                         <div className="text-lg font-medium text-gray-600 mt-1">
-                          Nettoinkomst
+                          Månadsinkomst (kr)
                         </div>
                       </div>
                     </div>
