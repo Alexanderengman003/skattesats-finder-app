@@ -32,20 +32,12 @@ export const findTaxRateFromAPI = (
   data: SkatteverketData[], 
   kommun: string, 
   year: number
-): { rate: number; kommun: string; year: number } | null => {
+): SkatteverketData | null => {
   const municipalityData = data.find(
-    item => item.Kommun.toLowerCase().includes(kommun.toLowerCase()) && item.År === year
+    item => item.Kommun === kommun && item.År === year
   );
 
-  if (!municipalityData) {
-    return null;
-  }
-
-  return {
-    rate: municipalityData.Skattesats,
-    kommun: municipalityData.Kommun,
-    year: municipalityData.År
-  };
+  return municipalityData || null;
 };
 
 export const getAvailableMunicipalities = (data: SkatteverketData[], year: number): string[] => {
