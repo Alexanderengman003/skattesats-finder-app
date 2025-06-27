@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
@@ -327,7 +328,7 @@ const TaxColumnSelector = ({
               </div>
 
               {/* Tax Calculation Display */}
-              {kommun && currentTaxAmount && getTotalIncomeForTax() > 0 && (
+              {kommun && taxAmount && getTotalIncomeForTax() > 0 && (
                 <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
                   <div className="text-center">
                     <div className="text-sm font-medium text-black mb-1">
@@ -351,7 +352,7 @@ const TaxColumnSelector = ({
             </div>
           )}
 
-          {kommun && currentTaxAmount && getTotalIncomeForTax() > 0 ? (
+          {kommun && taxAmount && getTotalIncomeForTax() > 0 ? (
             <div className="space-y-4">
               {/* Net Salary Display with Pie Chart */}
               <div className="text-center p-4 bg-blue-100 border border-blue-300 rounded-xl">
