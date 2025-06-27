@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
@@ -349,7 +350,7 @@ const TaxColumnSelector = ({
                       {Math.round(getActualTaxAmount()).toLocaleString()} kr
                     </div>
                     <div className="text-sm font-medium text-black mb-2">
-                      Månadsinkomst beräknad på {Math.round(getTotalIncomeForTax()).toLocaleString()} kr
+                      Månadsinkomst (kr) beräknad på {Math.round(getTotalIncomeForTax()).toLocaleString()} kr
                     </div>
                     <div className="text-sm font-medium text-black mb-1">
                       Du betalar <span className="font-bold">{getTaxPercentage()}%</span> i skatt
