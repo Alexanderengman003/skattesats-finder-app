@@ -246,31 +246,41 @@ const TaxColumnSelector = ({
                   Netto efter skatt:
                 </div>
                 <div className="flex items-center justify-center gap-6">
-                  <div className="text-3xl font-bold text-blue-800">
-                    {getNetSalary().toLocaleString()} kr
-                  </div>
-                  <div className="w-24 h-24">
+                  <div className="relative w-48 h-48">
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPieChart>
                         <Pie
                           data={getPieChartData()}
                           cx="50%"
                           cy="50%"
-                          innerRadius={25}
-                          outerRadius={48}
+                          innerRadius={60}
+                          outerRadius={90}
                           paddingAngle={2}
                           dataKey="value"
+                          stroke="none"
                         >
                           {getPieChartData().map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
                         <Tooltip 
-                          formatter={(value: number) => [`${value.toLocaleString()} kr`, '']}
-                          labelFormatter={(label) => label}
+                          formatter={(value: number, name: string) => [
+                            `${value.toLocaleString()} kr`,
+                            name
+                          ]}
                         />
                       </RechartsPieChart>
                     </ResponsiveContainer>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-800">
+                          {getNetSalary().toLocaleString()}
+                        </div>
+                        <div className="text-sm text-blue-600">
+                          kr
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
