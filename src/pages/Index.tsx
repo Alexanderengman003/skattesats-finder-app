@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Calculator, MapPin, Calendar, Database } from 'lucide-react';
 import TaxRateTable from '@/components/TaxRateTable';
 import SkatteverketTable from '@/components/SkatteverketTable';
+import KommunSearch from '@/components/KommunSearch';
 import { 
   taxData, 
   fetchTaxData, 
@@ -126,22 +126,13 @@ const Index = () => {
                     <MapPin className="h-4 w-4" />
                     Kommun
                   </label>
-                  <Select 
-                    onValueChange={(value) => setKommun(value)}
+                  <KommunSearch
+                    municipalities={availableMunicipalities}
                     value={kommun}
+                    onValueChange={setKommun}
                     disabled={!selectedYear}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={selectedYear ? "Välj kommun" : "Välj år först"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableMunicipalities.map((municipality) => (
-                        <SelectItem key={municipality} value={municipality}>
-                          {municipality}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder={selectedYear ? "Sök kommun..." : "Välj år först"}
+                  />
                 </div>
 
                 <Button 
