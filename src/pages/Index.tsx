@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -218,7 +219,7 @@ const Index = () => {
                           <h3 className="text-lg font-semibold text-green-800 mb-4 text-center">
                             {item.Kommun} - {item.Församling} ({item.År})
                           </h3>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-3 gap-4 text-sm">
                             <div>
                               <span className="font-medium text-gray-600">Kommun:</span>
                               <div className="text-lg font-bold text-green-700">{item.Kommun}</div>
@@ -228,6 +229,10 @@ const Index = () => {
                               <div className="text-lg font-bold text-green-700">{item.Församling}</div>
                             </div>
                             <div>
+                              <span className="font-medium text-gray-600">Skattetabell:</span>
+                              <div className="text-lg font-bold text-green-700">{skattetabell}</div>
+                            </div>
+                            <div>
                               <span className="font-medium text-gray-600">Kommunkod:</span>
                               <div className="text-lg font-bold text-green-700">{item.KommunKod}</div>
                             </div>
@@ -235,10 +240,10 @@ const Index = () => {
                               <span className="font-medium text-gray-600">Församlingskod:</span>
                               <div className="text-lg font-bold text-green-700">{item.FörsamlingsKod}</div>
                             </div>
-                            <div className="col-span-2">
-                              <span className="font-medium text-gray-600">Total skatt / Skattetabell {includeSvenskaKyrkan ? '(inkl. kyrkoavgift)' : '(exkl. kyrkoavgift)'}:</span>
+                            <div>
+                              <span className="font-medium text-gray-600">Total skatt {includeSvenskaKyrkan ? '(inkl. kyrkoavgift)' : '(exkl. kyrkoavgift)'}:</span>
                               <div className="text-2xl font-bold text-green-700">
-                                {taxRate}% / {skattetabell}
+                                {taxRate}%
                               </div>
                             </div>
                             <div>
