@@ -116,38 +116,42 @@ const TaxColumnSelector = ({
     
     if (!currentBracket) return '0';
     
-    // Find next bracket to calculate marginal rate
-    const nextBracket = skattetabellData.find(item => 
-      item.InkomstFrån > currentBracket.InkomstTill
-    );
+    const currentIndex = skattetabellData.indexOf(currentBracket);
     
-    if (!nextBracket) {
-      // If no next bracket, use current bracket rate
-      const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
-      if (isPercentageValue(currentTaxValue, getTotalIncomeForTax())) {
-        return currentTaxValue.toFixed(1);
-      }
+    // Find previous bracket to calculate marginal rate
+    const previousBracket = currentIndex > 0 ? skattetabellData[currentIndex - 1] : null;
+    
+    if (!previousBracket) {
+      // If no previous bracket, return 0
       return '0';
     }
     
-    // Calculate marginal tax rate between current and next bracket
+    // Get tax values for both brackets
     const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
-    const nextTaxValue = parseFloat(nextBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    const previousTaxValue = parseFloat(previousBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
     
-    const incomeDiff = nextBracket.InkomstFrån - currentBracket.InkomstTill;
-    let taxDiff = 0;
+    // Calculate income difference between brackets
+    const incomeDiff = currentBracket.InkomstFrån - previousBracket.InkomstTill;
     
-    if (isPercentageValue(currentTaxValue, currentBracket.InkomstTill) && isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
-      // Both are percentages
-      const currentTaxAmount = (currentTaxValue / 100) * currentBracket.InkomstTill;
-      const nextTaxAmount = (nextTaxValue / 100) * nextBracket.InkomstFrån;
-      taxDiff = nextTaxAmount - currentTaxAmount;
-    } else if (!isPercentageValue(currentTaxValue, currentBracket.InkomstTill) && !isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
-      // Both are absolute values
-      taxDiff = nextTaxValue - currentTaxValue;
+    let currentTaxAmount = 0;
+    let previousTaxAmount = 0;
+    
+    // Convert to actual tax amounts if they are percentages
+    if (isPercentageValue(currentTaxValue, currentBracket.InkomstFrån)) {
+      currentTaxAmount = (currentTaxValue / 100) * currentBracket.InkomstFrån;
+    } else {
+      currentTaxAmount = currentTaxValue;
     }
     
-    if (incomeDiff > 0) {
+    if (isPercentageValue(previousTaxValue, previousBracket.InkomstTill)) {
+      previousTaxAmount = (previousTaxValue / 100) * previousBracket.InkomstTill;
+    } else {
+      previousTaxAmount = previousTaxValue;
+    }
+    
+    const taxDiff = currentTaxAmount - previousTaxAmount;
+    
+    if (incomeDiff > 0 && taxDiff >= 0) {
       const marginalRate = (taxDiff / incomeDiff) * 100;
       return Math.max(0, marginalRate).toFixed(1);
     }
@@ -224,7 +228,7 @@ const TaxColumnSelector = ({
             <div className="space-y-4">
               <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
                 <div className="text-lg font-medium text-blue-700 mb-2">
-                  Skatt för {getTotalIncomeForTax().toLocaleString()} kr/månad:
+                  Skatt för {monthlyIncome.toLocaleString()} kr/månad:
                 </div>
                 <div className="text-3xl font-bold text-blue-800 mb-2">
                   {getActualTaxAmount().toLocaleString()} kr
@@ -239,7 +243,7 @@ const TaxColumnSelector = ({
               
               <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
                 <div className="text-lg font-medium text-blue-700 mb-4">
-                  Netto (efter skatt):
+                  Netto efter skatt:
                 </div>
                 <div className="flex items-center justify-center gap-6">
                   <div className="text-3xl font-bold text-blue-800">

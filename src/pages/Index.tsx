@@ -249,6 +249,19 @@ const Index = () => {
     }
   };
 
+  // Convert linear value to logarithmic for slider
+  const valueToLog = (value: number): number => {
+    if (value <= 0) return 0;
+    return Math.log(value + 1);
+  };
+
+  // Convert logarithmic value back to linear
+  const logToValue = (log: number): number => {
+    return Math.max(0, Math.round(Math.exp(log) - 1));
+  };
+
+  const maxLog = valueToLog(1500000);
+
   const getTotalIncome = (): number => {
     return monthlyIncome + taxableBenefit;
   };
@@ -400,15 +413,7 @@ const Index = () => {
                   </div>
 
                   <div className="space-y-4">
-                    <Label htmlFor="monthlyIncome">Månadsinkomst: {monthlyIncome.toLocaleString()} kr</Label>
-                    <Slider
-                      value={[monthlyIncome]}
-                      onValueChange={(value) => setMonthlyIncome(value[0])}
-                      max={1500000}
-                      min={0}
-                      step={1000}
-                      className="w-full"
-                    />
+                    <Label htmlFor="monthlyIncome">Månadsinkomst</Label>
                     <Input
                       id="monthlyIncome"
                       type="number"
@@ -416,7 +421,14 @@ const Index = () => {
                       onChange={handleIncomeChange}
                       placeholder="Ange månadsinkomst"
                       min="0"
-                      className="mt-2"
+                    />
+                    <Slider
+                      value={[valueToLog(monthlyIncome)]}
+                      onValueChange={(value) => setMonthlyIncome(logToValue(value[0]))}
+                      max={maxLog}
+                      min={0}
+                      step={0.01}
+                      className="w-full"
                     />
                   </div>
 

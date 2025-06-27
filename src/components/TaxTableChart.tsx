@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -77,11 +78,10 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
     return null;
   }
 
-  const maxIncome = Math.max(...chartData.map(item => item.income));
-  
-  const generateXTicks = (max: number) => {
+  // Generate X-axis ticks with 25k increments up to 1.5M
+  const generateXTicks = () => {
     const ticks = [];
-    for (let i = 0; i <= max; i += 10000) {
+    for (let i = 0; i <= 1500000; i += 25000) {
       ticks.push(i);
     }
     return ticks;
@@ -100,8 +100,8 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
               <XAxis 
                 dataKey="income" 
                 type="number"
-                domain={[0, maxIncome]}
-                ticks={generateXTicks(maxIncome)}
+                domain={[0, 1500000]}
+                ticks={generateXTicks()}
                 tickFormatter={(value) => `${Math.round(value / 1000)}k`}
                 stroke="#6b7280"
                 fontSize={12}
