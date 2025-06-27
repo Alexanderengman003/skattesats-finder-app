@@ -28,34 +28,66 @@ interface SkatteverketApiResponse {
 
 export const fetchTaxData = async (): Promise<{ data: SkatteverketData[], years: number[] }> => {
   try {
-    const response = await fetch('https://skatteverket.entryscape.net/rowstore/dataset/c67b320b-ffee-4876-b073-dd9236cd2a99/json');
-    const apiResponse: SkatteverketApiResponse = await response.json();
+    let allData: SkatteverketData[] = [];
+    let offset = 0;
+    const limit = 500; // Maximum allowed limit
+    let hasMoreData = true;
+
+    console.log('Starting to fetch tax data with pagination...');
+
+    while (hasMoreData) {
+      const url = `https://skatteverket.entryscape.net/rowstore/dataset/c67b320b-ffee-4876-b073-dd9236cd2a99/json?_limit=${limit}&_offset=${offset}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const apiResponse: SkatteverketApiResponse = await response.json();
+      
+      console.log(`Fetched batch: offset=${offset}, limit=${limit}, results=${apiResponse.results?.length}, total=${apiResponse.resultCount}`);
+      
+      if (!apiResponse.results || apiResponse.results.length === 0) {
+        hasMoreData = false;
+        break;
+      }
+
+      // Transform the API data to our expected format
+      const batchData: SkatteverketData[] = apiResponse.results.map(item => ({
+        KommunKod: item['församlings-kod'] || '', // Use församlings-kod as a fallback for kommun code
+        Kommun: item.kommun.toUpperCase(),
+        Skattesats: parseFloat(item['summa, exkl. kyrkoavgift']),
+        År: parseInt(item.år)
+      }));
+
+      allData = [...allData, ...batchData];
+      
+      // Check if we've fetched all data
+      if (apiResponse.results.length < limit || offset + limit >= apiResponse.resultCount) {
+        hasMoreData = false;
+      } else {
+        offset += limit;
+      }
+    }
     
-    console.log('Raw API response:', apiResponse);
-    console.log('Number of results:', apiResponse.results?.length);
+    console.log(`Total data fetched: ${allData.length} records`);
     
-    // Transform the API data to our expected format
-    const data: SkatteverketData[] = apiResponse.results.map(item => ({
-      KommunKod: '', // API doesn't provide kommun code in this format
-      Kommun: item.kommun.toUpperCase(),
-      Skattesats: parseFloat(item['summa, exkl. kyrkoavgift']),
-      År: parseInt(item.år)
-    }));
-    
-    // Get unique years from the data and log them
-    const allYears = data.map(item => item.År);
-    console.log('All years in data:', allYears);
-    
+    // Get unique years from all data
+    const allYears = allData.map(item => item.År);
     const years = [...new Set(allYears)].sort((a, b) => b - a);
-    console.log('Unique years sorted:', years);
     
-    console.log('Sample data items:', data.slice(0, 10));
+    console.log('All unique years found:', years);
     console.log('Years distribution:', years.map(year => ({ 
       year, 
-      count: data.filter(item => item.År === year).length 
+      count: allData.filter(item => item.År === year).length 
     })));
     
-    return { data, years };
+    return { data: allData, years };
   } catch (error) {
     console.error('Error fetching tax data:', error);
     return { data: [], years: [] };
