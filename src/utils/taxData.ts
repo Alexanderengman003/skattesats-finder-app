@@ -1,3 +1,4 @@
+
 export interface TaxRate {
   kommun: string;
   under18: number;
@@ -13,13 +14,36 @@ export interface SkatteverketData {
   År: number;
 }
 
+interface SkatteverketApiResponse {
+  results: Array<{
+    'kommun': string;
+    'år': string;
+    'summa, exkl. kyrkoavgift': string;
+    [key: string]: string;
+  }>;
+  resultCount: number;
+  offset: number;
+  limit: number;
+}
+
 export const fetchTaxData = async (): Promise<{ data: SkatteverketData[], years: number[] }> => {
   try {
-    const response = await fetch('https://skatteverket.entryscape.net/rowstore/dataset/c67b320b-ffee-4876-b073-dd9236cd2a99');
-    const data: SkatteverketData[] = await response.json();
+    const response = await fetch('https://skatteverket.entryscape.net/rowstore/dataset/c67b320b-ffee-4876-b073-dd9236cd2a99/json');
+    const apiResponse: SkatteverketApiResponse = await response.json();
+    
+    // Transform the API data to our expected format
+    const data: SkatteverketData[] = apiResponse.results.map(item => ({
+      KommunKod: '', // API doesn't provide kommun code in this format
+      Kommun: item.kommun.toUpperCase(),
+      Skattesats: parseFloat(item['summa, exkl. kyrkoavgift']),
+      År: parseInt(item.år)
+    }));
     
     // Get unique years from the data
     const years = [...new Set(data.map(item => item.År))].sort((a, b) => b - a);
+    
+    console.log('Fetched data:', data.slice(0, 5)); // Log first 5 items for debugging
+    console.log('Available years:', years);
     
     return { data, years };
   } catch (error) {
