@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -81,9 +82,13 @@ const Index = () => {
     if (selectedYear && apiData.length > 0) {
       const municipalities = getAvailableMunicipalities(apiData, selectedYear);
       setAvailableMunicipalities(municipalities);
-      setKommun('');
-      setForsamling('');
-      setResult([]);
+      
+      // Only clear kommun if it's not available in the new year
+      if (kommun && !municipalities.includes(kommun)) {
+        setKommun('');
+        setForsamling('');
+        setResult([]);
+      }
     }
   }, [selectedYear, apiData]);
 
@@ -91,7 +96,14 @@ const Index = () => {
     if (kommun && selectedYear && apiData.length > 0) {
       const forsamlingar = getAvailableForsamlingar(apiData, kommun, selectedYear);
       setAvailableForsamlingar(forsamlingar);
-      setForsamling('');
+      
+      // Auto-select first församling if there are multiple options
+      if (forsamlingar.length > 1 && !forsamling) {
+        setForsamling(forsamlingar[0]);
+      } else if (forsamlingar.length <= 1) {
+        setForsamling('');
+      }
+      
       setResult([]);
     }
   }, [kommun, selectedYear, apiData]);

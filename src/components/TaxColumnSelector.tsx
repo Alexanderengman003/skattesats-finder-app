@@ -435,29 +435,33 @@ const TaxColumnSelector = ({
                 </div>
               </div>
 
-              {/* Engångsbeskattning Card */}
+              {/* Engångsbeskattning Card with Two Column Layout */}
               <Card className="shadow-lg rounded-xl">
                 <CardContent className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <div className="text-lg font-semibold text-blue-800 mb-3">
-                        Beskattning på engångsbelopp
+                  <div className="text-center mb-4">
+                    <div className="text-lg font-semibold text-blue-800">
+                      Beskattning på engångsbelopp
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left Column - Input */}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="engangsbeskattningAmount">Engångsbelopp (kr)</Label>
+                        <Input
+                          id="engangsbeskattningAmount"
+                          type="number"
+                          value={engangsbeskattningAmount || ''}
+                          onChange={handleEngangsbeskattningAmountChange}
+                          placeholder="Ange engångsbelopp"
+                          min="0"
+                          max="1000000000"
+                        />
                       </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="engangsbeskattningAmount">Engångsbelopp (kr)</Label>
-                      <Input
-                        id="engangsbeskattningAmount"
-                        type="number"
-                        value={engangsbeskattningAmount || ''}
-                        onChange={handleEngangsbeskattningAmountChange}
-                        placeholder="Ange engångsbelopp"
-                        min="0"
-                        max="1000000000"
-                      />
-                    </div>
 
+                    {/* Right Column - Results */}
                     <div className="text-center">
                       {engangsbeskattningLoading ? (
                         <div className="text-gray-500">Beräknar...</div>
