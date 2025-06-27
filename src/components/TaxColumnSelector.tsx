@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
@@ -234,16 +235,28 @@ const TaxColumnSelector = ({
   };
 
   const loadEngangsbeskattningData = async () => {
-    if (!selectedYear || getTotalIncomeForTax() === 0) {
-      console.log('Missing required data for engångsbeskattning:', { selectedYear, totalIncome: getTotalIncomeForTax() });
+    if (!selectedYear || getTotalIncomeForTax() === 0 || engangsbeskattningAmount === 0) {
+      console.log('Missing required data for engångsbeskattning:', { 
+        selectedYear, 
+        totalIncome: getTotalIncomeForTax(), 
+        engangsbeskattningAmount 
+      });
       return;
     }
     
     setEngangsbeskattningLoading(true);
     setEngangsbeskattningError(null);
     try {
-      const yearlyIncome = getTotalIncomeForTax() * 12;
-      console.log('Loading engångsbeskattning data:', { selectedYear, yearlyIncome, selectedTaxColumn });
+      // Calculate årslön according to Skatteverket: 
+      // (månadsinkomst + beskattningsbar förmån) * 12 + engångsbelopp
+      const yearlyIncome = (getTotalIncomeForTax() * 12) + engangsbeskattningAmount;
+      console.log('Loading engångsbeskattning data:', { 
+        selectedYear, 
+        monthlyIncome: getTotalIncomeForTax(),
+        engangsbeskattningAmount,
+        calculatedYearlyIncome: yearlyIncome, 
+        selectedTaxColumn 
+      });
       const data = await fetchEngangsbeskattningData(selectedYear, yearlyIncome, selectedTaxColumn);
       console.log('Engångsbeskattning data received:', data);
       setEngangsbeskattningData(data);
@@ -276,10 +289,10 @@ const TaxColumnSelector = ({
 
   // Load engångsbeskattning data when relevant values change
   useEffect(() => {
-    if (selectedYear && getTotalIncomeForTax() > 0 && selectedTaxColumn) {
+    if (selectedYear && getTotalIncomeForTax() > 0 && selectedTaxColumn && engangsbeskattningAmount > 0) {
       loadEngangsbeskattningData();
     }
-  }, [selectedYear, monthlyIncome, taxableBenefit, selectedTaxColumn]);
+  }, [selectedYear, monthlyIncome, taxableBenefit, selectedTaxColumn, engangsbeskattningAmount]);
 
   return (
     <div className="space-y-6">
@@ -472,6 +485,9 @@ const TaxColumnSelector = ({
                               </span>{' '}
                               i skatt
                             </div>
+                            <div className="text-xs text-gray-500 mt-2">
+                              Baserat på total årslön: {((getTotalIncomeForTax() * 12) + engangsbeskattningAmount).toLocaleString()} kr
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -501,3 +517,4 @@ const TaxColumnSelector = ({
 };
 
 export default TaxColumnSelector;
+
