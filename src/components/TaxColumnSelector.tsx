@@ -167,17 +167,17 @@ const TaxColumnSelector = ({
       {
         name: 'Nettoinkomst',
         value: netSalary,
-        color: '#8b5cf6'
+        color: '#3b82f6'
       },
       {
         name: 'Skatt',
         value: taxAmount,
-        color: '#06b6d4'
+        color: '#1e40af'
       }
     ];
   };
 
-  const COLORS = ['#8b5cf6', '#06b6d4'];
+  const COLORS = ['#3b82f6', '#1e40af'];
 
   // Fixed chart size based on maximum possible value (1 billion + "kr")
   const getChartSize = () => {
@@ -278,7 +278,7 @@ const TaxColumnSelector = ({
               {kommun && currentTaxAmount && getTotalIncomeForTax() > 0 && (
                 <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
                   <div className="text-center">
-                    <div className="text-sm font-medium text-blue-700 mb-2">
+                    <div className="text-sm font-medium text-blue-700 mb-1">
                       Skatt för {Math.round(monthlyIncome).toLocaleString()} kr/månad:
                     </div>
                     <div className="text-2xl font-bold text-blue-800 mb-2">
@@ -300,9 +300,6 @@ const TaxColumnSelector = ({
             <div className="space-y-4">
               {/* Net Salary Display with Pie Chart */}
               <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
-                <div className="text-lg font-medium text-blue-700 mb-4">
-                  Netto efter skatt:
-                </div>
                 <div className="flex flex-col items-center gap-6">
                   <div className="relative" style={{ width: 320, height: 320 }}>
                     <ResponsiveContainer width="100%" height="100%">
@@ -313,10 +310,10 @@ const TaxColumnSelector = ({
                           cy="50%"
                           innerRadius={120}
                           outerRadius={140}
-                          paddingAngle={2}
+                          paddingAngle={0}
                           dataKey="value"
                           stroke="none"
-                          cornerRadius={12}
+                          cornerRadius={0}
                         >
                           {getPieChartData().map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -339,11 +336,11 @@ const TaxColumnSelector = ({
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <div className="text-lg font-medium text-gray-600 mb-1">
-                          Net salary
-                        </div>
                         <div className="text-3xl font-bold text-gray-900">
-                          {Math.round(getNetSalary()).toLocaleString()}
+                          {Math.round(getNetSalary()).toLocaleString()} kr
+                        </div>
+                        <div className="text-lg font-medium text-gray-600 mt-1">
+                          Nettoinkomst
                         </div>
                       </div>
                     </div>
@@ -361,7 +358,7 @@ const TaxColumnSelector = ({
                           <span className="text-sm font-medium text-gray-600">{entry.name}</span>
                         </div>
                         <div className="text-xl font-bold text-gray-900">
-                          {entry.value.toLocaleString()}
+                          {entry.value.toLocaleString()} kr
                         </div>
                       </div>
                     ))}
