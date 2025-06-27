@@ -90,7 +90,7 @@ const TaxColumnSelector = ({
 
   const getActualTaxAmount = (): number => {
     if (!taxAmount || getTotalIncomeForTax() === 0) return 0;
-    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, '));
+    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
     
     if (isPercentageValue(taxAmountNum, getTotalIncomeForTax())) {
       return (taxAmountNum / 100) * getTotalIncomeForTax();
