@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -296,14 +295,14 @@ const Index = () => {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Input Section */}
           <div className="space-y-6">
-            <Card className="shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+            <Card className="shadow-lg rounded-xl">
+              <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
                 <CardTitle className="flex items-center gap-2">
                   <Search className="h-5 w-5" />
                   Skattesats
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-6 space-y-4 bg-blue-50 rounded-b-xl">
                 <div className="space-y-2">
                   <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
                     <Calendar className="h-4 w-4" />
@@ -375,7 +374,7 @@ const Index = () => {
 
                 {/* Error */}
                 {error && (
-                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
                     {error}
                   </div>
                 )}
@@ -461,7 +460,7 @@ const Index = () => {
                     </div>
                   )}
 
-                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="mt-4 p-4 bg-blue-100 border border-blue-300 rounded-xl">
                     <div className="text-center">
                       <span className="text-sm font-medium text-blue-600">Använd skattekolumn:</span>
                       <div className="text-2xl font-bold text-blue-800">

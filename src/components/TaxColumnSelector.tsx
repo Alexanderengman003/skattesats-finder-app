@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator } from 'lucide-react';
+import { Calculator, PieChart } from 'lucide-react';
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import TaxTableChart from './TaxTableChart';
 
 interface SkattetabellData {
@@ -102,25 +103,88 @@ const TaxColumnSelector = ({
   };
 
   const getMarginalTaxRate = (): string => {
-    if (result.length === 0) return '0';
-    const taxRate = includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats;
-    return taxRate.toFixed(1);
+    if (skattetabellData.length === 0 || getTotalIncome() === 0) return '0';
+    
+    // Find current tax bracket
+    const currentBracket = skattetabellData.find(item => 
+      getTotalIncome() >= item.InkomstFrån && getTotalIncome() <= item.InkomstTill
+    );
+    
+    if (!currentBracket) return '0';
+    
+    // Find next bracket to calculate marginal rate
+    const nextBracket = skattetabellData.find(item => 
+      item.InkomstFrån > currentBracket.InkomstTill
+    );
+    
+    if (!nextBracket) {
+      // If no next bracket, use current bracket rate
+      const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+      if (isPercentageValue(currentTaxValue, getTotalIncome())) {
+        return currentTaxValue.toFixed(1);
+      }
+      return '0';
+    }
+    
+    // Calculate marginal tax rate between current and next bracket
+    const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    const nextTaxValue = parseFloat(nextBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    
+    const incomeDiff = nextBracket.InkomstFrån - currentBracket.InkomstTill;
+    let taxDiff = 0;
+    
+    if (isPercentageValue(currentTaxValue, currentBracket.InkomstTill) && isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
+      // Both are percentages
+      const currentTaxAmount = (currentTaxValue / 100) * currentBracket.InkomstTill;
+      const nextTaxAmount = (nextTaxValue / 100) * nextBracket.InkomstFrån;
+      taxDiff = nextTaxAmount - currentTaxAmount;
+    } else if (!isPercentageValue(currentTaxValue, currentBracket.InkomstTill) && !isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
+      // Both are absolute values
+      taxDiff = nextTaxValue - currentTaxValue;
+    }
+    
+    if (incomeDiff > 0) {
+      const marginalRate = (taxDiff / incomeDiff) * 100;
+      return Math.max(0, marginalRate).toFixed(1);
+    }
+    
+    return '0';
   };
+
+  const getPieChartData = () => {
+    const netSalary = getNetSalary();
+    const taxAmount = getActualTaxAmount();
+    
+    return [
+      {
+        name: 'Netto efter skatt',
+        value: netSalary,
+        color: '#3b82f6'
+      },
+      {
+        name: 'Skatt',
+        value: taxAmount,
+        color: '#ef4444'
+      }
+    ];
+  };
+
+  const COLORS = ['#3b82f6', '#ef4444'];
 
   return (
     <div className="space-y-6">
-      <Card className="shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+      <Card className="shadow-lg rounded-xl">
+        <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
             Skatteberäkning
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-6 bg-blue-50 rounded-b-xl">
           {/* Tax Result Display */}
           {result.length > 0 && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h3 className="font-semibold text-green-800 mb-2">Skattesats för {result[0].Kommun}</h3>
+            <div className="mb-4 p-4 bg-blue-100 border border-blue-300 rounded-xl">
+              <h3 className="font-semibold text-blue-800 mb-2">Skattesats för {result[0].Kommun}</h3>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span>Kommunal skatt:</span>
@@ -138,13 +202,13 @@ const TaxColumnSelector = ({
                 )}
                 <div className="flex justify-between border-t pt-1 mt-2">
                   <span className="font-semibold">Total skattesats:</span>
-                  <span className="font-semibold text-green-700">
+                  <span className="font-semibold text-blue-700">
                     {includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats}%
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-semibold">Skattetabell:</span>
-                  <span className="font-semibold text-green-700">
+                  <span className="font-semibold text-blue-700">
                     {getSkattetabell(includeSvenskaKyrkan ? result[0].SummaInklKyrkoavgift : result[0].Skattesats)}
                   </span>
                 </div>
@@ -154,32 +218,57 @@ const TaxColumnSelector = ({
 
           {kommun && taxAmount && getTotalIncome() > 0 ? (
             <div className="space-y-4">
-              <div className="text-center p-6 bg-green-50 border border-green-200 rounded-lg">
-                <div className="text-lg font-medium text-green-700 mb-2">
+              <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
+                <div className="text-lg font-medium text-blue-700 mb-2">
                   Skatt för {getTotalIncome().toLocaleString()} kr/månad:
                 </div>
-                <div className="text-3xl font-bold text-green-800 mb-2">
+                <div className="text-3xl font-bold text-blue-800 mb-2">
                   {getActualTaxAmount().toLocaleString()} kr
                 </div>
-                <div className="text-lg font-medium text-green-600 mb-2">
+                <div className="text-lg font-medium text-blue-600 mb-2">
                   Du betalar {getTaxPercentage()}% i skatt
                 </div>
-                <div className="text-md font-medium text-green-600">
+                <div className="text-md font-medium text-blue-600">
                   Marginalskatt: {getMarginalTaxRate()}%
                 </div>
               </div>
               
-              <div className="text-center p-6 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="text-lg font-medium text-blue-700 mb-2">
+              <div className="text-center p-6 bg-blue-100 border border-blue-300 rounded-xl">
+                <div className="text-lg font-medium text-blue-700 mb-4">
                   Netto (efter skatt):
                 </div>
-                <div className="text-3xl font-bold text-blue-800">
-                  {getNetSalary().toLocaleString()} kr
+                <div className="flex items-center justify-center gap-6">
+                  <div className="text-3xl font-bold text-blue-800">
+                    {getNetSalary().toLocaleString()} kr
+                  </div>
+                  <div className="w-24 h-24">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={getPieChartData()}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={25}
+                          outerRadius={48}
+                          paddingAngle={2}
+                          dataKey="value"
+                        >
+                          {getPieChartData().map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: number) => [`${value.toLocaleString()} kr`, '']}
+                          labelFormatter={(label) => label}
+                        />
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="text-center text-gray-500 py-8 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="text-center text-gray-500 py-8 bg-blue-100 border border-blue-300 rounded-xl">
               {!kommun 
                 ? 'Gör en skattesats-sökning först'
                 : getTotalIncome() === 0

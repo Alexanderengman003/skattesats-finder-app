@@ -70,7 +70,7 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
   const chartConfig = {
     taxPercentage: {
       label: "Skatt (%)",
-      color: "#2563eb",
+      color: "#3b82f6",
     },
   };
 
@@ -82,7 +82,7 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
   
   const generateXTicks = (max: number) => {
     const ticks = [];
-    const step = Math.ceil(max / 10 / 1000) * 1000;
+    const step = Math.ceil(max / 15 / 1000) * 1000; // More ticks by dividing by 15 instead of 10
     for (let i = 0; i <= max; i += step) {
       ticks.push(i);
     }
@@ -90,15 +90,15 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
   };
 
   return (
-    <Card className="mt-4">
-      <CardContent className="p-6">
+    <Card className="mt-4 rounded-xl">
+      <CardContent className="p-6 bg-blue-50 rounded-xl">
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height={400}>
             <LineChart 
               data={chartData} 
               margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#bfdbfe" />
               <XAxis 
                 dataKey="income" 
                 type="number"
@@ -120,7 +120,7 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
                   if (active && payload && payload[0]) {
                     const data = payload[0].payload;
                     return (
-                      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+                      <div className="bg-white p-3 border border-blue-200 rounded-lg shadow-lg">
                         <p className="font-medium">{`Inkomst: ${Math.round(Number(label)).toLocaleString()} kr`}</p>
                         <p className="text-blue-600">{`Skatt: ${payload[0].value}%`}</p>
                         <p className="text-gray-500 text-sm">
@@ -135,10 +135,10 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
               <Line 
                 type="monotone" 
                 dataKey="taxPercentage" 
-                stroke="#2563eb" 
-                strokeWidth={2}
+                stroke="#3b82f6" 
+                strokeWidth={1}
                 dot={false}
-                activeDot={{ r: 4, fill: '#1d4ed8' }}
+                activeDot={{ r: 4, fill: '#2563eb' }}
               />
               {currentIncome > 0 && (
                 <ReferenceLine 
@@ -156,9 +156,6 @@ const TaxTableChart = ({ skattetabellData, selectedTaxColumn, currentIncome }: T
             </LineChart>
           </ResponsiveContainer>
         </ChartContainer>
-        <div className="mt-2 text-sm text-gray-600">
-          Grafen visar skatteprocent baserat på inkomst för skattetabell kolumn {selectedTaxColumn}.
-        </div>
       </CardContent>
     </Card>
   );
