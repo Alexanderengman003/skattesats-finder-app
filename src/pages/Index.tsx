@@ -10,6 +10,8 @@ import { Search, Coins, MapPin, Calendar, List, HelpCircle } from 'lucide-react'
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
 import TaxColumnSelector from '@/components/TaxColumnSelector';
+import TaxTableDisplay from '@/components/TaxTableDisplay';
+import VacationPayCard from '@/components/VacationPayCard';
 import { 
   fetchTaxData, 
   findTaxRateFromAPI, 
@@ -19,7 +21,6 @@ import {
   SkatteverketData,
   SkattetabellData
 } from '@/utils/taxData';
-import VacationPayCard from '@/components/VacationPayCard';
 
 const Index = () => {
   const [kommun, setKommun] = useState('');
