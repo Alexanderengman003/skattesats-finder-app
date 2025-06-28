@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -366,258 +365,255 @@ const Index = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 bg-blue-50 rounded-b-xl w-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Left Column - Personal Information */}
-                  <div className="space-y-6">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      Personuppgifter
-                    </h3>
-                    
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
-                          <Calendar className="h-4 w-4" />
-                          Inkomstår
-                        </label>
-                        <Select 
-                          onValueChange={(value) => setSelectedYear(parseInt(value))}
-                          value={selectedYear?.toString() || ''}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Välj år" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableYears.map((year) => (
-                              <SelectItem key={year} value={year.toString()}>
-                                {year}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label htmlFor="kommun" className="flex items-center gap-2 text-sm font-medium">
-                          <MapPin className="h-4 w-4" />
-                          Kommun
-                        </label>
-                        <KommunSearch
-                          municipalities={availableMunicipalities}
-                          value={kommun}
-                          onValueChange={setKommun}
-                          disabled={!selectedYear}
-                          placeholder={selectedYear ? "Sök kommun..." : "Välj år först"}
-                        />
-                      </div>
-
-                      {availableForsamlingar.length > 1 && (
-                        <ForsamlingSelect
-                          forsamlingar={availableForsamlingar}
-                          value={forsamling}
-                          onValueChange={setForsamling}
-                          disabled={!kommun}
-                        />
-                      )}
-
-                      <div className="space-y-2">
-                        <Label htmlFor="birthday" className="flex items-center gap-2">
-                          Födelsedatum
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </Label>
-                        <Input
-                          id="birthday"
-                          type="date"
-                          value={birthday}
-                          onChange={handleBirthdayChange}
-                          placeholder="Välj födelsedatum"
-                          max={new Date().toISOString().split('T')[0]}
-                          min="1900-01-01"
-                          className="w-full"
-                        />
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="svenskaKyrkan" 
-                          checked={includeSvenskaKyrkan}
-                          onCheckedChange={(checked) => setIncludeSvenskaKyrkan(checked === true)}
-                        />
-                        <label 
-                          htmlFor="svenskaKyrkan" 
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
-                        >
-                          Medlem i svenska kyrkan
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p>Ditt medlemskap i Svenska Kyrkan kan du hitta här: https://www.svenskakyrkan.se/medlem</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </label>
-                      </div>
+                <div className="space-y-8">
+                  {/* Form Fields - Single Column Layout */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Year Selection */}
+                    <div className="space-y-2">
+                      <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
+                        <Calendar className="h-4 w-4" />
+                        Inkomstår
+                      </label>
+                      <Select 
+                        onValueChange={(value) => setSelectedYear(parseInt(value))}
+                        value={selectedYear?.toString() || ''}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Välj år" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableYears.map((year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
-                    {/* Tax Table Display */}
-                    {skattetabellData.length > 0 && (
-                      <div className="mt-6">
-                        <TaxTableDisplay
-                          skattetabellData={skattetabellData}
-                          selectedTaxColumn={selectedTaxColumn}
-                          currentIncome={getTotalIncome()}
+                    {/* Monthly Income */}
+                    <div className="space-y-2">
+                      <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
+                      <Input
+                        id="monthlyIncome"
+                        type="number"
+                        value={monthlyIncome || ''}
+                        onChange={handleIncomeChange}
+                        placeholder="Ange månadsinkomst"
+                        min="0"
+                        max="1000000000"
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Kommune Search */}
+                    <div className="space-y-2">
+                      <label htmlFor="kommun" className="flex items-center gap-2 text-sm font-medium">
+                        <MapPin className="h-4 w-4" />
+                        Kommun
+                      </label>
+                      <KommunSearch
+                        municipalities={availableMunicipalities}
+                        value={kommun}
+                        onValueChange={setKommun}
+                        disabled={!selectedYear}
+                        placeholder={selectedYear ? "Sök kommun..." : "Välj år först"}
+                      />
+                    </div>
+
+                    {/* Taxable Benefit */}
+                    <div className="space-y-2">
+                      <Label htmlFor="taxableBenefit">Skattepliktig förmån (kr)</Label>
+                      <Input
+                        id="taxableBenefit"
+                        type="number"
+                        value={taxableBenefit === 0 ? '' : taxableBenefit}
+                        onChange={handleTaxableBenefitChange}
+                        placeholder="Ange skattepliktig förmån"
+                        min="0"
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Birthday */}
+                    <div className="space-y-2">
+                      <Label htmlFor="birthday" className="flex items-center gap-2">
+                        Födelsedatum
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <Input
+                        id="birthday"
+                        type="date"
+                        value={birthday}
+                        onChange={handleBirthdayChange}
+                        placeholder="Välj födelsedatum"
+                        max={new Date().toISOString().split('T')[0]}
+                        min="1900-01-01"
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Income Type */}
+                    <div className="space-y-2">
+                      <Label htmlFor="incomeType">Typ av inkomst</Label>
+                      <Select onValueChange={setIncomeType} value={incomeType}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Välj inkomsttyp" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="salary">Lön, arvode och liknande ersättningar</SelectItem>
+                          <SelectItem value="pension">Pension och andra ersättningar</SelectItem>
+                          <SelectItem value="disability">Sjuk- och aktivitetsersättning</SelectItem>
+                          <SelectItem value="unemployment">Ersättning från arbetslöshetskassa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Församling Selection - Full Width */}
+                  {availableForsamlingar.length > 1 && (
+                    <div className="space-y-2">
+                      <ForsamlingSelect
+                        forsamlingar={availableForsamlingar}
+                        value={forsamling}
+                        onValueChange={setForsamling}
+                        disabled={!kommun}
+                      />
+                    </div>
+                  )}
+
+                  {/* Checkboxes */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="svenskaKyrkan" 
+                        checked={includeSvenskaKyrkan}
+                        onCheckedChange={(checked) => setIncludeSvenskaKyrkan(checked === true)}
+                      />
+                      <label 
+                        htmlFor="svenskaKyrkan" 
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                      >
+                        Medlem i svenska kyrkan
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>Ditt medlemskap i Svenska Kyrkan kan du hitta här: https://www.svenskakyrkan.se/medlem</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </label>
+                    </div>
+
+                    {incomeType === 'unemployment' && (
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="pensionContributing" 
+                          checked={isPensionContributing}
+                          onCheckedChange={(checked) => setIsPensionContributing(checked === true)}
                         />
+                        <Label htmlFor="pensionContributing">
+                          Utgör grund för allmän pensionsavgift
+                        </Label>
                       </div>
                     )}
                   </div>
 
-                  {/* Right Column - Income Info */}
-                  <div className="space-y-6">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <Coins className="h-4 w-4" />
-                      Inkomstuppgifter
-                    </h3>
-                    
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
-                        <Input
-                          id="monthlyIncome"
-                          type="number"
-                          value={monthlyIncome || ''}
-                          onChange={handleIncomeChange}
-                          placeholder="Ange månadsinkomst"
-                          min="0"
-                          max="1000000000"
-                          className="w-full"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="taxableBenefit">Skattepliktig förmån (kr)</Label>
-                        <Input
-                          id="taxableBenefit"
-                          type="number"
-                          value={taxableBenefit === 0 ? '' : taxableBenefit}
-                          onChange={handleTaxableBenefitChange}
-                          placeholder="Ange skattepliktig förmån"
-                          min="0"
-                          className="w-full"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="incomeType">Typ av inkomst</Label>
-                        <Select onValueChange={setIncomeType} value={incomeType}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Välj inkomsttyp" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="salary">Lön, arvode och liknande ersättningar</SelectItem>
-                            <SelectItem value="pension">Pension och andra ersättningar</SelectItem>
-                            <SelectItem value="disability">Sjuk- och aktivitetsersättning</SelectItem>
-                            <SelectItem value="unemployment">Ersättning från arbetslöshetskassa</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {incomeType === 'unemployment' && (
+                  {/* Vacation Pay Section */}
+                  {monthlyIncome > 0 && (
+                    <div className="space-y-4 pt-4 border-t border-blue-200">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        Semestertillägg
+                      </h4>
+                      
+                      <div className="space-y-4">
                         <div className="flex items-center space-x-2">
                           <Checkbox 
-                            id="pensionContributing" 
-                            checked={isPensionContributing}
-                            onCheckedChange={(checked) => setIsPensionContributing(checked === true)}
+                            id="collectiveAgreement" 
+                            checked={hasCollectiveAgreement}
+                            onCheckedChange={(checked) => setHasCollectiveAgreement(checked === true)}
                           />
-                          <Label htmlFor="pensionContributing">
-                            Utgör grund för allmän pensionsavgift
+                          <Label htmlFor="collectiveAgreement" className="flex items-center gap-2">
+                            Kollektivavtal
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>Med kollektivavtal: 0.8% för grundlön + 0.5% för rörlig lön</p>
+                                  <p>Utan kollektivavtal: 0.43% för grundlön + (12% / 25) för rörlig lön</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </Label>
                         </div>
-                      )}
 
-                      {/* Semestertillägg Section */}
-                      {monthlyIncome > 0 && (
-                        <div className="space-y-4 pt-4 border-t border-blue-200">
-                          <h4 className="font-semibold flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            Semestertillägg
-                          </h4>
-                          
-                          <div className="space-y-4">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox 
-                                id="collectiveAgreement" 
-                                checked={hasCollectiveAgreement}
-                                onCheckedChange={(checked) => setHasCollectiveAgreement(checked === true)}
-                              />
-                              <Label htmlFor="collectiveAgreement" className="flex items-center gap-2">
-                                Kollektivavtal
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs">
-                                      <p>Med kollektivavtal: 0.8% för grundlön + 0.5% för rörlig lön</p>
-                                      <p>Utan kollektivavtal: 0.43% för grundlön + (12% / 25) för rörlig lön</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </Label>
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="vacationDays">Antal semesterdagar</Label>
+                            <Input
+                              id="vacationDays"
+                              type="number"
+                              value={vacationDays || ''}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+                                const cappedValue = Math.min(Math.max(0, numericValue), 50);
+                                setVacationDays(cappedValue);
+                              }}
+                              placeholder="Antal semesterdagar"
+                              min="0"
+                              max="50"
+                              className="w-full"
+                            />
+                          </div>
 
-                            <div className="space-y-2">
-                              <Label htmlFor="vacationDays">Antal semesterdagar</Label>
-                              <Input
-                                id="vacationDays"
-                                type="number"
-                                value={vacationDays || ''}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
-                                  const cappedValue = Math.min(Math.max(0, numericValue), 50);
-                                  setVacationDays(cappedValue);
-                                }}
-                                placeholder="Antal semesterdagar"
-                                min="0"
-                                max="50"
-                                className="w-full"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="variableSalary">Rörlig lön per månad (kr)</Label>
-                              <Input
-                                id="variableSalary"
-                                type="number"
-                                value={variableSalary === 0 ? '' : variableSalary}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
-                                  const cappedValue = Math.min(numericValue, 1000000000);
-                                  setVariableSalary(cappedValue);
-                                }}
-                                placeholder="Rörlig månadslön"
-                                min="0"
-                                className="w-full"
-                              />
-                            </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="variableSalary">Rörlig lön per månad (kr)</Label>
+                            <Input
+                              id="variableSalary"
+                              type="number"
+                              value={variableSalary === 0 ? '' : variableSalary}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+                                const cappedValue = Math.min(numericValue, 1000000000);
+                                setVariableSalary(cappedValue);
+                              }}
+                              placeholder="Rörlig månadslön"
+                              min="0"
+                              className="w-full"
+                            />
                           </div>
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Tax Table Display */}
+                  {skattetabellData.length > 0 && (
+                    <div className="pt-4 border-t border-blue-200">
+                      <TaxTableDisplay
+                        skattetabellData={skattetabellData}
+                        selectedTaxColumn={selectedTaxColumn}
+                        currentIncome={getTotalIncome()}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Error */}
