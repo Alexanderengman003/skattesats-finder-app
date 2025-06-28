@@ -63,7 +63,32 @@ const EngangsbeskattningCard = ({
     
     const vacationPay = calculateVacationPay();
     if (vacationPay > 0) {
-      breakdown.push(`Semestertillägg: ${Math.round(vacationPay).toLocaleString()} kr`);
+      // Get vacation calculation details from the hook context
+      const baseSalary = monthlyIncome;
+      const hasCollectiveAgreement = true; // This should come from props but defaulting for now
+      const vacationDays = 25; // This should come from props but defaulting for now
+      const variableSalary = 0; // This should come from props but defaulting for now
+      
+      let calculationText = '';
+      if (hasCollectiveAgreement) {
+        const baseVacationPay = vacationDays * 0.008 * baseSalary;
+        const variableVacationPay = vacationDays * 0.005 * variableSalary;
+        if (variableSalary > 0) {
+          calculationText = `${vacationDays} × 0.8% × ${baseSalary.toLocaleString()} kr + ${vacationDays} × 0.5% × ${variableSalary.toLocaleString()} kr`;
+        } else {
+          calculationText = `${vacationDays} × 0.8% × ${baseSalary.toLocaleString()} kr`;
+        }
+      } else {
+        const baseVacationPay = vacationDays * 0.0043 * baseSalary;
+        const variableVacationPay = vacationDays * ((0.12 * variableSalary) / 25);
+        if (variableSalary > 0) {
+          calculationText = `${vacationDays} × 0.43% × ${baseSalary.toLocaleString()} kr + ${vacationDays} × (12% × ${variableSalary.toLocaleString()} kr ÷ 25)`;
+        } else {
+          calculationText = `${vacationDays} × 0.43% × ${baseSalary.toLocaleString()} kr`;
+        }
+      }
+      
+      breakdown.push(`Semestertillägg: ${calculationText} = ${Math.round(vacationPay).toLocaleString()} kr`);
     }
     
     if (additionalIncome > 0) {

@@ -25,7 +25,7 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
 
   return (
     <div className="text-center p-4 bg-blue-100 border border-blue-300 rounded-xl w-full">
-      <div className="flex flex-col items-center gap-3 w-full">
+      <div className="flex flex-col items-center gap-2 w-full">
         <div className="relative w-full max-w-xs" style={{ height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
             <RechartsPieChart>
@@ -71,8 +71,8 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
           </div>
         </div>
         
-        {/* Legend */}
-        <div className="grid grid-cols-2 gap-8 text-center w-full">
+        {/* Legend - moved closer to pie chart */}
+        <div className="grid grid-cols-2 gap-6 text-center w-full">
           {pieChartData.map((entry, index) => (
             <div key={entry.name} className="flex flex-col items-center">
               <div className="flex items-center gap-2 mb-1">
