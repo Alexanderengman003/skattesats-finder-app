@@ -472,7 +472,7 @@ const Index = () => {
                             <p>Ditt medlemskap i Svenska Kyrkan kan du hitta här: https://www.svenskakyrkan.se/medlem</p>
                           </TooltipContent>
                         </Tooltip>
-                      </Tooltip>
+                      </TooltipProvider>
                     </label>
                   </div>
 
