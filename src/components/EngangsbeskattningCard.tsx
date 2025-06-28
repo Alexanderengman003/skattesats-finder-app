@@ -80,45 +80,8 @@ const EngangsbeskattningCard = ({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-          {/* Left Column - Input */}
+          {/* Left Column - Input fields */}
           <div className="space-y-4 w-full">
-            <div className="space-y-2">
-              <Label htmlFor="engangsbeskattningAmount" className="flex items-center gap-2">
-                Engångsbelopp (kr)
-                <TooltipProvider>
-                  <UITooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Som engångsbelopp räknas ersättning för arbete som inte avser en bestämd tidsperiod eller inte betalas ut regelbundet.</p>
-                      <br />
-                      <p>Till sådana ersättningar räknas</p>
-                      <ul className="list-disc pl-4 mt-2">
-                        <li>vissa slag av ackordsersättningar</li>
-                        <li>retroaktiv lön</li>
-                        <li>semesterersättning</li>
-                        <li>tantiem (andel i vinst som tillägg till lön)</li>
-                        <li>vissa provisioner och arvoden</li>
-                        <li>avgångsvederlag</li>
-                        <li>retroaktiv livränta</li>
-                      </ul>
-                    </TooltipContent>
-                  </UITooltip>
-                </TooltipProvider>
-              </Label>
-              <Input
-                id="engangsbeskattningAmount"
-                type="number"
-                value={engangsbeskattningAmount || ''}
-                onChange={onEngangsbeskattningAmountChange}
-                placeholder="Ange engångsbelopp"
-                min="0"
-                max="1000000000"
-                className="w-full"
-              />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="additionalIncome" className="flex items-center gap-2">
                 Övrig inkomst (kr)
@@ -198,52 +161,92 @@ const EngangsbeskattningCard = ({
             </div>
           </div>
 
-          {/* Right Column - Results */}
-          <div className="text-center w-full">
-            {engangsbeskattningLoading ? (
-              <div className="text-gray-500">Beräknar...</div>
-            ) : engangsbeskattningError ? (
-              <div className="text-red-600">
-                <div className="font-medium mb-1">Fel vid hämtning av data</div>
-                <div className="text-sm">{engangsbeskattningError}</div>
-              </div>
-            ) : engangsbeskattningData.length > 0 ? (
-              <div>
-                <div className="text-sm font-medium text-black mb-1">
-                  Du betalar
+          {/* Right Column - Engångsbelopp input and results */}
+          <div className="space-y-4 w-full">
+            <div className="space-y-2">
+              <Label htmlFor="engangsbeskattningAmount" className="flex items-center gap-2">
+                Utbetalt engångsbelopp (kr)
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>Som engångsbelopp räknas ersättning för arbete som inte avser en bestämd tidsperiod eller inte betalas ut regelbundet.</p>
+                      <br />
+                      <p>Till sådana ersättningar räknas</p>
+                      <ul className="list-disc pl-4 mt-2">
+                        <li>vissa slag av ackordsersättningar</li>
+                        <li>retroaktiv lön</li>
+                        <li>semesterersättning</li>
+                        <li>tantiem (andel i vinst som tillägg till lön)</li>
+                        <li>vissa provisioner och arvoden</li>
+                        <li>avgångsvederlag</li>
+                        <li>retroaktiv livränta</li>
+                      </ul>
+                    </TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+              </Label>
+              <Input
+                id="engangsbeskattningAmount"
+                type="number"
+                value={engangsbeskattningAmount || ''}
+                onChange={onEngangsbeskattningAmountChange}
+                placeholder="Ange engångsbelopp"
+                min="0"
+                max="1000000000"
+                className="w-full"
+              />
+            </div>
+
+            {/* Results section */}
+            <div className="text-center w-full">
+              {engangsbeskattningLoading ? (
+                <div className="text-gray-500">Beräknar...</div>
+              ) : engangsbeskattningError ? (
+                <div className="text-red-600">
+                  <div className="font-medium mb-1">Fel vid hämtning av data</div>
+                  <div className="text-sm">{engangsbeskattningError}</div>
                 </div>
-                <div className="text-2xl font-bold text-black mb-1">
-                  {getEngangsbeskattningRate()}%
-                </div>
-                <div className="text-sm font-medium text-black">
-                  I engångsskatt
-                </div>
-                <div className="mt-3 pt-3 border-t border-blue-300">
-                  <div className="text-sm text-gray-600 break-words">
-                    På ett engångsbelopp om {engangsbeskattningAmount.toLocaleString()} kr betalar du{' '}
-                    <span className="font-bold">
-                      {Math.round(calculateEngangsbeskattning(engangsbeskattningAmount)).toLocaleString()} kr
-                    </span>{' '}
-                    i skatt
+              ) : engangsbeskattningData.length > 0 ? (
+                <div>
+                  <div className="text-sm font-medium text-black mb-1">
+                    Du betalar
                   </div>
-                  <div className="text-xs text-gray-500 mt-2 break-words">
-                    Baserat på total årslön: {calculateYearlyIncome().toLocaleString()} kr
+                  <div className="text-2xl font-bold text-black mb-1">
+                    {getEngangsbeskattningRate()}%
                   </div>
-                  <div className="text-xs text-gray-500 mt-2 text-left bg-gray-50 p-2 rounded">
-                    <div className="font-medium mb-1">Årslönen inkluderar:</div>
-                    <ul className="space-y-1">
-                      {getYearlyIncomeBreakdown().map((item, index) => (
-                        <li key={index} className="text-xs">• {item}</li>
-                      ))}
-                    </ul>
+                  <div className="text-sm font-medium text-black">
+                    I engångsskatt
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-blue-300">
+                    <div className="text-sm text-gray-600 break-words">
+                      På ett engångsbelopp om {engangsbeskattningAmount.toLocaleString()} kr betalar du{' '}
+                      <span className="font-bold">
+                        {Math.round(calculateEngangsbeskattning(engangsbeskattningAmount)).toLocaleString()} kr
+                      </span>{' '}
+                      i skatt
+                    </div>
+                    <div className="text-xs text-gray-500 mt-2 break-words">
+                      Baserat på total årslön: {calculateYearlyIncome().toLocaleString()} kr
+                    </div>
+                    <div className="text-xs text-gray-500 mt-2 text-left bg-gray-50 p-2 rounded">
+                      <div className="font-medium mb-1">Årslönen inkluderar:</div>
+                      <ul className="space-y-1">
+                        {getYearlyIncomeBreakdown().map((item, index) => (
+                          <li key={index} className="text-xs">• {item}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="text-gray-500">
-                Ingen data tillgänglig för år {selectedYear}
-              </div>
-            )}
+              ) : (
+                <div className="text-gray-500">
+                  Ingen data tillgänglig för år {selectedYear}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
