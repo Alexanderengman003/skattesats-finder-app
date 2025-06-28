@@ -275,6 +275,8 @@ export const useTaxCalculations = ({
     getMarginalTaxRate,
     getEngangsbeskattningRate,
     calculateEngangsbeskattning,
-    loadEngangsbeskattningData
+    loadEngangsbeskattningData,
+    monthlyIncome,
+    taxableBenefit
   };
 };

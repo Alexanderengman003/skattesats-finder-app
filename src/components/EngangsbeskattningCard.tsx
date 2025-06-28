@@ -22,6 +22,8 @@ interface EngangsbeskattningCardProps {
   calculateEngangsbeskattning: (amount: number) => number;
   calculateYearlyIncome: () => number;
   selectedYear: number | null;
+  monthlyIncome: number;
+  taxableBenefit: number;
 }
 
 const EngangsbeskattningCard = ({
@@ -39,8 +41,35 @@ const EngangsbeskattningCard = ({
   getEngangsbeskattningRate,
   calculateEngangsbeskattning,
   calculateYearlyIncome,
-  selectedYear
+  selectedYear,
+  monthlyIncome,
+  taxableBenefit
 }: EngangsbeskattningCardProps) => {
+  const getYearlyIncomeBreakdown = () => {
+    const baseMonthlyIncome = monthlyIncome + taxableBenefit;
+    const breakdown = [];
+    
+    if (adjustedSalary > 0 && adjustedMonths > 0 && adjustedMonths <= 12) {
+      const remainingMonths = 12 - adjustedMonths;
+      breakdown.push(`Justerad lön: ${adjustedSalary.toLocaleString()} kr × ${adjustedMonths} månader = ${(adjustedSalary * adjustedMonths).toLocaleString()} kr`);
+      if (remainingMonths > 0) {
+        breakdown.push(`Nuvarande lön: ${baseMonthlyIncome.toLocaleString()} kr × ${remainingMonths} månader = ${(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`);
+      }
+    } else {
+      breakdown.push(`Månadslön: ${baseMonthlyIncome.toLocaleString()} kr × 12 månader = ${(baseMonthlyIncome * 12).toLocaleString()} kr`);
+    }
+    
+    if (additionalIncome > 0) {
+      breakdown.push(`Övrig inkomst: ${additionalIncome.toLocaleString()} kr`);
+    }
+    
+    if (engangsbeskattningAmount > 0) {
+      breakdown.push(`Engångsbelopp: ${engangsbeskattningAmount.toLocaleString()} kr`);
+    }
+    
+    return breakdown;
+  };
+
   return (
     <Card className="shadow-lg rounded-xl w-full">
       <CardContent className="p-4 bg-blue-100 border border-blue-300 rounded-xl w-full">
@@ -199,6 +228,14 @@ const EngangsbeskattningCard = ({
                   </div>
                   <div className="text-xs text-gray-500 mt-2 break-words">
                     Baserat på total årslön: {calculateYearlyIncome().toLocaleString()} kr
+                  </div>
+                  <div className="text-xs text-gray-500 mt-2 text-left bg-gray-50 p-2 rounded">
+                    <div className="font-medium mb-1">Årslönen inkluderar:</div>
+                    <ul className="space-y-1">
+                      {getYearlyIncomeBreakdown().map((item, index) => (
+                        <li key={index} className="text-xs">• {item}</li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </div>
