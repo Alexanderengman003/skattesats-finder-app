@@ -469,13 +469,13 @@ const Index = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="taxableBenefit">Beskattningsbar förmån (kr)</Label>
+                    <Label htmlFor="taxableBenefit">Skattepliktig förmån (kr)</Label>
                     <Input
                       id="taxableBenefit"
                       type="number"
                       value={taxableBenefit === 0 ? '' : taxableBenefit}
                       onChange={handleTaxableBenefitChange}
-                      placeholder="Ange beskattningsbar förmån"
+                      placeholder="Ange skattepliktig förmån"
                       min="0"
                       className="w-full"
                     />
