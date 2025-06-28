@@ -229,13 +229,16 @@ const EngangsbeskattningCard = ({
                   <div className="text-xs text-gray-500 mt-2 break-words">
                     Baserat på total årslön: {calculateYearlyIncome().toLocaleString()} kr
                   </div>
-                  <div className="text-xs text-gray-500 mt-2 text-left bg-gray-50 p-2 rounded">
-                    <div className="font-medium mb-1">Årslönen inkluderar:</div>
-                    <ul className="space-y-1">
+                  <div className="text-xs text-gray-500 mt-3 text-left bg-white/60 p-3 rounded-lg border border-gray-200 shadow-sm">
+                    <div className="font-semibold mb-2 text-gray-700">Årslönen inkluderar:</div>
+                    <div className="space-y-1.5">
                       {getYearlyIncomeBreakdown().map((item, index) => (
-                        <li key={index} className="text-xs">• {item}</li>
+                        <div key={index} className="flex items-start gap-2 text-xs">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></div>
+                          <span className="text-gray-600">{item}</span>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 </div>
               </div>

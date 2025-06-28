@@ -28,7 +28,16 @@ const ForsamlingSelect = ({
               <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
             </TooltipTrigger>
             <TooltipContent className="max-w-xs">
-              <p>Alla som är skrivna i en svensk kommun tillhör en församling. Om du inte vet vilken församling du tillhör kan du hitta det här https://www.svenskakyrkan.se/sokforsamling</p>
+              <p>Alla som är skrivna i en svensk kommun tillhör en församling. Om du inte vet vilken församling du tillhör kan du hitta det{' '}
+                <a 
+                  href="https://www.svenskakyrkan.se/sokforsamling" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800 transition-colors"
+                >
+                  här
+                </a>
+              </p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
