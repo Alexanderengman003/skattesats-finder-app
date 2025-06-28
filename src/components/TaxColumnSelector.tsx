@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, HelpCircle } from 'lucide-react';
@@ -154,17 +153,9 @@ const TaxColumnSelector = ({
       currentIndex = skattetabellData.length - 1;
     }
     
-    // If we're at the last bracket, return current tax rate as marginal rate
+    // If we're at the last bracket, return 0 as there's no next bracket
     if (currentIndex >= skattetabellData.length - 1) {
-      const currentBracket = skattetabellData[currentIndex];
-      const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
-      
-      if (isPercentageValue(currentTaxValue, currentIncome)) {
-        return currentTaxValue.toFixed(1);
-      } else {
-        const percentage = (currentTaxValue / currentIncome) * 100;
-        return percentage.toFixed(1);
-      }
+      return '0';
     }
     
     // Get current and next bracket
@@ -175,17 +166,18 @@ const TaxColumnSelector = ({
     const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
     const nextTaxValue = parseFloat(nextBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
     
-    // Calculate actual tax amounts
+    // Calculate actual tax amounts for each bracket
     let currentTaxAmount = 0;
     let nextTaxAmount = 0;
     
+    // For current bracket, use current income
     if (isPercentageValue(currentTaxValue, currentBracket.InkomstFrån)) {
       currentTaxAmount = (currentTaxValue / 100) * currentIncome;
     } else {
       currentTaxAmount = currentTaxValue;
     }
     
-    // For next bracket, use the bracket's starting income to calculate tax
+    // For next bracket, use the next bracket's starting income
     const nextIncome = nextBracket.InkomstFrån;
     if (isPercentageValue(nextTaxValue, nextIncome)) {
       nextTaxAmount = (nextTaxValue / 100) * nextIncome;
@@ -193,7 +185,7 @@ const TaxColumnSelector = ({
       nextTaxAmount = nextTaxValue;
     }
     
-    // Calculate marginal rate: difference in tax divided by difference in income
+    // Calculate marginal rate: additional tax divided by income step
     const incomeDiff = nextIncome - currentIncome;
     const taxDiff = nextTaxAmount - currentTaxAmount;
     
@@ -202,13 +194,7 @@ const TaxColumnSelector = ({
       return Math.max(0, marginalRate).toFixed(1);
     }
     
-    // Fallback: return current tax rate
-    if (isPercentageValue(currentTaxValue, currentIncome)) {
-      return currentTaxValue.toFixed(1);
-    } else {
-      const percentage = (currentTaxValue / currentIncome) * 100;
-      return percentage.toFixed(1);
-    }
+    return '0';
   };
 
   const getPieChartData = () => {
