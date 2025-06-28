@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
@@ -7,6 +8,7 @@ import TaxCalculationDisplay from './TaxCalculationDisplay';
 import TaxPieChart from './TaxPieChart';
 import EngangsbeskattningCard from './EngangsbeskattningCard';
 import TaxTableDisplay from './TaxTableDisplay';
+import VacationPayCard from './VacationPayCard';
 
 interface SkattetabellData {
   År: number;
@@ -75,6 +77,12 @@ const TaxColumnSelector = ({
     setAdjustedSalary,
     adjustedMonths,
     setAdjustedMonths,
+    hasCollectiveAgreement,
+    setHasCollectiveAgreement,
+    vacationDays,
+    setVacationDays,
+    variableSalary,
+    setVariableSalary,
     getTotalIncomeForTax,
     getTaxPercentage,
     getActualTaxAmount,
@@ -82,7 +90,8 @@ const TaxColumnSelector = ({
     getMarginalTaxRate,
     getEngangsbeskattningRate,
     calculateEngangsbeskattning,
-    calculateYearlyIncome
+    calculateYearlyIncome,
+    calculateVacationPay
   } = useTaxCalculations({
     monthlyIncome,
     taxableBenefit,
@@ -156,6 +165,18 @@ const TaxColumnSelector = ({
               <TaxPieChart 
                 netSalary={getNetSalary()}
                 taxAmount={getActualTaxAmount()}
+              />
+
+              {/* Vacation Pay Card */}
+              <VacationPayCard
+                hasCollectiveAgreement={hasCollectiveAgreement}
+                onHasCollectiveAgreementChange={setHasCollectiveAgreement}
+                vacationDays={vacationDays}
+                onVacationDaysChange={setVacationDays}
+                variableSalary={variableSalary}
+                onVariableSalaryChange={setVariableSalary}
+                vacationPayAmount={calculateVacationPay()}
+                monthlyIncome={monthlyIncome}
               />
 
               {/* Engångsbeskattning Card */}
