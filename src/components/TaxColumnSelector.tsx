@@ -199,7 +199,7 @@ const TaxColumnSelector = ({
           ) : (
             <div className="text-center text-gray-500 py-8 bg-blue-100 border border-blue-300 rounded-xl w-full">
               {!kommun 
-                ? 'Gör en skattesats-sökning först'
+                ? 'Ange den kommun som du är bosatt i'
                 : getTotalIncomeForTax() === 0
                 ? 'Ange månadsinkomst (kr) för att se skatteberäkning'
                 : 'Beräknar skatt...'
