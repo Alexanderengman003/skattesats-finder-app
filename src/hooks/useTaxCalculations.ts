@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { fetchEngangsbeskattningData } from '@/utils/taxData';
 
@@ -137,9 +136,19 @@ export const useTaxCalculations = ({
       currentIncome >= item.InkomstFrån && currentIncome <= item.InkomstTill
     );
     
+    // If income exceeds the highest bracket, use the last bracket's tax value
     if (currentBracketIndex === -1) {
-      console.log('No bracket found for income:', currentIncome);
-      return '0';
+      console.log('Income exceeds highest bracket, using last bracket tax value');
+      const lastBracket = skattetabellData[skattetabellData.length - 1];
+      const lastTaxValue = parseFloat(lastBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+      
+      if (isPercentageValue(lastTaxValue, lastBracket.InkomstFrån)) {
+        return lastTaxValue.toFixed(1);
+      } else {
+        // For kr values in the last bracket, calculate as percentage of income
+        const percentage = (lastTaxValue / lastBracket.InkomstFrån) * 100;
+        return percentage.toFixed(1);
+      }
     }
     
     const currentBracket = skattetabellData[currentBracketIndex];
