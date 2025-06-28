@@ -24,7 +24,7 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
   const COLORS = ['#3b82f6', '#60a5fa'];
 
   return (
-    <div className="text-center p-3 bg-blue-100 border border-blue-300 rounded-xl w-full">
+    <div className="text-center p-2 bg-blue-100 border border-blue-300 rounded-xl w-full">
       <div className="flex flex-col items-center w-full">
         <div className="relative w-full max-w-xs" style={{ height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -71,11 +71,11 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
           </div>
         </div>
         
-        {/* Legend - moved closer to pie chart */}
-        <div className="grid grid-cols-2 gap-3 text-center w-full mt-2">
+        {/* Legend - moved closer and tighter spacing */}
+        <div className="grid grid-cols-2 gap-2 text-center w-full mt-1 px-2">
           {pieChartData.map((entry, index) => (
             <div key={entry.name} className="flex flex-col items-center">
-              <div className="flex items-center gap-2 mb-0.5">
+              <div className="flex items-center gap-1 mb-0.5">
                 <div 
                   className="w-3 h-3 rounded-full" 
                   style={{ backgroundColor: COLORS[index] }}
