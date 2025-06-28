@@ -52,8 +52,7 @@ export const useTaxCalculations = ({
   };
 
   const calculateYearlyIncome = (): number => {
-    // For engångsbeskattning calculation, only use monthlyIncome (not taxableBenefit)
-    const baseMonthlyIncome = monthlyIncome;
+    const baseMonthlyIncome = monthlyIncome + taxableBenefit;
     let yearlyIncome = 0;
     
     if (adjustedSalary > 0 && adjustedMonths > 0 && adjustedMonths <= 12) {
