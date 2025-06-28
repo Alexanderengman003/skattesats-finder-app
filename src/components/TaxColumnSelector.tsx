@@ -175,6 +175,8 @@ const TaxColumnSelector = ({
                 calculateEngangsbeskattning={calculateEngangsbeskattning}
                 calculateYearlyIncome={calculateYearlyIncome}
                 selectedYear={selectedYear}
+                monthlyIncome={monthlyIncome}
+                taxableBenefit={taxableBenefit}
               />
             </div>
           ) : (
