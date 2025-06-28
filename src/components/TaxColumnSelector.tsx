@@ -167,20 +167,6 @@ const TaxColumnSelector = ({
             </div>
           )}
 
-          {/* Du tillhör card */}
-          {selectedTaxColumn && (
-            <div className="mb-4">
-              <Card className="bg-white border-2 border-blue-200">
-                <CardContent className="p-4">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-1">Du tillhör</p>
-                    <p className="text-lg font-semibold text-blue-900">Kolumn {selectedTaxColumn}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
           {kommun && taxAmount && getTotalIncomeForTax() > 0 ? (
             <div className="space-y-4 w-full">
               {/* Net Salary Display with Pie Chart */}

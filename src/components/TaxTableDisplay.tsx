@@ -1,10 +1,9 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { List, Search } from 'lucide-react';
+import { List } from 'lucide-react';
 
 interface SkattetabellData {
   År: number;
@@ -30,8 +29,6 @@ interface TaxTableDisplayProps {
 }
 
 const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }: TaxTableDisplayProps) => {
-  const [searchTerm, setSearchTerm] = useState('');
-
   if (skattetabellData.length === 0) {
     return null;
   }
@@ -80,18 +77,6 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
     }
   }
 
-  // Filter data based on search term
-  const filteredData = skattetabellData.filter(row => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      formatIncome(row.InkomstFrån).toLowerCase().includes(searchLower) ||
-      formatIncome(row.InkomstTill).toLowerCase().includes(searchLower) ||
-      availableColumns.some(col => 
-        getTaxFromColumn(row, col).toLowerCase().includes(searchLower)
-      )
-    );
-  });
-
   return (
     <Card className="shadow-lg rounded-xl">
       <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
@@ -100,34 +85,22 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
           Skattetabell {skattetabellData[0]?.Tabell}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 bg-blue-50 rounded-b-xl">
-        {/* Search Input */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="text"
-            placeholder="Sök efter inkomst eller skatt..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
+      <CardContent className="p-0 bg-blue-50 rounded-b-xl">
         <ScrollArea className="h-96">
           <Table>
-            <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
+            <TableHeader className="sticky top-0 bg-white z-10">
               <TableRow className="bg-blue-50">
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50">Inkomst från</TableHead>
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50">Inkomst till</TableHead>
+                <TableHead className="font-semibold text-blue-900">Inkomst från</TableHead>
+                <TableHead className="font-semibold text-blue-900">Inkomst till</TableHead>
                 {availableColumns.map(col => (
-                  <TableHead key={col} className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50">
+                  <TableHead key={col} className="font-semibold text-blue-900 text-center">
                     Kol. {col}
                   </TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredData.map((row, index) => {
+              {skattetabellData.map((row, index) => {
                 const isCurrentRow = isCurrentIncomeBracket(row);
                 return (
                   <TableRow 
