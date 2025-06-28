@@ -131,37 +131,74 @@ export const useTaxCalculations = ({
     
     console.log('Calculating marginal tax rate for income:', currentIncome);
     
-    // Find current bracket
-    const currentBracket = skattetabellData.find(item => 
+    // Find current bracket index
+    const currentBracketIndex = skattetabellData.findIndex(item => 
       currentIncome >= item.InkomstFrån && currentIncome <= item.InkomstTill
     );
     
-    if (!currentBracket) {
+    if (currentBracketIndex === -1) {
       console.log('No bracket found for income:', currentIncome);
       return '0';
     }
     
+    const currentBracket = skattetabellData[currentBracketIndex];
+    const nextBracket = skattetabellData[currentBracketIndex + 1];
+    
     console.log('Current bracket:', currentBracket);
+    console.log('Next bracket:', nextBracket);
     
-    // Get the current tax value from the bracket
+    // If there's no next bracket, we're at the highest bracket
+    if (!nextBracket) {
+      const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+      if (isPercentageValue(currentTaxValue, currentIncome)) {
+        return currentTaxValue.toFixed(1);
+      }
+      // For the highest bracket with kr values, marginal rate is effectively 0
+      return '0';
+    }
+    
+    // Get tax values from both brackets
     const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    const nextTaxValue = parseFloat(nextBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
     
-    console.log('Current tax value from table:', currentTaxValue);
+    console.log('Current tax value:', currentTaxValue);
+    console.log('Next tax value:', nextTaxValue);
     
-    // Check if this is a percentage value
-    if (isPercentageValue(currentTaxValue, currentIncome)) {
-      console.log('Tax value is percentage:', currentTaxValue);
+    // If both are percentage values, return the current one (marginal rate is the bracket rate)
+    if (isPercentageValue(currentTaxValue, currentBracket.InkomstFrån) && 
+        isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
+      console.log('Both are percentage values, returning current:', currentTaxValue);
       return currentTaxValue.toFixed(1);
     }
     
-    // For kr values, we need to calculate the rate within the bracket
-    // The marginal rate is the rate that applies to the next kr of income
-    const bracketSize = currentBracket.InkomstTill - currentBracket.InkomstFrån + 1;
-    const marginalRate = (currentTaxValue / bracketSize) * 100;
+    // If both are kr values, calculate marginal rate
+    if (!isPercentageValue(currentTaxValue, currentBracket.InkomstFrån) && 
+        !isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
+      
+      // Use the start values of both brackets for consistency
+      const currentIncomePoint = currentBracket.InkomstFrån;
+      const nextIncomePoint = nextBracket.InkomstFrån;
+      const incomeDiff = nextIncomePoint - currentIncomePoint;
+      const taxDiff = nextTaxValue - currentTaxValue;
+      
+      const marginalRate = (taxDiff / incomeDiff) * 100;
+      
+      console.log('Kr values calculation:');
+      console.log('Current income point:', currentIncomePoint);
+      console.log('Next income point:', nextIncomePoint);
+      console.log('Income difference:', incomeDiff);
+      console.log('Tax difference:', taxDiff);
+      console.log('Marginal rate:', marginalRate);
+      
+      return Math.max(0, marginalRate).toFixed(1);
+    }
     
-    console.log('Bracket size:', bracketSize, 'Tax for bracket:', currentTaxValue, 'Marginal rate:', marginalRate);
+    // Mixed case - return current bracket rate if it's percentage
+    if (isPercentageValue(currentTaxValue, currentBracket.InkomstFrån)) {
+      return currentTaxValue.toFixed(1);
+    }
     
-    return Math.max(0, marginalRate).toFixed(1);
+    return '0';
   };
 
   const loadEngangsbeskattningData = async () => {
