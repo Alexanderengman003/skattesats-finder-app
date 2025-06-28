@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
@@ -165,16 +164,6 @@ const TaxColumnSelector = ({
                   marginalTaxRate={getMarginalTaxRate()}
                 />
               )}
-            </div>
-          )}
-
-          {/* Column indicator */}
-          {kommun && taxAmount && selectedTaxColumn && (
-            <div className="mb-4">
-              <div className="inline-block bg-blue-200 border border-blue-300 px-3 py-2 rounded-lg">
-                <span className="text-sm font-medium text-blue-900">Du tillhör</span>
-                <span className="text-sm font-bold text-blue-900 ml-2">Kolumn {selectedTaxColumn}</span>
-              </div>
             </div>
           )}
 

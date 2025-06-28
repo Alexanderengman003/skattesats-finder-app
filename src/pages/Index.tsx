@@ -670,17 +670,6 @@ const Index = () => {
                   </div>
                 </div>
 
-                {/* Tax Table Display - Full Width */}
-                {skattetabellData.length > 0 && (
-                  <div className="mt-8 pt-6 border-t border-blue-200">
-                    <TaxTableDisplay
-                      skattetabellData={skattetabellData}
-                      selectedTaxColumn={selectedTaxColumn}
-                      currentIncome={getTotalIncome()}
-                    />
-                  </div>
-                )}
-
                 {/* Error */}
                 {error && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
