@@ -368,7 +368,7 @@ const Index = () => {
               <CardContent className="p-6 bg-blue-50 rounded-b-xl w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Left Column - Personal Information */}
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <h3 className="font-semibold flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       Personuppgifter
@@ -484,7 +484,7 @@ const Index = () => {
                   </div>
 
                   {/* Right Column - Income Info */}
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <h3 className="font-semibold flex items-center gap-2">
                       <Coins className="h-4 w-4" />
                       Inkomstuppgifter
