@@ -368,13 +368,13 @@ const Index = () => {
               <CardContent className="p-6 bg-blue-50 rounded-b-xl w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Left Column - Personal Information */}
-                  <div className="space-y-6">
-                    <h3 className="font-semibold flex items-center gap-2">
+                  <div className="flex flex-col">
+                    <h3 className="font-semibold flex items-center gap-2 mb-6">
                       <Calendar className="h-4 w-4" />
                       Personuppgifter
                     </h3>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-6 flex-1">
                       <div className="space-y-2">
                         <Label htmlFor="birthday" className="flex items-center gap-2">
                           Födelsedatum
@@ -473,7 +473,7 @@ const Index = () => {
 
                     {/* Tax Table Display */}
                     {skattetabellData.length > 0 && (
-                      <div className="mt-4">
+                      <div className="mt-6">
                         <TaxTableDisplay
                           skattetabellData={skattetabellData}
                           selectedTaxColumn={selectedTaxColumn}
@@ -484,13 +484,13 @@ const Index = () => {
                   </div>
 
                   {/* Right Column - Income Info */}
-                  <div className="space-y-6">
-                    <h3 className="font-semibold flex items-center gap-2">
+                  <div className="flex flex-col">
+                    <h3 className="font-semibold flex items-center gap-2 mb-6">
                       <Coins className="h-4 w-4" />
                       Inkomstuppgifter
                     </h3>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-6 flex-1">
                       <div className="space-y-2">
                         <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
                         <Input
