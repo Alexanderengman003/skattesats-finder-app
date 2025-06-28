@@ -368,6 +368,37 @@ const Index = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Left Column - Tax Rate Info */}
                   <div className="space-y-4">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Personuppgifter
+                    </h3>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="birthday" className="flex items-center gap-2">
+                        Födelsedatum
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <Input
+                        id="birthday"
+                        type="date"
+                        value={birthday}
+                        onChange={handleBirthdayChange}
+                        placeholder="Välj födelsedatum"
+                        max={new Date().toISOString().split('T')[0]}
+                        min="1900-01-01"
+                        className="w-full"
+                      />
+                    </div>
+
                     <div className="space-y-2">
                       <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
                         <Calendar className="h-4 w-4" />
@@ -457,32 +488,6 @@ const Index = () => {
                     </h3>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="birthday" className="flex items-center gap-2">
-                        Födelsedatum
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-xs">
-                              <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </Label>
-                      <Input
-                        id="birthday"
-                        type="date"
-                        value={birthday}
-                        onChange={handleBirthdayChange}
-                        placeholder="Välj födelsedatum"
-                        max={new Date().toISOString().split('T')[0]}
-                        min="1900-01-01"
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
                       <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
                       <Input
                         id="monthlyIncome"
@@ -537,18 +542,73 @@ const Index = () => {
                       </div>
                     )}
 
-                    {/* Vacation Pay Card moved here */}
+                    {/* Semestertillägg Section */}
                     {monthlyIncome > 0 && (
-                      <VacationPayCard
-                        hasCollectiveAgreement={hasCollectiveAgreement}
-                        onHasCollectiveAgreementChange={setHasCollectiveAgreement}
-                        vacationDays={vacationDays}
-                        onVacationDaysChange={setVacationDays}
-                        variableSalary={variableSalary}
-                        onVariableSalaryChange={setVariableSalary}
-                        vacationPayAmount={calculateVacationPay()}
-                        monthlyIncome={monthlyIncome}
-                      />
+                      <div className="space-y-4 pt-4 border-t border-blue-200">
+                        <h4 className="font-semibold flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          Semestertillägg
+                        </h4>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="collectiveAgreement" 
+                            checked={hasCollectiveAgreement}
+                            onCheckedChange={(checked) => setHasCollectiveAgreement(checked === true)}
+                          />
+                          <Label htmlFor="collectiveAgreement" className="flex items-center gap-2">
+                            Kollektivavtal
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>Med kollektivavtal: 0.8% för grundlön + 0.5% för rörlig lön</p>
+                                  <p>Utan kollektivavtal: 0.43% för grundlön + (12% / 25) för rörlig lön</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </Label>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="vacationDays">Antal semesterdagar</Label>
+                          <Input
+                            id="vacationDays"
+                            type="number"
+                            value={vacationDays || ''}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+                              const cappedValue = Math.min(Math.max(0, numericValue), 50);
+                              setVacationDays(cappedValue);
+                            }}
+                            placeholder="Antal semesterdagar"
+                            min="0"
+                            max="50"
+                            className="w-full"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="variableSalary">Rörlig lön per månad (kr)</Label>
+                          <Input
+                            id="variableSalary"
+                            type="number"
+                            value={variableSalary === 0 ? '' : variableSalary}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+                              const cappedValue = Math.min(numericValue, 1000000000);
+                              setVariableSalary(cappedValue);
+                            }}
+                            placeholder="Rörlig månadslön"
+                            min="0"
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>

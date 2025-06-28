@@ -7,8 +7,6 @@ import TaxRateDisplay from './TaxRateDisplay';
 import TaxCalculationDisplay from './TaxCalculationDisplay';
 import TaxPieChart from './TaxPieChart';
 import EngangsbeskattningCard from './EngangsbeskattningCard';
-import TaxTableDisplay from './TaxTableDisplay';
-import VacationPayCard from './VacationPayCard';
 
 interface SkattetabellData {
   År: number;
@@ -98,8 +96,7 @@ const TaxColumnSelector = ({
     getMarginalTaxRate,
     getEngangsbeskattningRate,
     calculateEngangsbeskattning,
-    calculateYearlyIncome,
-    calculateVacationPay: hookCalculateVacationPay
+    calculateYearlyIncome
   } = useTaxCalculations({
     monthlyIncome,
     taxableBenefit,
@@ -178,9 +175,9 @@ const TaxColumnSelector = ({
                 taxAmount={getActualTaxAmount()}
               />
 
-              {/* Yearly Income Breakdown */}
+              {/* Årslönen inkluderar - Updated to show vacation pay */}
               <div className="p-4 bg-green-100 border border-green-300 rounded-xl">
-                <h3 className="font-semibold text-green-800 mb-3">Årslön uppdelning:</h3>
+                <h3 className="font-semibold text-green-800 mb-3">Årslönen inkluderar:</h3>
                 <div className="space-y-2 text-sm text-green-700">
                   <div className="flex justify-between">
                     <span>Grundlön (12 månader):</span>
