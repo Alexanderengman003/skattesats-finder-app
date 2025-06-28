@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { List } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { List, Search } from 'lucide-react';
 
 interface SkattetabellData {
   År: number;
@@ -29,6 +30,8 @@ interface TaxTableDisplayProps {
 }
 
 const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }: TaxTableDisplayProps) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
   if (skattetabellData.length === 0) {
     return null;
   }
@@ -37,36 +40,77 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
     return income.toLocaleString('sv-SE') + ' kr';
   };
 
-  const getTaxFromColumn = (item: any, column: number): string => {
+  // Improved method to determine if a value is percentage or kr
+  const isPercentageValue = (value: string | undefined, rowIndex: number, columnKey: string): boolean => {
+    if (!value || value === 'Ej tillgänglig') return false;
+    
+    const numericValue = parseFloat(value.toString().replace(/[^\d.-]/g, ''));
+    if (isNaN(numericValue)) return false;
+    
+    // Find the transition point where values start being percentages
+    // Look for the first occurrence of a value > 100 in this column
+    let transitionIndex = -1;
+    for (let i = 0; i < skattetabellData.length; i++) {
+      const testValue = skattetabellData[i][columnKey];
+      if (testValue && testValue !== 'Ej tillgänglig') {
+        const testNumeric = parseFloat(testValue.toString().replace(/[^\d.-]/g, ''));
+        if (!isNaN(testNumeric) && testNumeric > 100) {
+          transitionIndex = i;
+          break;
+        }
+      }
+    }
+    
+    // If we found a transition point, values after it are likely percentages
+    // If no transition found, assume all small values are kr
+    if (transitionIndex !== -1 && rowIndex >= transitionIndex) {
+      return numericValue <= 100;
+    }
+    
+    // Before transition point or no transition found - use stricter criteria
+    // Only consider it percentage if it's a very small decimal-like value
+    return numericValue < 1 && numericValue > 0;
+  };
+
+  const getTaxFromColumn = (item: any, column: number, rowIndex: number): string => {
     const columnKey = `Kolumn${column}`;
     const taxValue = item[columnKey];
+    
     if (!taxValue || taxValue === 'Ej tillgänglig') {
       return 'Ej tillgänglig';
     }
     
-    // Check if the value is a percentage (typically values under 100 for tax rates)
     const numericValue = parseFloat(taxValue.toString().replace(/[^\d.-]/g, ''));
     
-    // If the value is likely a percentage (between 0 and 100), add %
-    if (numericValue > 0 && numericValue <= 100 && !taxValue.toString().includes('kr')) {
-      // Check if this is actually a percentage by comparing with income ranges
-      // Values under 100 in higher income brackets are likely percentages
-      if (item.InkomstFrån > 50000 || numericValue < 50) {
-        return taxValue + '%';
-      }
+    // Handle NaN values
+    if (isNaN(numericValue)) {
+      return '';
     }
     
-    // If it already has 'kr' or is a large number, add 'kr'
-    if (!taxValue.toString().includes('kr') && !taxValue.toString().includes('%')) {
-      return taxValue + ' kr';
+    // Use improved percentage detection
+    if (isPercentageValue(taxValue, rowIndex, columnKey)) {
+      return numericValue + '%';
+    } else {
+      return numericValue + ' kr';
     }
-    
-    return taxValue;
   };
 
   const isCurrentIncomeBracket = (item: SkattetabellData): boolean => {
     return currentIncome >= item.InkomstFrån && currentIncome <= item.InkomstTill;
   };
+
+  // Filter data based on search term
+  const filteredData = useMemo(() => {
+    if (!searchTerm) return skattetabellData;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return skattetabellData.filter(item => 
+      item.InkomstFrån.toString().includes(searchTerm) ||
+      item.InkomstTill.toString().includes(searchTerm) ||
+      formatIncome(item.InkomstFrån).toLowerCase().includes(searchLower) ||
+      formatIncome(item.InkomstTill).toLowerCase().includes(searchLower)
+    );
+  }, [skattetabellData, searchTerm]);
 
   return (
     <Card className="shadow-lg rounded-xl">
@@ -77,20 +121,36 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0 bg-blue-50 rounded-b-xl">
+        {/* Search Input */}
+        <div className="p-4 border-b border-blue-200">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              type="text"
+              placeholder="Sök efter inkomst..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-white border-blue-200 focus:border-blue-400"
+            />
+          </div>
+        </div>
+        
         <ScrollArea className="h-96">
           <Table>
-            <TableHeader className="sticky top-0 bg-white z-10">
+            <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
               <TableRow className="bg-blue-50">
-                <TableHead className="font-semibold text-blue-900">Inkomst från</TableHead>
-                <TableHead className="font-semibold text-blue-900">Inkomst till</TableHead>
-                <TableHead className="font-semibold text-blue-900 text-center">
+                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50">Inkomst från</TableHead>
+                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50">Inkomst till</TableHead>
+                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50">
                   Skatt
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {skattetabellData.map((row, index) => {
+              {filteredData.map((row, index) => {
                 const isCurrentRow = isCurrentIncomeBracket(row);
+                const originalIndex = skattetabellData.indexOf(row);
+                
                 return (
                   <TableRow 
                     key={`${row.InkomstFrån}-${row.InkomstTill}-${index}`}
@@ -111,7 +171,7 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                     <TableCell className={`text-center font-semibold ${
                       isCurrentRow ? 'text-blue-900' : 'text-blue-700'
                     }`}>
-                      {getTaxFromColumn(row, selectedTaxColumn)}
+                      {getTaxFromColumn(row, selectedTaxColumn, originalIndex)}
                     </TableCell>
                   </TableRow>
                 );
