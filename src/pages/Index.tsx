@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,6 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Search, Coins, MapPin, Calendar, List, HelpCircle } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSelector from '@/components/LanguageSelector';
+import CollapsibleCard from '@/components/CollapsibleCard';
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
 import TaxColumnSelector from '@/components/TaxColumnSelector';
@@ -23,6 +25,7 @@ import {
 } from '@/utils/taxData';
 
 const Index = () => {
+  const { t } = useLanguage();
   const [kommun, setKommun] = useState('');
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [forsamling, setForsamling] = useState('');
@@ -138,12 +141,12 @@ const Index = () => {
         const skattetabell = getSkattetabell(taxRate);
         loadSkattetabellData(selectedYear, skattetabell);
       } else {
-        setError('Ingen data hittad för den valda kombinationen.');
+        setError(t('noDataFound'));
       }
     };
 
     performAutomaticLookup();
-  }, [kommun, selectedYear, forsamling, availableForsamlingar, apiData, includeSvenskaKyrkan]);
+  }, [kommun, selectedYear, forsamling, availableForsamlingar, apiData, includeSvenskaKyrkan, t]);
 
   const loadSkattetabellData = async (year: number, tabell: number) => {
     setSkattetabellLoading(true);
@@ -336,18 +339,21 @@ const Index = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b w-full">
         <div className="container mx-auto px-4 py-6 max-w-full">
-          <div className="flex items-center gap-3">
-            <Coins className="h-8 w-8 text-blue-600" />
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Min skatt</h1>
-              <p className="text-gray-600">Hitta din inkomstskatt på ett enklare sätt</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Coins className="h-8 w-8 text-blue-600" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{t('appTitle')}</h1>
+                <p className="text-gray-600">{t('appSubtitle')}</p>
+              </div>
             </div>
+            <LanguageSelector />
           </div>
           
           {/* Info Text */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
             <p className="text-gray-700 leading-relaxed">
-              Att hitta och förstå den skatt man som anställd i Sverige betalar på sin inkomst kan vara komplicerad och frustrerande. Denna applikation hjälper dig att snabbt och enkelt hitta exakt hur mycket du ska betala i skatt, så att du slipper leta fram det själv.
+              {t('infoText')}
             </p>
           </div>
         </div>
@@ -357,327 +363,321 @@ const Index = () => {
         <div className="grid lg:grid-cols-2 gap-8 w-full">
           {/* Input Section */}
           <div className="space-y-6 w-full">
-            <Card className="shadow-lg rounded-xl w-full">
-              <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
-                <CardTitle className="flex items-center gap-2">
-                  <Search className="h-5 w-5" />
-                  Skattesats
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 bg-blue-50 rounded-b-xl w-full">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Left Column - Personal Information */}
+            <CollapsibleCard
+              title={t('taxRate')}
+              icon={<Search className="h-5 w-5" />}
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column - Personal Information */}
+                <div className="space-y-6">
+                  <h3 className="font-semibold flex items-center gap-2 text-lg">
+                    <Calendar className="h-5 w-5" />
+                    {t('personalInfo')}
+                  </h3>
+                  
                   <div className="space-y-6">
-                    <h3 className="font-semibold flex items-center gap-2 text-lg">
-                      <Calendar className="h-5 w-5" />
-                      Personuppgifter
-                    </h3>
-                    
-                    <div className="space-y-6">
-                      <div className="space-y-3">
-                        <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
-                          <Calendar className="h-4 w-4" />
-                          Inkomstår
-                        </label>
-                        <Select 
-                          onValueChange={(value) => setSelectedYear(parseInt(value))}
-                          value={selectedYear?.toString() || ''}
-                        >
-                          <SelectTrigger className="w-full h-10">
-                            <SelectValue placeholder="Välj år" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableYears.map((year) => (
-                              <SelectItem key={year} value={year.toString()}>
-                                {year}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-3">
-                        <label htmlFor="kommun" className="flex items-center gap-2 text-sm font-medium">
-                          <MapPin className="h-4 w-4" />
-                          Kommun
-                        </label>
-                        <KommunSearch
-                          municipalities={availableMunicipalities}
-                          value={kommun}
-                          onValueChange={setKommun}
-                          disabled={!selectedYear}
-                          placeholder={selectedYear ? "Sök kommun..." : "Välj år först"}
-                        />
-                      </div>
-
-                      {availableForsamlingar.length > 1 && (
-                        <div className="space-y-3">
-                          <ForsamlingSelect
-                            forsamlingar={availableForsamlingar}
-                            value={forsamling}
-                            onValueChange={setForsamling}
-                            disabled={!kommun}
-                          />
-                        </div>
-                      )}
-
-                      <div className="space-y-3">
-                        <Label htmlFor="birthday" className="flex items-center gap-2 text-sm font-medium">
-                          Födelsedatum
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </Label>
-                        <Input
-                          id="birthday"
-                          type="date"
-                          value={birthday}
-                          onChange={handleBirthdayChange}
-                          placeholder="Välj födelsedatum"
-                          max={new Date().toISOString().split('T')[0]}
-                          min="1900-01-01"
-                          className="w-full h-10"
-                        />
-                      </div>
-
-                      <div className="flex items-center space-x-3 pt-2">
-                        <Checkbox 
-                          id="svenskaKyrkan" 
-                          checked={includeSvenskaKyrkan}
-                          onCheckedChange={(checked) => setIncludeSvenskaKyrkan(checked === true)}
-                        />
-                        <label 
-                          htmlFor="svenskaKyrkan" 
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
-                        >
-                          Medlem i svenska kyrkan
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p>Ditt medlemskap i Svenska Kyrkan kan du hitta här: <a href="https://www.svenskakyrkan.se/medlem" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">https://www.svenskakyrkan.se/medlem</a></p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </label>
-                      </div>
+                    <div className="space-y-3">
+                      <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
+                        <Calendar className="h-4 w-4" />
+                        {t('incomeYear')}
+                      </label>
+                      <Select 
+                        onValueChange={(value) => setSelectedYear(parseInt(value))}
+                        value={selectedYear?.toString() || ''}
+                      >
+                        <SelectTrigger className="w-full h-10">
+                          <SelectValue placeholder={t('selectYear')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableYears.map((year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </div>
 
-                  {/* Right Column - Income Info */}
-                  <div className="space-y-6">
-                    <h3 className="font-semibold flex items-center gap-2 text-lg">
-                      <Coins className="h-5 w-5" />
-                      Inkomstuppgifter
-                    </h3>
-                    
-                    <div className="space-y-6">
+                    <div className="space-y-3">
+                      <label htmlFor="kommun" className="flex items-center gap-2 text-sm font-medium">
+                        <MapPin className="h-4 w-4" />
+                        {t('municipality')}
+                      </label>
+                      <KommunSearch
+                        municipalities={availableMunicipalities}
+                        value={kommun}
+                        onValueChange={setKommun}
+                        disabled={!selectedYear}
+                        placeholder={selectedYear ? t('searchMunicipality') : t('selectYearFirst')}
+                      />
+                    </div>
+
+                    {availableForsamlingar.length > 1 && (
                       <div className="space-y-3">
-                        <Label htmlFor="monthlyIncome" className="flex items-center gap-2 text-sm font-medium">
-                          Månadsinkomst (kr)
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p>Din bruttoinkomst per månad före skatt och andra avdrag. Detta inkluderar grundlön, fasta tillägg och andra regelbundna ersättningar.</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </Label>
-                        <Input
-                          id="monthlyIncome"
-                          type="number"
-                          value={monthlyIncome || ''}
-                          onChange={handleIncomeChange}
-                          placeholder="Ange månadsinkomst"
-                          min="0"
-                          max="1000000000"
-                          className="w-full h-10"
+                        <ForsamlingSelect
+                          forsamlingar={availableForsamlingar}
+                          value={forsamling}
+                          onValueChange={setForsamling}
+                          disabled={!kommun}
                         />
                       </div>
+                    )}
 
-                      <div className="space-y-3">
-                        <Label htmlFor="taxableBenefit" className="flex items-center gap-2 text-sm font-medium">
-                          Skattepliktig förmån (kr)
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p>Förmåner från arbetsgivaren som är skattepliktiga, såsom bilförmån, friskvårdsförmån över gränsvärdet, eller subventionerad mat. Dessa räknas som beskattningsbar inkomst.</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </Label>
-                        <Input
-                          id="taxableBenefit"
-                          type="number"
-                          value={taxableBenefit === 0 ? '' : taxableBenefit}
-                          onChange={handleTaxableBenefitChange}
-                          placeholder="Ange skattepliktig förmån"
-                          min="0"
-                          className="w-full h-10"
-                        />
-                      </div>
+                    <div className="space-y-3">
+                      <Label htmlFor="birthday" className="flex items-center gap-2 text-sm font-medium">
+                        {t('birthDate')}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>{t('birthDateTooltip')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <Input
+                        id="birthday"
+                        type="date"
+                        value={birthday}
+                        onChange={handleBirthdayChange}
+                        placeholder={t('selectBirthDate')}
+                        max={new Date().toISOString().split('T')[0]}
+                        min="1900-01-01"
+                        className="w-full h-10"
+                      />
+                    </div>
 
-                      <div className="space-y-3">
-                        <Label htmlFor="incomeType" className="flex items-center gap-2 text-sm font-medium">
-                          Typ av inkomst
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p>Typ av inkomst påverkar vilken skattetabell som används. Lön och arvoden använder en tabell, pensioner en annan, och olika ersättningar har sina egna tabeller med olika skattesatser.</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </Label>
-                        <Select onValueChange={setIncomeType} value={incomeType}>
-                          <SelectTrigger className="w-full h-10">
-                            <SelectValue placeholder="Välj inkomsttyp" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="salary">Lön, arvode och liknande ersättningar</SelectItem>
-                            <SelectItem value="pension">Pension och andra ersättningar</SelectItem>
-                            <SelectItem value="disability">Sjuk- och aktivitetsersättning</SelectItem>
-                            <SelectItem value="unemployment">Ersättning från arbetslöshetskassa</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {incomeType === 'unemployment' && (
-                        <div className="flex items-center space-x-3 pt-2">
-                          <Checkbox 
-                            id="pensionContributing" 
-                            checked={isPensionContributing}
-                            onCheckedChange={(checked) => setIsPensionContributing(checked === true)}
-                          />
-                          <Label htmlFor="pensionContributing" className="text-sm font-medium">
-                            Utgör grund för allmän pensionsavgift
-                          </Label>
-                        </div>
-                      )}
-
-                      {/* Semestertillägg Section */}
-                      {monthlyIncome > 0 && (
-                        <div className="space-y-4 pt-4 border-t border-blue-200">
-                          <h4 className="font-semibold flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            Semestertillägg
-                          </h4>
-                          
-                          <div className="space-y-4">
-                            <div className="flex items-center space-x-3">
-                              <Checkbox 
-                                id="collectiveAgreement" 
-                                checked={hasCollectiveAgreement}
-                                onCheckedChange={(checked) => setHasCollectiveAgreement(checked === true)}
-                              />
-                              <Label htmlFor="collectiveAgreement" className="flex items-center gap-2 text-sm font-medium">
-                                Kollektivavtal
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs">
-                                      <p>Med kollektivavtal: 0.8% för grundlön + 0.5% för rörlig lön</p>
-                                      <p>Utan kollektivavtal: 0.43% för grundlön + (12% / 25) för rörlig lön</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </Label>
-                            </div>
-
-                            <div className="space-y-3">
-                              <Label htmlFor="vacationDays" className="flex items-center gap-2 text-sm font-medium">
-                                Antal semesterdagar
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs">
-                                      <p>Antalet betalda semesterdagar per år enligt din anställning. Standard är 25 dagar, men kan variera beroende på ålder, tjänstgöringstid eller kollektivavtal.</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </Label>
-                              <Input
-                                id="vacationDays"
-                                type="number"
-                                value={vacationDays || ''}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
-                                  const cappedValue = Math.min(Math.max(0, numericValue), 50);
-                                  setVacationDays(cappedValue);
-                                }}
-                                placeholder="Antal semesterdagar"
-                                min="0"
-                                max="50"
-                                className="w-full h-10"
-                              />
-                            </div>
-
-                            <div className="space-y-3">
-                              <Label htmlFor="variableSalary" className="flex items-center gap-2 text-sm font-medium">
-                                Rörlig lön per månad (kr)
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs">
-                                      <p>Genomsnittlig rörlig lön per månad såsom provision, bonus, övertidsersättning eller andra prestationsbaserade tillägg som inte ingår i grundlönen.</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </Label>
-                              <Input
-                                id="variableSalary"
-                                type="number"
-                                value={variableSalary === 0 ? '' : variableSalary}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
-                                  const cappedValue = Math.min(numericValue, 1000000000);
-                                  setVariableSalary(cappedValue);
-                                }}
-                                placeholder="Rörlig månadslön"
-                                min="0"
-                                className="w-full h-10"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                    <div className="flex items-center space-x-3 pt-2">
+                      <Checkbox 
+                        id="svenskaKyrkan" 
+                        checked={includeSvenskaKyrkan}
+                        onCheckedChange={(checked) => setIncludeSvenskaKyrkan(checked === true)}
+                      />
+                      <label 
+                        htmlFor="svenskaKyrkan" 
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                      >
+                        {t('swedishChurchMember')}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>{t('swedishChurchTooltip')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </label>
                     </div>
                   </div>
                 </div>
 
-                {/* Error */}
-                {error && (
-                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-                    {error}
+                {/* Right Column - Income Info */}
+                <div className="space-y-6">
+                  <h3 className="font-semibold flex items-center gap-2 text-lg">
+                    <Coins className="h-5 w-5" />
+                    {t('incomeInfo')}
+                  </h3>
+                  
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                      <Label htmlFor="monthlyIncome" className="flex items-center gap-2 text-sm font-medium">
+                        {t('monthlyIncome')}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>{t('monthlyIncomeTooltip')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <Input
+                        id="monthlyIncome"
+                        type="number"
+                        value={monthlyIncome || ''}
+                        onChange={handleIncomeChange}
+                        placeholder={t('enterMonthlyIncome')}
+                        min="0"
+                        max="1000000000"
+                        className="w-full h-10"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label htmlFor="taxableBenefit" className="flex items-center gap-2 text-sm font-medium">
+                        {t('taxableBenefit')}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>{t('taxableBenefitTooltip')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <Input
+                        id="taxableBenefit"
+                        type="number"
+                        value={taxableBenefit === 0 ? '' : taxableBenefit}
+                        onChange={handleTaxableBenefitChange}
+                        placeholder={t('enterTaxableBenefit')}
+                        min="0"
+                        className="w-full h-10"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label htmlFor="incomeType" className="flex items-center gap-2 text-sm font-medium">
+                        {t('incomeType')}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>{t('incomeTypeTooltip')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </Label>
+                      <Select onValueChange={setIncomeType} value={incomeType}>
+                        <SelectTrigger className="w-full h-10">
+                          <SelectValue placeholder={t('selectIncomeType')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="salary">{t('salary')}</SelectItem>
+                          <SelectItem value="pension">{t('pension')}</SelectItem>
+                          <SelectItem value="disability">{t('disability')}</SelectItem>
+                          <SelectItem value="unemployment">{t('unemployment')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {incomeType === 'unemployment' && (
+                      <div className="flex items-center space-x-3 pt-2">
+                        <Checkbox 
+                          id="pensionContributing" 
+                          checked={isPensionContributing}
+                          onCheckedChange={(checked) => setIsPensionContributing(checked === true)}
+                        />
+                        <Label htmlFor="pensionContributing" className="text-sm font-medium">
+                          Utgör grund för allmän pensionsavgift
+                        </Label>
+                      </div>
+                    )}
+
+                    {/* Semestertillägg Section */}
+                    {monthlyIncome > 0 && (
+                      <div className="space-y-4 pt-4 border-t border-blue-200">
+                        <h4 className="font-semibold flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          {t('vacationPay')}
+                        </h4>
+                        
+                        <div className="space-y-4">
+                          <div className="flex items-center space-x-3">
+                            <Checkbox 
+                              id="collectiveAgreement" 
+                              checked={hasCollectiveAgreement}
+                              onCheckedChange={(checked) => setHasCollectiveAgreement(checked === true)}
+                            />
+                            <Label htmlFor="collectiveAgreement" className="flex items-center gap-2 text-sm font-medium">
+                              {t('collectiveAgreement')}
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p>{t('collectiveAgreementTooltip')}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </Label>
+                          </div>
+
+                          <div className="space-y-3">
+                            <Label htmlFor="vacationDays" className="flex items-center gap-2 text-sm font-medium">
+                              {t('vacationDays')}
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p>{t('vacationDaysTooltip')}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </Label>
+                            <Input
+                              id="vacationDays"
+                              type="number"
+                              value={vacationDays || ''}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+                                const cappedValue = Math.min(Math.max(0, numericValue), 50);
+                                setVacationDays(cappedValue);
+                              }}
+                              placeholder={t('vacationDays')}
+                              min="0"
+                              max="50"
+                              className="w-full h-10"
+                            />
+                          </div>
+
+                          <div className="space-y-3">
+                            <Label htmlFor="variableSalary" className="flex items-center gap-2 text-sm font-medium">
+                              {t('variableSalary')}
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p>{t('variableSalaryTooltip')}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </Label>
+                            <Input
+                              id="variableSalary"
+                              type="number"
+                              value={variableSalary === 0 ? '' : variableSalary}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+                                const cappedValue = Math.min(numericValue, 1000000000);
+                                setVariableSalary(cappedValue);
+                              }}
+                              placeholder={t('variableMonthlySalary')}
+                              min="0"
+                              className="w-full h-10"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </div>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                  {error}
+                </div>
+              )}
+            </CollapsibleCard>
           </div>
 
           {/* Results Section */}

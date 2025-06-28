@@ -1,7 +1,9 @@
+
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useTaxCalculations } from '@/hooks/useTaxCalculations';
+import CollapsibleCard from './CollapsibleCard';
 import TaxRateDisplay from './TaxRateDisplay';
 import TaxCalculationDisplay from './TaxCalculationDisplay';
 import TaxPieChart from './TaxPieChart';
@@ -77,6 +79,8 @@ const TaxColumnSelector = ({
   setVariableSalary,
   calculateVacationPay
 }: TaxColumnSelectorProps) => {
+  const { t } = useLanguage();
+  
   const {
     engangsbeskattningData,
     engangsbeskattningLoading,
@@ -139,87 +143,82 @@ const TaxColumnSelector = ({
 
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
-      <Card className="shadow-lg rounded-xl w-full">
-        <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
-          <CardTitle className="flex items-center gap-2">
-            <Calculator className="h-5 w-5" />
-            Skatteberäkning
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 bg-blue-50 rounded-b-xl w-full">
-          {/* Tax Result Display - Side by Side Layout */}
-          {result.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
-              <TaxRateDisplay 
-                result={result}
-                includeSvenskaKyrkan={includeSvenskaKyrkan}
-                getSkattetabell={getSkattetabell}
+      <CollapsibleCard
+        title={t('taxCalculation')}
+        icon={<Calculator className="h-5 w-5" />}
+      >
+        {/* Tax Result Display - Side by Side Layout */}
+        {result.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
+            <TaxRateDisplay 
+              result={result}
+              includeSvenskaKyrkan={includeSvenskaKyrkan}
+              getSkattetabell={getSkattetabell}
+            />
+
+            {kommun && taxAmount && getTotalIncomeForTax() > 0 && (
+              <TaxCalculationDisplay
+                totalIncome={getTotalIncomeForTax()}
+                actualTaxAmount={getActualTaxAmount()}
+                taxPercentage={getTaxPercentage()}
+                marginalTaxRate={getMarginalTaxRate()}
               />
+            )}
+          </div>
+        )}
 
-              {kommun && taxAmount && getTotalIncomeForTax() > 0 && (
-                <TaxCalculationDisplay
-                  totalIncome={getTotalIncomeForTax()}
-                  actualTaxAmount={getActualTaxAmount()}
-                  taxPercentage={getTaxPercentage()}
-                  marginalTaxRate={getMarginalTaxRate()}
-                />
-              )}
-            </div>
-          )}
-
-          {kommun && taxAmount && getTotalIncomeForTax() > 0 ? (
-            <div className="space-y-4 w-full">
-              {/* Pie Chart and Tax Table - Side by Side */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <TaxPieChart 
-                  netSalary={getNetSalary()}
-                  taxAmount={getActualTaxAmount()}
-                />
-                
-                <TaxTableDisplay
-                  skattetabellData={skattetabellData}
-                  selectedTaxColumn={selectedTaxColumn}
-                  currentIncome={getTotalIncomeForTax()}
-                />
-              </div>
-
-              {/* Engångsbeskattning Card */}
-              <EngangsbeskattningCard
-                engangsbeskattningAmount={engangsbeskattningAmount}
-                onEngangsbeskattningAmountChange={handleEngangsbeskattningAmountChange}
-                additionalIncome={additionalIncome}
-                onAdditionalIncomeChange={handleAdditionalIncomeChange}
-                adjustedSalary={adjustedSalary}
-                onAdjustedSalaryChange={handleAdjustedSalaryChange}
-                adjustedMonths={adjustedMonths}
-                onAdjustedMonthsChange={handleAdjustedMonthsChange}
-                engangsbeskattningLoading={engangsbeskattningLoading}
-                engangsbeskattningError={engangsbeskattningError}
-                engangsbeskattningData={engangsbeskattningData}
-                getEngangsbeskattningRate={getEngangsbeskattningRate}
-                calculateEngangsbeskattning={calculateEngangsbeskattning}
-                calculateYearlyIncome={calculateYearlyIncome}
-                selectedYear={selectedYear}
-                monthlyIncome={monthlyIncome}
-                taxableBenefit={taxableBenefit}
-                calculateVacationPay={calculateVacationPay}
-                hasCollectiveAgreement={hasCollectiveAgreement}
-                vacationDays={vacationDays}
-                variableSalary={variableSalary}
+        {kommun && taxAmount && getTotalIncomeForTax() > 0 ? (
+          <div className="space-y-4 w-full">
+            {/* Pie Chart and Tax Table - Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TaxPieChart 
+                netSalary={getNetSalary()}
+                taxAmount={getActualTaxAmount()}
+              />
+              
+              <TaxTableDisplay
+                skattetabellData={skattetabellData}
+                selectedTaxColumn={selectedTaxColumn}
+                currentIncome={getTotalIncomeForTax()}
               />
             </div>
-          ) : (
-            <div className="text-center text-gray-500 py-8 bg-blue-100 border border-blue-300 rounded-xl w-full">
-              {!kommun 
-                ? 'Ange den kommun som du är bosatt i'
-                : getTotalIncomeForTax() === 0
-                ? 'Ange månadsinkomst (kr) för att se skatteberäkning'
-                : 'Beräknar skatt...'
-              }
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {/* Engångsbeskattning Card */}
+            <EngangsbeskattningCard
+              engangsbeskattningAmount={engangsbeskattningAmount}
+              onEngangsbeskattningAmountChange={handleEngangsbeskattningAmountChange}
+              additionalIncome={additionalIncome}
+              onAdditionalIncomeChange={handleAdditionalIncomeChange}
+              adjustedSalary={adjustedSalary}
+              onAdjustedSalaryChange={handleAdjustedSalaryChange}
+              adjustedMonths={adjustedMonths}
+              onAdjustedMonthsChange={handleAdjustedMonthsChange}
+              engangsbeskattningLoading={engangsbeskattningLoading}
+              engangsbeskattningError={engangsbeskattningError}
+              engangsbeskattningData={engangsbeskattningData}
+              getEngangsbeskattningRate={getEngangsbeskattningRate}
+              calculateEngangsbeskattning={calculateEngangsbeskattning}
+              calculateYearlyIncome={calculateYearlyIncome}
+              selectedYear={selectedYear}
+              monthlyIncome={monthlyIncome}
+              taxableBenefit={taxableBenefit}
+              calculateVacationPay={calculateVacationPay}
+              hasCollectiveAgreement={hasCollectiveAgreement}
+              vacationDays={vacationDays}
+              variableSalary={variableSalary}
+            />
+          </div>
+        ) : (
+          <div className="text-center text-gray-500 py-8 bg-blue-100 border border-blue-300 rounded-xl w-full">
+            {!kommun 
+              ? t('enterMunicipality')
+              : getTotalIncomeForTax() === 0
+              ? t('enterIncomeToSee')
+              : t('calculatingTax')
+            }
+          </div>
+        )}
+      </CollapsibleCard>
     </div>
   );
 };
