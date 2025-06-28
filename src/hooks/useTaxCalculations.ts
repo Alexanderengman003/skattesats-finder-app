@@ -171,6 +171,13 @@ export const useTaxCalculations = ({
       return currentTaxValue.toFixed(1);
     }
     
+    // Special case: Current is kr, next is percentage (transition point)
+    if (!isPercentageValue(currentTaxValue, currentBracket.InkomstFrån) && 
+        isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
+      console.log('Transition from kr to percentage, using percentage value:', nextTaxValue);
+      return nextTaxValue.toFixed(1);
+    }
+    
     // If both are kr values, calculate marginal rate
     if (!isPercentageValue(currentTaxValue, currentBracket.InkomstFrån) && 
         !isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
