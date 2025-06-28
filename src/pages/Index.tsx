@@ -327,7 +327,7 @@ const Index = () => {
           {/* Info Text */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
             <p className="text-gray-700 leading-relaxed">
-              Processen att hitta och förstå den skatt man som anställd i Sverige betalar på sin inkomst kan vara komplicerad och frustrerande. Denna applikation hjälper dig att snabbt och enkelt hitta exakt hur mycket du ska betala i skatt, så att du slipper leta fram det själv.
+              Att hitta och förstå den skatt man som anställd i Sverige betalar på sin inkomst kan vara komplicerad och frustrerande. Denna applikation hjälper dig att snabbt och enkelt hitta exakt hur mycket du ska betala i skatt, så att du slipper leta fram det själv.
             </p>
           </div>
         </div>
