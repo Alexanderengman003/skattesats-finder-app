@@ -51,6 +51,13 @@ interface TaxColumnSelectorProps {
   taxableBenefit: number;
   onTaxableBenefitChange: (benefit: number) => void;
   skattetabellData: SkattetabellData[];
+  hasCollectiveAgreement: boolean;
+  setHasCollectiveAgreement: (value: boolean) => void;
+  vacationDays: number;
+  setVacationDays: (days: number) => void;
+  variableSalary: number;
+  setVariableSalary: (salary: number) => void;
+  calculateVacationPay: () => number;
 }
 
 const TaxColumnSelector = ({
@@ -63,7 +70,14 @@ const TaxColumnSelector = ({
   selectedYear,
   getSkattetabell,
   taxableBenefit,
-  skattetabellData
+  skattetabellData,
+  hasCollectiveAgreement,
+  setHasCollectiveAgreement,
+  vacationDays,
+  setVacationDays,
+  variableSalary,
+  setVariableSalary,
+  calculateVacationPay
 }: TaxColumnSelectorProps) => {
   const {
     engangsbeskattningData,
@@ -77,12 +91,6 @@ const TaxColumnSelector = ({
     setAdjustedSalary,
     adjustedMonths,
     setAdjustedMonths,
-    hasCollectiveAgreement,
-    setHasCollectiveAgreement,
-    vacationDays,
-    setVacationDays,
-    variableSalary,
-    setVariableSalary,
     getTotalIncomeForTax,
     getTaxPercentage,
     getActualTaxAmount,
@@ -91,14 +99,17 @@ const TaxColumnSelector = ({
     getEngangsbeskattningRate,
     calculateEngangsbeskattning,
     calculateYearlyIncome,
-    calculateVacationPay
+    calculateVacationPay: hookCalculateVacationPay
   } = useTaxCalculations({
     monthlyIncome,
     taxableBenefit,
     taxAmount,
     selectedTaxColumn,
     skattetabellData,
-    selectedYear
+    selectedYear,
+    hasCollectiveAgreement,
+    vacationDays,
+    variableSalary
   });
 
   const handleEngangsbeskattningAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,17 +178,42 @@ const TaxColumnSelector = ({
                 taxAmount={getActualTaxAmount()}
               />
 
-              {/* Vacation Pay Card */}
-              <VacationPayCard
-                hasCollectiveAgreement={hasCollectiveAgreement}
-                onHasCollectiveAgreementChange={setHasCollectiveAgreement}
-                vacationDays={vacationDays}
-                onVacationDaysChange={setVacationDays}
-                variableSalary={variableSalary}
-                onVariableSalaryChange={setVariableSalary}
-                vacationPayAmount={calculateVacationPay()}
-                monthlyIncome={monthlyIncome}
-              />
+              {/* Yearly Income Breakdown */}
+              <div className="p-4 bg-green-100 border border-green-300 rounded-xl">
+                <h3 className="font-semibold text-green-800 mb-3">Årslön uppdelning:</h3>
+                <div className="space-y-2 text-sm text-green-700">
+                  <div className="flex justify-between">
+                    <span>Grundlön (12 månader):</span>
+                    <span className="font-medium">{(monthlyIncome * 12).toLocaleString()} kr</span>
+                  </div>
+                  {taxableBenefit > 0 && (
+                    <div className="flex justify-between">
+                      <span>Skattepliktig förmån (12 månader):</span>
+                      <span className="font-medium">{(taxableBenefit * 12).toLocaleString()} kr</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span>Semestertillägg:</span>
+                    <span className="font-medium">{calculateVacationPay().toLocaleString()} kr</span>
+                  </div>
+                  {engangsbeskattningAmount > 0 && (
+                    <div className="flex justify-between">
+                      <span>Engångsbeskattning:</span>
+                      <span className="font-medium">{engangsbeskattningAmount.toLocaleString()} kr</span>
+                    </div>
+                  )}
+                  {additionalIncome > 0 && (
+                    <div className="flex justify-between">
+                      <span>Övrig inkomst:</span>
+                      <span className="font-medium">{additionalIncome.toLocaleString()} kr</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-green-800 pt-2 border-t border-green-300">
+                    <span>Total årslön:</span>
+                    <span>{calculateYearlyIncome().toLocaleString()} kr</span>
+                  </div>
+                </div>
+              </div>
 
               {/* Engångsbeskattning Card */}
               <EngangsbeskattningCard
@@ -198,13 +234,6 @@ const TaxColumnSelector = ({
                 selectedYear={selectedYear}
                 monthlyIncome={monthlyIncome}
                 taxableBenefit={taxableBenefit}
-              />
-
-              {/* Tax Table Display */}
-              <TaxTableDisplay
-                skattetabellData={skattetabellData}
-                selectedTaxColumn={selectedTaxColumn}
-                currentIncome={getTotalIncomeForTax()}
               />
             </div>
           ) : (

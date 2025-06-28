@@ -25,6 +25,9 @@ interface UseTaxCalculationsProps {
   selectedTaxColumn: number;
   skattetabellData: SkattetabellData[];
   selectedYear: number | null;
+  hasCollectiveAgreement?: boolean;
+  vacationDays?: number;
+  variableSalary?: number;
 }
 
 export const useTaxCalculations = ({
@@ -33,7 +36,10 @@ export const useTaxCalculations = ({
   taxAmount,
   selectedTaxColumn,
   skattetabellData,
-  selectedYear
+  selectedYear,
+  hasCollectiveAgreement = false,
+  vacationDays = 25,
+  variableSalary = 0
 }: UseTaxCalculationsProps) => {
   const [engangsbeskattningData, setEngangsbeskattningData] = useState<any[]>([]);
   const [engangsbeskattningLoading, setEngangsbeskattningLoading] = useState(false);
@@ -43,10 +49,17 @@ export const useTaxCalculations = ({
   const [adjustedSalary, setAdjustedSalary] = useState(0);
   const [adjustedMonths, setAdjustedMonths] = useState(0);
   
-  // Vacation pay states
-  const [hasCollectiveAgreement, setHasCollectiveAgreement] = useState(false);
-  const [vacationDays, setVacationDays] = useState(25);
-  const [variableSalary, setVariableSalary] = useState(0);
+  // Vacation pay states - use props or defaults
+  const [localHasCollectiveAgreement, setLocalHasCollectiveAgreement] = useState(hasCollectiveAgreement);
+  const [localVacationDays, setLocalVacationDays] = useState(vacationDays);
+  const [localVariableSalary, setLocalVariableSalary] = useState(variableSalary);
+
+  // Update local state when props change
+  useEffect(() => {
+    setLocalHasCollectiveAgreement(hasCollectiveAgreement);
+    setLocalVacationDays(vacationDays);
+    setLocalVariableSalary(variableSalary);
+  }, [hasCollectiveAgreement, vacationDays, variableSalary]);
 
   const getTotalIncomeForTax = (): number => {
     return monthlyIncome + taxableBenefit;
@@ -111,7 +124,7 @@ export const useTaxCalculations = ({
 
   const getActualTaxAmount = (): number => {
     if (!taxAmount || getTotalIncomeForTax() === 0) return 0;
-    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, ''));
+    const taxAmountNum = parseFloat(taxAmount.replace(/[^\d.-]/g, '));
     
     if (isPercentageValue(taxAmountNum, getTotalIncomeForTax())) {
       return (taxAmountNum / 100) * getTotalIncomeForTax();
@@ -292,7 +305,7 @@ export const useTaxCalculations = ({
     if (selectedYear && getTotalIncomeForTax() > 0 && selectedTaxColumn && engangsbeskattningAmount > 0) {
       loadEngangsbeskattningData();
     }
-  }, [selectedYear, monthlyIncome, taxableBenefit, selectedTaxColumn, engangsbeskattningAmount, additionalIncome, adjustedSalary, adjustedMonths, hasCollectiveAgreement, vacationDays, variableSalary]);
+  }, [selectedYear, monthlyIncome, taxableBenefit, selectedTaxColumn, engangsbeskattningAmount, additionalIncome, adjustedSalary, adjustedMonths, localHasCollectiveAgreement, localVacationDays, localVariableSalary]);
 
   return {
     engangsbeskattningData,
@@ -306,12 +319,12 @@ export const useTaxCalculations = ({
     setAdjustedSalary,
     adjustedMonths,
     setAdjustedMonths,
-    hasCollectiveAgreement,
-    setHasCollectiveAgreement,
-    vacationDays,
-    setVacationDays,
-    variableSalary,
-    setVariableSalary,
+    hasCollectiveAgreement: localHasCollectiveAgreement,
+    setHasCollectiveAgreement: setLocalHasCollectiveAgreement,
+    vacationDays: localVacationDays,
+    setVacationDays: setLocalVacationDays,
+    variableSalary: localVariableSalary,
+    setVariableSalary: setLocalVariableSalary,
     getTotalIncomeForTax,
     getBaseSalary,
     calculateYearlyIncome,
