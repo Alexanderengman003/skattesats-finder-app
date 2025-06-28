@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 type Language = 'sv' | 'en';
@@ -12,6 +13,7 @@ const translations = {
   sv: {
     appTitle: 'Skatteberäkning',
     appSubtitle: 'Beräkna din skatt enkelt och snabbt',
+    infoText: 'Detta verktyg hjälper dig att beräkna din preliminärskatt baserat på din kommun, inkomst och personliga förhållanden. Ange din information nedan för att få en uppskattning av din månatliga skatt.',
     taxRate: 'Skattesats',
     personalInfo: 'Personlig information',
     incomeYear: 'Inkomstår',
@@ -56,6 +58,7 @@ const translations = {
   en: {
     appTitle: 'Tax Calculation',
     appSubtitle: 'Calculate your tax easily and quickly',
+    infoText: 'This tool helps you calculate your preliminary tax based on your municipality, income, and personal circumstances. Enter your information below to get an estimate of your monthly tax.',
     taxRate: 'Tax Rate',
     personalInfo: 'Personal Information',
     incomeYear: 'Income Year',
