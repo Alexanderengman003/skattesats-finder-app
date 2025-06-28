@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
@@ -7,6 +6,7 @@ import TaxRateDisplay from './TaxRateDisplay';
 import TaxCalculationDisplay from './TaxCalculationDisplay';
 import TaxPieChart from './TaxPieChart';
 import EngangsbeskattningCard from './EngangsbeskattningCard';
+import TaxTableDisplay from './TaxTableDisplay';
 
 interface SkattetabellData {
   År: number;
@@ -177,6 +177,13 @@ const TaxColumnSelector = ({
                 selectedYear={selectedYear}
                 monthlyIncome={monthlyIncome}
                 taxableBenefit={taxableBenefit}
+              />
+
+              {/* Tax Table Display */}
+              <TaxTableDisplay
+                skattetabellData={skattetabellData}
+                selectedTaxColumn={selectedTaxColumn}
+                currentIncome={getTotalIncomeForTax()}
               />
             </div>
           ) : (
