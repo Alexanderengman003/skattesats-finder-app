@@ -40,7 +40,11 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
   const getTaxFromColumn = (item: any, column: number): string => {
     const columnKey = `Kolumn${column}`;
     const taxValue = item[columnKey];
-    return taxValue || 'Ej tillgänglig';
+    if (!taxValue || taxValue === 'Ej tillgänglig') {
+      return 'Ej tillgänglig';
+    }
+    // Add 'kr' suffix for tax amounts
+    return taxValue + ' kr';
   };
 
   const isCurrentIncomeBracket = (item: SkattetabellData): boolean => {
@@ -49,20 +53,20 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
 
   return (
     <Card className="shadow-lg rounded-xl">
-      <CardHeader className="bg-gradient-to-r from-green-400 to-green-500 text-white rounded-t-xl">
+      <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
         <CardTitle className="flex items-center gap-2">
           <List className="h-5 w-5" />
           Skattetabell {skattetabellData[0]?.Tabell} - Kolumn {selectedTaxColumn}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0 bg-green-50 rounded-b-xl">
+      <CardContent className="p-0 bg-blue-50 rounded-b-xl">
         <ScrollArea className="h-96">
           <Table>
             <TableHeader className="sticky top-0 bg-white z-10">
-              <TableRow className="bg-green-50">
-                <TableHead className="font-semibold text-green-900">Inkomst från</TableHead>
-                <TableHead className="font-semibold text-green-900">Inkomst till</TableHead>
-                <TableHead className="font-semibold text-green-900 text-center">Skatt</TableHead>
+              <TableRow className="bg-blue-50">
+                <TableHead className="font-semibold text-blue-900">Inkomst från</TableHead>
+                <TableHead className="font-semibold text-blue-900">Inkomst till</TableHead>
+                <TableHead className="font-semibold text-blue-900 text-center">Skatt</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -73,19 +77,19 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                     key={`${row.InkomstFrån}-${row.InkomstTill}-${index}`}
                     className={`transition-colors ${
                       isCurrentRow 
-                        ? 'bg-green-200 border-l-4 border-green-500' 
+                        ? 'bg-blue-200 border-l-4 border-blue-500' 
                         : index % 2 === 0 
-                        ? 'bg-white hover:bg-green-50' 
-                        : 'bg-gray-50 hover:bg-green-50'
+                        ? 'bg-white hover:bg-blue-50' 
+                        : 'bg-gray-50 hover:bg-blue-50'
                     }`}
                   >
-                    <TableCell className={`font-medium ${isCurrentRow ? 'text-green-900' : 'text-gray-900'}`}>
+                    <TableCell className={`font-medium ${isCurrentRow ? 'text-blue-900' : 'text-gray-900'}`}>
                       {formatIncome(row.InkomstFrån)}
                     </TableCell>
-                    <TableCell className={`${isCurrentRow ? 'text-green-900' : 'text-gray-600'}`}>
+                    <TableCell className={`${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
                       {formatIncome(row.InkomstTill)}
                     </TableCell>
-                    <TableCell className={`text-center font-semibold ${isCurrentRow ? 'text-green-900' : 'text-blue-700'}`}>
+                    <TableCell className={`text-center font-semibold ${isCurrentRow ? 'text-blue-900' : 'text-blue-700'}`}>
                       {getTaxFromColumn(row, selectedTaxColumn)}
                     </TableCell>
                   </TableRow>

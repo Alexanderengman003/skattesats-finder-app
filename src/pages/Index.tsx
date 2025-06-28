@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -463,7 +462,7 @@ const Index = () => {
                                 <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs">
-                                <p>Ditt medlemskap i Svenska Kyrkan kan du hitta här: https://www.svenskakyrkan.se/medlem</p>
+                                <p>Ditt medlemskap i Svenska Kyrkan kan du hitta här: <a href="https://www.svenskakyrkan.se/medlem" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">https://www.svenskakyrkan.se/medlem</a></p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -492,7 +491,19 @@ const Index = () => {
                     
                     <div className="space-y-6">
                       <div className="space-y-2">
-                        <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
+                        <Label htmlFor="monthlyIncome" className="flex items-center gap-2">
+                          Månadsinkomst (kr)
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <p>Din bruttoinkomst per månad före skatt och andra avdrag. Detta inkluderar grundlön, fasta tillägg och andra regelbundna ersättningar.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </Label>
                         <Input
                           id="monthlyIncome"
                           type="number"
@@ -506,7 +517,19 @@ const Index = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="taxableBenefit">Skattepliktig förmån (kr)</Label>
+                        <Label htmlFor="taxableBenefit" className="flex items-center gap-2">
+                          Skattepliktig förmån (kr)
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <p>Förmåner från arbetsgivaren som är skattepliktiga, såsom bilförmån, friskvårdsförmån över gränsvärdet, eller subventionerad mat. Dessa räknas som beskattningsbar inkomst.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </Label>
                         <Input
                           id="taxableBenefit"
                           type="number"
@@ -519,7 +542,19 @@ const Index = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="incomeType">Typ av inkomst</Label>
+                        <Label htmlFor="incomeType" className="flex items-center gap-2">
+                          Typ av inkomst
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <p>Typ av inkomst påverkar vilken skattetabell som används. Lön och arvoden använder en tabell, pensioner en annan, och olika ersättningar har sina egna tabeller med olika skattesatser.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </Label>
                         <Select onValueChange={setIncomeType} value={incomeType}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Välj inkomsttyp" />
@@ -578,7 +613,19 @@ const Index = () => {
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="vacationDays">Antal semesterdagar</Label>
+                              <Label htmlFor="vacationDays" className="flex items-center gap-2">
+                                Antal semesterdagar
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                      <p>Antalet betalda semesterdagar per år enligt din anställning. Standard är 25 dagar, men kan variera beroende på ålder, tjänstgöringstid eller kollektivavtal.</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </Label>
                               <Input
                                 id="vacationDays"
                                 type="number"
@@ -597,7 +644,19 @@ const Index = () => {
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="variableSalary">Rörlig lön per månad (kr)</Label>
+                              <Label htmlFor="variableSalary" className="flex items-center gap-2">
+                                Rörlig lön per månad (kr)
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                      <p>Genomsnittlig rörlig lön per månad såsom provision, bonus, övertidsersättning eller andra prestationsbaserade tillägg som inte ingår i grundlönen.</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </Label>
                               <Input
                                 id="variableSalary"
                                 type="number"

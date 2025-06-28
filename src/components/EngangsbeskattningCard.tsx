@@ -53,17 +53,17 @@ const EngangsbeskattningCard = ({
     
     if (adjustedSalary > 0 && adjustedMonths > 0 && adjustedMonths <= 12) {
       const remainingMonths = 12 - adjustedMonths;
-      breakdown.push(`Justerad lön: ${adjustedSalary.toLocaleString()} kr × ${adjustedMonths} månader = ${(adjustedSalary * adjustedMonths).toLocaleString()} kr`);
+      breakdown.push(`Justerad inkomst: ${adjustedSalary.toLocaleString()} kr × ${adjustedMonths} månader = ${(adjustedSalary * adjustedMonths).toLocaleString()} kr`);
       if (remainingMonths > 0) {
-        breakdown.push(`Nuvarande lön: ${baseMonthlyIncome.toLocaleString()} kr × ${remainingMonths} månader = ${(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`);
+        breakdown.push(`Nuvarande inkomst: ${baseMonthlyIncome.toLocaleString()} kr × ${remainingMonths} månader = ${(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`);
       }
     } else {
-      breakdown.push(`Månadslön: ${baseMonthlyIncome.toLocaleString()} kr × 12 månader = ${(baseMonthlyIncome * 12).toLocaleString()} kr`);
+      breakdown.push(`Månadsinkomst: ${baseMonthlyIncome.toLocaleString()} kr × 12 månader = ${(baseMonthlyIncome * 12).toLocaleString()} kr`);
     }
     
     const vacationPay = calculateVacationPay();
     if (vacationPay > 0) {
-      breakdown.push(`Semestertillägg: ${vacationPay.toLocaleString()} kr`);
+      breakdown.push(`Semestertillägg: ${Math.round(vacationPay).toLocaleString()} kr`);
     }
     
     if (additionalIncome > 0) {
@@ -135,7 +135,7 @@ const EngangsbeskattningCard = ({
                       <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>Här kan du lägga till övrig inkomst under året som räknas in i din årslön enligt Skatteverket.</p>
+                      <p>Här kan du lägga till övrig inkomst under året som räknas in i din årsinkomst enligt Skatteverket.</p>
                     </TooltipContent>
                   </UITooltip>
                 </TooltipProvider>
@@ -154,14 +154,14 @@ const EngangsbeskattningCard = ({
 
             <div className="space-y-2">
               <Label htmlFor="adjustedSalary" className="flex items-center gap-2">
-                Justera lön (kr)
+                Justera inkomst (kr)
                 <TooltipProvider>
                   <UITooltip>
                     <TooltipTrigger asChild>
                       <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>Om du har haft en annan lön än den du angav tidigare under året, kan du fylla i din tidigare lön för att få en så korrekt uträkning som möjligt. Fyll även i nedan hur många månader du hade den tidigare lönen.</p>
+                      <p>Om du har haft en annan inkomst än den du angav tidigare under året, kan du fylla i din tidigare inkomst för att få en så korrekt uträkning som möjligt. Fyll även i nedan hur många månader du hade den tidigare inkomsten.</p>
                     </TooltipContent>
                   </UITooltip>
                 </TooltipProvider>
@@ -171,7 +171,7 @@ const EngangsbeskattningCard = ({
                 type="number"
                 value={adjustedSalary || ''}
                 onChange={onAdjustedSalaryChange}
-                placeholder="Ange justerad månadslön"
+                placeholder="Ange justerad månadsinkomst"
                 min="0"
                 max="1000000000"
                 className="w-full"
@@ -187,7 +187,7 @@ const EngangsbeskattningCard = ({
                       <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>Här fyller du i hur många månader innevarande år som du hade din tidigare lön, för att få en så korrekt uträkning som möjligt</p>
+                      <p>Här fyller du i hur många månader innevarande år som du hade din tidigare inkomst, för att få en så korrekt uträkning som möjligt</p>
                     </TooltipContent>
                   </UITooltip>
                 </TooltipProvider>
@@ -197,7 +197,7 @@ const EngangsbeskattningCard = ({
                 type="number"
                 value={adjustedMonths || ''}
                 onChange={onAdjustedMonthsChange}
-                placeholder="Antal månader med justerad lön"
+                placeholder="Antal månader med justerad inkomst"
                 min="0"
                 max="12"
                 className="w-full"
@@ -234,10 +234,10 @@ const EngangsbeskattningCard = ({
                     i skatt
                   </div>
                   <div className="text-xs text-gray-500 mt-2 break-words">
-                    Baserat på total årslön: {calculateYearlyIncome().toLocaleString()} kr
+                    Baserat på total årsinkomst: {calculateYearlyIncome().toLocaleString()} kr
                   </div>
                   <div className="text-xs text-gray-500 mt-3 text-left bg-white/60 p-3 rounded-lg border border-gray-200 shadow-sm">
-                    <div className="font-semibold mb-2 text-gray-700">Årslönen inkluderar:</div>
+                    <div className="font-semibold mb-2 text-gray-700">Årsinkomsten inkluderar:</div>
                     <div className="space-y-1.5">
                       {getYearlyIncomeBreakdown().map((item, index) => (
                         <div key={index} className="flex items-start gap-2 text-xs">
@@ -247,7 +247,7 @@ const EngangsbeskattningCard = ({
                       ))}
                       <div className="flex items-start gap-2 text-xs pt-2 border-t border-gray-300 font-bold text-gray-700">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 flex-shrink-0"></div>
-                        <span>Total årslön: {calculateYearlyIncome().toLocaleString()} kr</span>
+                        <span>Total årsinkomst: {calculateYearlyIncome().toLocaleString()} kr</span>
                       </div>
                     </div>
                   </div>
