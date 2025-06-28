@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, HelpCircle } from 'lucide-react';
@@ -353,7 +352,7 @@ const TaxColumnSelector = ({
     setAdjustedSalary(cappedValue);
   };
 
-  const handleAdjustedMonthsChange = (e: React.ChangeEvent<HTMLInputInput>) => {
+  const handleAdjustedMonthsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
     const cappedValue = Math.min(Math.max(0, numericValue), 12);
