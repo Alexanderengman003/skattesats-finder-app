@@ -368,39 +368,13 @@ const Index = () => {
               <CardContent className="p-6 bg-blue-50 rounded-b-xl w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Left Column - Personal Information */}
-                  <div className="flex flex-col">
-                    <h3 className="font-semibold flex items-center gap-2 mb-6">
+                  <div className="space-y-6">
+                    <h3 className="font-semibold flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       Personuppgifter
                     </h3>
                     
-                    <div className="space-y-6 flex-1">
-                      <div className="space-y-2">
-                        <Label htmlFor="birthday" className="flex items-center gap-2">
-                          Födelsedatum
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </Label>
-                        <Input
-                          id="birthday"
-                          type="date"
-                          value={birthday}
-                          onChange={handleBirthdayChange}
-                          placeholder="Välj födelsedatum"
-                          max={new Date().toISOString().split('T')[0]}
-                          min="1900-01-01"
-                          className="w-full"
-                        />
-                      </div>
-
+                    <div className="space-y-6">
                       <div className="space-y-2">
                         <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
                           <Calendar className="h-4 w-4" />
@@ -446,7 +420,33 @@ const Index = () => {
                         />
                       )}
 
-                      <div className="flex items-center space-x-2 pt-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="birthday" className="flex items-center gap-2">
+                          Födelsedatum
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </Label>
+                        <Input
+                          id="birthday"
+                          type="date"
+                          value={birthday}
+                          onChange={handleBirthdayChange}
+                          placeholder="Välj födelsedatum"
+                          max={new Date().toISOString().split('T')[0]}
+                          min="1900-01-01"
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div className="flex items-center space-x-2">
                         <Checkbox 
                           id="svenskaKyrkan" 
                           checked={includeSvenskaKyrkan}
@@ -484,13 +484,13 @@ const Index = () => {
                   </div>
 
                   {/* Right Column - Income Info */}
-                  <div className="flex flex-col">
-                    <h3 className="font-semibold flex items-center gap-2 mb-6">
+                  <div className="space-y-6">
+                    <h3 className="font-semibold flex items-center gap-2">
                       <Coins className="h-4 w-4" />
                       Inkomstuppgifter
                     </h3>
                     
-                    <div className="space-y-6 flex-1">
+                    <div className="space-y-6">
                       <div className="space-y-2">
                         <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
                         <Input
