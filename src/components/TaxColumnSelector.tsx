@@ -150,33 +150,19 @@ const TaxColumnSelector = ({
         {/* Tax Result Display - Side by Side Layout */}
         {result.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
-            <CollapsibleCard
-              title={t('taxRate')}
-              defaultOpen={true}
-              headerClassName="bg-gradient-to-r from-green-400 to-green-500 text-white rounded-t-xl"
-              contentClassName="p-4 bg-green-50 rounded-b-xl"
-            >
-              <TaxRateDisplay 
-                result={result}
-                includeSvenskaKyrkan={includeSvenskaKyrkan}
-                getSkattetabell={getSkattetabell}
-              />
-            </CollapsibleCard>
+            <TaxRateDisplay 
+              result={result}
+              includeSvenskaKyrkan={includeSvenskaKyrkan}
+              getSkattetabell={getSkattetabell}
+            />
 
             {kommun && taxAmount && getTotalIncomeForTax() > 0 && (
-              <CollapsibleCard
-                title={t('taxCalculation')}
-                defaultOpen={true}
-                headerClassName="bg-gradient-to-r from-purple-400 to-purple-500 text-white rounded-t-xl"
-                contentClassName="p-4 bg-purple-50 rounded-b-xl"
-              >
-                <TaxCalculationDisplay
-                  totalIncome={getTotalIncomeForTax()}
-                  actualTaxAmount={getActualTaxAmount()}
-                  taxPercentage={getTaxPercentage()}
-                  marginalTaxRate={getMarginalTaxRate()}
-                />
-              </CollapsibleCard>
+              <TaxCalculationDisplay
+                totalIncome={getTotalIncomeForTax()}
+                actualTaxAmount={getActualTaxAmount()}
+                taxPercentage={getTaxPercentage()}
+                marginalTaxRate={getMarginalTaxRate()}
+              />
             )}
           </div>
         )}
@@ -185,17 +171,10 @@ const TaxColumnSelector = ({
           <div className="space-y-4 w-full">
             {/* Pie Chart and Tax Table - Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <CollapsibleCard
-                title={t('taxBreakdown')}
-                defaultOpen={true}
-                headerClassName="bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-t-xl"
-                contentClassName="p-4 bg-orange-50 rounded-b-xl"
-              >
-                <TaxPieChart 
-                  netSalary={getNetSalary()}
-                  taxAmount={getActualTaxAmount()}
-                />
-              </CollapsibleCard>
+              <TaxPieChart 
+                netSalary={getNetSalary()}
+                taxAmount={getActualTaxAmount()}
+              />
               
               <TaxTableDisplay
                 skattetabellData={skattetabellData}
