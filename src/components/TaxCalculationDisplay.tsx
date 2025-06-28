@@ -24,7 +24,7 @@ const TaxCalculationDisplay = ({
           {Math.round(actualTaxAmount).toLocaleString()} kr
         </div>
         <div className="text-sm font-medium text-black mb-2 break-words">
-          Månadsinkomst (kr) beräknad på {Math.round(totalIncome).toLocaleString()} kr
+          Skatt beräknad på skattepliktig inkomst {Math.round(totalIncome).toLocaleString()} kr
         </div>
         <div className="text-sm font-medium text-black mb-1">
           Du betalar <span className="font-bold">{taxPercentage}%</span> i skatt
