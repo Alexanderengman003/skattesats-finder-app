@@ -24,6 +24,7 @@ interface EngangsbeskattningCardProps {
   selectedYear: number | null;
   monthlyIncome: number;
   taxableBenefit: number;
+  calculateVacationPay: () => number;
 }
 
 const EngangsbeskattningCard = ({
@@ -43,7 +44,8 @@ const EngangsbeskattningCard = ({
   calculateYearlyIncome,
   selectedYear,
   monthlyIncome,
-  taxableBenefit
+  taxableBenefit,
+  calculateVacationPay
 }: EngangsbeskattningCardProps) => {
   const getYearlyIncomeBreakdown = () => {
     const baseMonthlyIncome = monthlyIncome + taxableBenefit;
@@ -57,6 +59,11 @@ const EngangsbeskattningCard = ({
       }
     } else {
       breakdown.push(`Månadslön: ${baseMonthlyIncome.toLocaleString()} kr × 12 månader = ${(baseMonthlyIncome * 12).toLocaleString()} kr`);
+    }
+    
+    const vacationPay = calculateVacationPay();
+    if (vacationPay > 0) {
+      breakdown.push(`Semestertillägg: ${vacationPay.toLocaleString()} kr`);
     }
     
     if (additionalIncome > 0) {
@@ -238,6 +245,10 @@ const EngangsbeskattningCard = ({
                           <span className="text-gray-600">{item}</span>
                         </div>
                       ))}
+                      <div className="flex items-start gap-2 text-xs pt-2 border-t border-gray-300 font-bold text-gray-700">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 flex-shrink-0"></div>
+                        <span>Total årslön: {calculateYearlyIncome().toLocaleString()} kr</span>
+                      </div>
                     </div>
                   </div>
                 </div>
