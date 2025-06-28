@@ -312,10 +312,10 @@ const Index = () => {
   const taxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-full overflow-x-hidden">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-6">
+      <div className="bg-white shadow-sm border-b w-full">
+        <div className="container mx-auto px-4 py-6 max-w-full">
           <div className="flex items-center gap-3">
             <Coins className="h-8 w-8 text-blue-600" />
             <div>
@@ -333,18 +333,18 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
+      <div className="container mx-auto px-4 py-8 max-w-full">
+        <div className="grid lg:grid-cols-2 gap-8 w-full">
           {/* Input Section */}
-          <div className="space-y-6">
-            <Card className="shadow-lg rounded-xl">
+          <div className="space-y-6 w-full">
+            <Card className="shadow-lg rounded-xl w-full">
               <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
                 <CardTitle className="flex items-center gap-2">
                   <Search className="h-5 w-5" />
                   Skattesats
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-4 bg-blue-50 rounded-b-xl">
+              <CardContent className="p-6 space-y-4 bg-blue-50 rounded-b-xl w-full">
                 <div className="space-y-2">
                   <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
                     <Calendar className="h-4 w-4" />
@@ -354,7 +354,7 @@ const Index = () => {
                     onValueChange={(value) => setSelectedYear(parseInt(value))}
                     value={selectedYear?.toString() || ''}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Välj år" />
                     </SelectTrigger>
                     <SelectContent>
@@ -422,7 +422,7 @@ const Index = () => {
                 )}
 
                 {/* Income Input Fields */}
-                <div className="border-t pt-4 space-y-4">
+                <div className="border-t pt-4 space-y-4 w-full">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Coins className="h-4 w-4" />
                     Inkomstuppgifter
@@ -450,6 +450,7 @@ const Index = () => {
                       placeholder="Välj födelsedatum"
                       max={new Date().toISOString().split('T')[0]}
                       min="1900-01-01"
+                      className="w-full"
                     />
                   </div>
 
@@ -463,6 +464,7 @@ const Index = () => {
                       placeholder="Ange månadsinkomst"
                       min="0"
                       max="1000000000"
+                      className="w-full"
                     />
                   </div>
 
@@ -475,13 +477,14 @@ const Index = () => {
                       onChange={handleTaxableBenefitChange}
                       placeholder="Ange beskattningsbar förmån"
                       min="0"
+                      className="w-full"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="incomeType">Typ av inkomst</Label>
                     <Select onValueChange={setIncomeType} value={incomeType}>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Välj inkomsttyp" />
                       </SelectTrigger>
                       <SelectContent>
@@ -520,7 +523,7 @@ const Index = () => {
           </div>
 
           {/* Results Section */}
-          <div className="space-y-6">
+          <div className="space-y-6 w-full">
             <TaxColumnSelector
               age={0}
               onAgeChange={() => {}}

@@ -158,28 +158,13 @@ const TaxColumnSelector = ({
     // Find the next bracket (one income level higher)
     const currentIndex = skattetabellData.indexOf(currentBracket);
     
-    // If we're in the last bracket, check if the next tax table has percentage values
+    // If we're in the last bracket or close to it, return the current tax rate as marginal rate
     if (currentIndex >= skattetabellData.length - 1) {
-      // Try to get the next tax table (higher table number)
-      const nextTableNumber = currentBracket.Tabell + 1;
-      const nextTableData = skattetabellData.filter(item => item.Tabell === nextTableNumber);
-      
-      if (nextTableData.length > 0) {
-        // Find the first bracket in the next table
-        const firstBracketNextTable = nextTableData.sort((a, b) => a.InkomstFrån - b.InkomstFrån)[0];
-        const nextTableTaxValue = parseFloat(firstBracketNextTable[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
-        
-        // If the next table value is a percentage (typically values <= 100), use it directly
-        if (nextTableTaxValue <= 100 && nextTableTaxValue > 0) {
-          return nextTableTaxValue.toFixed(1);
-        }
-      }
-      
-      // Fallback: if we can't find next table or it's not percentage, use current tax rate
+      // For high income brackets, the marginal rate is typically the current rate
       if (isPercentageValue(currentTaxValue, currentIncome)) {
         return currentTaxValue.toFixed(1);
       } else {
-        // Convert absolute tax amount to percentage
+        // Convert absolute tax amount to percentage for marginal rate
         const percentage = (currentTaxValue / currentIncome) * 100;
         return percentage.toFixed(1);
       }
@@ -193,7 +178,14 @@ const TaxColumnSelector = ({
       return nextTaxValue.toFixed(1);
     }
     
-    // Calculate actual tax amounts for both brackets
+    // If we're transitioning from absolute values to percentage values
+    if (!isPercentageValue(currentTaxValue, currentBracket.InkomstFrån) && 
+        isPercentageValue(nextTaxValue, nextBracket.InkomstFrån)) {
+      // Use the percentage value from the next bracket
+      return nextTaxValue.toFixed(1);
+    }
+    
+    // Calculate marginal rate based on the difference between brackets
     let currentTaxAmount = 0;
     let nextTaxAmount = 0;
     
@@ -218,7 +210,7 @@ const TaxColumnSelector = ({
       return Math.max(0, marginalRate).toFixed(1);
     }
     
-    // Fallback: if we can't calculate marginal rate, return the current tax rate
+    // Fallback: return current tax rate
     if (isPercentageValue(currentTaxValue, currentIncome)) {
       return currentTaxValue.toFixed(1);
     } else {
@@ -361,7 +353,7 @@ const TaxColumnSelector = ({
     setAdjustedSalary(cappedValue);
   };
 
-  const handleAdjustedMonthsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAdjustedMonthsChange = (e: React.ChangeEvent<HTMLInputInput>) => {
     const value = e.target.value;
     const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
     const cappedValue = Math.min(Math.max(0, numericValue), 12);
@@ -376,20 +368,20 @@ const TaxColumnSelector = ({
   }, [selectedYear, monthlyIncome, taxableBenefit, selectedTaxColumn, engangsbeskattningAmount, additionalIncome, adjustedSalary, adjustedMonths]);
 
   return (
-    <div className="space-y-6">
-      <Card className="shadow-lg rounded-xl">
+    <div className="space-y-6 w-full max-w-full overflow-hidden">
+      <Card className="shadow-lg rounded-xl w-full">
         <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
             Skatteberäkning
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6 bg-blue-50 rounded-b-xl">
+        <CardContent className="p-6 bg-blue-50 rounded-b-xl w-full">
           {/* Tax Result Display - Side by Side Layout */}
           {result.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
               {/* Tax Rate Display */}
-              <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
+              <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl w-full">
                 <h3 className="font-semibold text-blue-800 mb-2">Skattesats för {result[0].Kommun}</h3>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
@@ -423,15 +415,15 @@ const TaxColumnSelector = ({
 
               {/* Tax Calculation Display */}
               {kommun && taxAmount && getTotalIncomeForTax() > 0 && (
-                <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
+                <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl w-full">
                   <div className="text-center">
                     <div className="text-sm font-medium text-black mb-1">
                       Total skatt
                     </div>
-                    <div className="text-2xl font-bold text-black mb-2">
+                    <div className="text-2xl font-bold text-black mb-2 break-words">
                       {Math.round(getActualTaxAmount()).toLocaleString()} kr
                     </div>
-                    <div className="text-sm font-medium text-black mb-2">
+                    <div className="text-sm font-medium text-black mb-2 break-words">
                       Månadsinkomst (kr) beräknad på {Math.round(getTotalIncomeForTax()).toLocaleString()} kr
                     </div>
                     <div className="text-sm font-medium text-black mb-1">
@@ -447,11 +439,11 @@ const TaxColumnSelector = ({
           )}
 
           {kommun && taxAmount && getTotalIncomeForTax() > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-4 w-full">
               {/* Net Salary Display with Pie Chart */}
-              <div className="text-center p-4 bg-blue-100 border border-blue-300 rounded-xl">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="relative" style={{ width: 320, height: 300 }}>
+              <div className="text-center p-4 bg-blue-100 border border-blue-300 rounded-xl w-full">
+                <div className="flex flex-col items-center gap-3 w-full">
+                  <div className="relative w-full max-w-xs" style={{ height: 300 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPieChart>
                         <Pie
@@ -486,7 +478,7 @@ const TaxColumnSelector = ({
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-gray-900">
+                        <div className="text-3xl font-bold text-gray-900 break-words">
                           {Math.round(getNetSalary()).toLocaleString()} kr
                         </div>
                         <div className="text-lg font-medium text-gray-600 mt-1">
@@ -497,7 +489,7 @@ const TaxColumnSelector = ({
                   </div>
                   
                   {/* Legend */}
-                  <div className="grid grid-cols-2 gap-8 text-center">
+                  <div className="grid grid-cols-2 gap-8 text-center w-full">
                     {getPieChartData().map((entry, index) => (
                       <div key={entry.name} className="flex flex-col items-center">
                         <div className="flex items-center gap-2 mb-1">
@@ -507,7 +499,7 @@ const TaxColumnSelector = ({
                           ></div>
                           <span className="text-sm font-medium text-gray-600">{entry.name}</span>
                         </div>
-                        <div className="text-xl font-bold text-gray-900">
+                        <div className="text-xl font-bold text-gray-900 break-words">
                           {entry.value.toLocaleString()} kr
                         </div>
                       </div>
@@ -517,17 +509,17 @@ const TaxColumnSelector = ({
               </div>
 
               {/* Engångsbeskattning Card with Two Column Layout */}
-              <Card className="shadow-lg rounded-xl">
-                <CardContent className="p-4 bg-blue-100 border border-blue-300 rounded-xl">
+              <Card className="shadow-lg rounded-xl w-full">
+                <CardContent className="p-4 bg-blue-100 border border-blue-300 rounded-xl w-full">
                   <div className="text-center mb-4">
                     <div className="text-lg font-semibold text-blue-800">
                       Beskattning på engångsbelopp
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                     {/* Left Column - Input */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 w-full">
                       <div className="space-y-2">
                         <Label htmlFor="engangsbeskattningAmount" className="flex items-center gap-2">
                           Engångsbelopp (kr)
@@ -561,6 +553,7 @@ const TaxColumnSelector = ({
                           placeholder="Ange engångsbelopp"
                           min="0"
                           max="1000000000"
+                          className="w-full"
                         />
                       </div>
 
@@ -586,6 +579,7 @@ const TaxColumnSelector = ({
                           placeholder="Ange övrig inkomst"
                           min="0"
                           max="1000000000"
+                          className="w-full"
                         />
                       </div>
 
@@ -611,6 +605,7 @@ const TaxColumnSelector = ({
                           placeholder="Ange justerad månadslön"
                           min="0"
                           max="1000000000"
+                          className="w-full"
                         />
                       </div>
 
@@ -636,12 +631,13 @@ const TaxColumnSelector = ({
                           placeholder="Antal månader med justerad lön"
                           min="0"
                           max="12"
+                          className="w-full"
                         />
                       </div>
                     </div>
 
                     {/* Right Column - Results */}
-                    <div className="text-center">
+                    <div className="text-center w-full">
                       {engangsbeskattningLoading ? (
                         <div className="text-gray-500">Beräknar...</div>
                       ) : engangsbeskattningError ? (
@@ -661,14 +657,14 @@ const TaxColumnSelector = ({
                             I engångsskatt
                           </div>
                           <div className="mt-3 pt-3 border-t border-blue-300">
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-gray-600 break-words">
                               På ett engångsbelopp om {engangsbeskattningAmount.toLocaleString()} kr betalar du{' '}
                               <span className="font-bold">
                                 {Math.round(calculateEngangsbeskattning(engangsbeskattningAmount)).toLocaleString()} kr
                               </span>{' '}
                               i skatt
                             </div>
-                            <div className="text-xs text-gray-500 mt-2">
+                            <div className="text-xs text-gray-500 mt-2 break-words">
                               Baserat på total årslön: {calculateYearlyIncome().toLocaleString()} kr
                             </div>
                           </div>
@@ -684,7 +680,7 @@ const TaxColumnSelector = ({
               </Card>
             </div>
           ) : (
-            <div className="text-center text-gray-500 py-8 bg-blue-100 border border-blue-300 rounded-xl">
+            <div className="text-center text-gray-500 py-8 bg-blue-100 border border-blue-300 rounded-xl w-full">
               {!kommun 
                 ? 'Gör en skattesats-sökning först'
                 : getTotalIncomeForTax() === 0
