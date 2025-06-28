@@ -114,15 +114,15 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
 
   return (
     <Card className="shadow-lg rounded-xl">
-      <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
-        <CardTitle className="flex items-center gap-2">
-          <List className="h-5 w-5" />
+      <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl py-3">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <List className="h-4 w-4" />
           Skattetabell {skattetabellData[0]?.Tabell}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0 bg-blue-50 rounded-b-xl">
         {/* Search Input */}
-        <div className="p-4 border-b border-blue-200">
+        <div className="p-3 border-b border-blue-200">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
@@ -130,18 +130,18 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
               placeholder="Sök efter inkomst..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white border-blue-200 focus:border-blue-400"
+              className="pl-10 bg-white border-blue-200 focus:border-blue-400 h-8"
             />
           </div>
         </div>
         
-        <ScrollArea className="h-96">
+        <ScrollArea className="h-64">
           <Table>
             <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
               <TableRow className="bg-blue-50">
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50">Inkomst från</TableHead>
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50">Inkomst till</TableHead>
-                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50">
+                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 text-sm py-2">Inkomst från</TableHead>
+                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 text-sm py-2">Inkomst till</TableHead>
+                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 text-sm py-2">
                   Skatt
                 </TableHead>
               </TableRow>
@@ -162,13 +162,13 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                         : 'bg-gray-50 hover:bg-blue-50'
                     }`}
                   >
-                    <TableCell className={`font-medium ${isCurrentRow ? 'text-blue-900' : 'text-gray-900'}`}>
+                    <TableCell className={`font-medium py-1.5 text-sm ${isCurrentRow ? 'text-blue-900' : 'text-gray-900'}`}>
                       {formatIncome(row.InkomstFrån)}
                     </TableCell>
-                    <TableCell className={`${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
+                    <TableCell className={`py-1.5 text-sm ${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
                       {formatIncome(row.InkomstTill)}
                     </TableCell>
-                    <TableCell className={`text-center font-semibold ${
+                    <TableCell className={`text-center font-semibold py-1.5 text-sm ${
                       isCurrentRow ? 'text-blue-900' : 'text-blue-700'
                     }`}>
                       {getTaxFromColumn(row, selectedTaxColumn, originalIndex)}
