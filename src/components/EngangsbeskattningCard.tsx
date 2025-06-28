@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,6 +24,9 @@ interface EngangsbeskattningCardProps {
   monthlyIncome: number;
   taxableBenefit: number;
   calculateVacationPay: () => number;
+  hasCollectiveAgreement: boolean;
+  vacationDays: number;
+  variableSalary: number;
 }
 
 const EngangsbeskattningCard = ({
@@ -45,7 +47,10 @@ const EngangsbeskattningCard = ({
   selectedYear,
   monthlyIncome,
   taxableBenefit,
-  calculateVacationPay
+  calculateVacationPay,
+  hasCollectiveAgreement,
+  vacationDays,
+  variableSalary
 }: EngangsbeskattningCardProps) => {
   const getYearlyIncomeBreakdown = () => {
     const baseMonthlyIncome = monthlyIncome + taxableBenefit;
@@ -63,11 +68,8 @@ const EngangsbeskattningCard = ({
     
     const vacationPay = calculateVacationPay();
     if (vacationPay > 0) {
-      // Get vacation calculation details from the hook context
+      // Use actual parameters from the form
       const baseSalary = monthlyIncome;
-      const hasCollectiveAgreement = true; // This should come from props but defaulting for now
-      const vacationDays = 25; // This should come from props but defaulting for now
-      const variableSalary = 0; // This should come from props but defaulting for now
       
       let calculationText = '';
       if (hasCollectiveAgreement) {

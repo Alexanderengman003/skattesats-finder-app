@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator } from 'lucide-react';
@@ -194,6 +195,9 @@ const TaxColumnSelector = ({
                 monthlyIncome={monthlyIncome}
                 taxableBenefit={taxableBenefit}
                 calculateVacationPay={calculateVacationPay}
+                hasCollectiveAgreement={hasCollectiveAgreement}
+                vacationDays={vacationDays}
+                variableSalary={variableSalary}
               />
             </div>
           ) : (
