@@ -42,6 +42,11 @@ export const useTaxCalculations = ({
   const [additionalIncome, setAdditionalIncome] = useState(0);
   const [adjustedSalary, setAdjustedSalary] = useState(0);
   const [adjustedMonths, setAdjustedMonths] = useState(0);
+  
+  // Vacation pay fields
+  const [hasCollectiveAgreement, setHasCollectiveAgreement] = useState(false);
+  const [vacationDays, setVacationDays] = useState(30);
+  const [variableSalary, setVariableSalary] = useState(0);
 
   const getTotalIncomeForTax = (): number => {
     return monthlyIncome + taxableBenefit;
@@ -49,6 +54,28 @@ export const useTaxCalculations = ({
 
   const getBaseSalary = (): number => {
     return monthlyIncome;
+  };
+
+  const calculateVacationPay = (): number => {
+    if (monthlyIncome === 0) return 0;
+    
+    let vacationPay = 0;
+    
+    if (hasCollectiveAgreement) {
+      // Med kollektivavtal: 30 semesterdagar x 0.8% x månadslön
+      const fixedVacationPay = vacationDays * 0.008 * monthlyIncome;
+      // För rörlig lön: 30 semesterdagar x 0.5% x rörlig lön
+      const variableVacationPay = vacationDays * 0.005 * variableSalary;
+      vacationPay = fixedVacationPay + variableVacationPay;
+    } else {
+      // Utan kollektivavtal: 30 semesterdagar x 0.43% x månadslön
+      const fixedVacationPay = vacationDays * 0.0043 * monthlyIncome;
+      // För rörlig lön: 30 semesterdagar * (12% x rörlig lön)/25
+      const variableVacationPay = vacationDays * (0.12 * variableSalary) / 25;
+      vacationPay = fixedVacationPay + variableVacationPay;
+    }
+    
+    return Math.round(vacationPay);
   };
 
   const calculateYearlyIncome = (): number => {
@@ -62,7 +89,8 @@ export const useTaxCalculations = ({
       yearlyIncome = baseMonthlyIncome * 12;
     }
     
-    return yearlyIncome + additionalIncome + engangsbeskattningAmount;
+    const vacationPay = calculateVacationPay();
+    return yearlyIncome + additionalIncome + engangsbeskattningAmount + vacationPay;
   };
 
   const isPercentageValue = (value: number, income: number): boolean => {
@@ -145,9 +173,8 @@ export const useTaxCalculations = ({
       if (isPercentageValue(lastTaxValue, lastBracket.InkomstFrån)) {
         return lastTaxValue.toFixed(1);
       } else {
-        // For kr values in the last bracket, calculate as percentage of income
-        const percentage = (lastTaxValue / lastBracket.InkomstFrån) * 100;
-        return percentage.toFixed(1);
+        // For kr values in the last bracket, return the tax value directly as marginal rate
+        return lastTaxValue.toFixed(1);
       }
     }
     
@@ -270,7 +297,7 @@ export const useTaxCalculations = ({
     if (selectedYear && getTotalIncomeForTax() > 0 && selectedTaxColumn && engangsbeskattningAmount > 0) {
       loadEngangsbeskattningData();
     }
-  }, [selectedYear, monthlyIncome, taxableBenefit, selectedTaxColumn, engangsbeskattningAmount, additionalIncome, adjustedSalary, adjustedMonths]);
+  }, [selectedYear, monthlyIncome, taxableBenefit, selectedTaxColumn, engangsbeskattningAmount, additionalIncome, adjustedSalary, adjustedMonths, hasCollectiveAgreement, vacationDays, variableSalary]);
 
   return {
     engangsbeskattningData,
@@ -284,9 +311,16 @@ export const useTaxCalculations = ({
     setAdjustedSalary,
     adjustedMonths,
     setAdjustedMonths,
+    hasCollectiveAgreement,
+    setHasCollectiveAgreement,
+    vacationDays,
+    setVacationDays,
+    variableSalary,
+    setVariableSalary,
     getTotalIncomeForTax,
     getBaseSalary,
     calculateYearlyIncome,
+    calculateVacationPay,
     getTaxPercentage,
     getActualTaxAmount,
     getNetSalary,
