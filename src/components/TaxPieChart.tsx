@@ -17,15 +17,15 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
     {
       name: 'Skatt',
       value: Math.round(taxAmount),
-      color: '#94a3b8'
+      color: '#60a5fa'
     }
   ];
 
-  const COLORS = ['#3b82f6', '#94a3b8'];
+  const COLORS = ['#3b82f6', '#60a5fa'];
 
   return (
-    <div className="text-center p-6 bg-gradient-to-r from-slate-100 to-blue-100/60 border border-slate-200/60 rounded-2xl shadow-sm w-full">
-      <div className="flex flex-col items-center gap-4 w-full">
+    <div className="text-center p-4 bg-blue-100 border border-blue-300 rounded-xl w-full">
+      <div className="flex flex-col items-center gap-3 w-full">
         <div className="relative w-full max-w-xs" style={{ height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
             <RechartsPieChart>
@@ -35,10 +35,10 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
                 cy="50%"
                 innerRadius={110}
                 outerRadius={130}
-                paddingAngle={2}
+                paddingAngle={0}
                 dataKey="value"
                 stroke="none"
-                cornerRadius={4}
+                cornerRadius={0}
               >
                 {pieChartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -52,21 +52,19 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
                 labelFormatter={() => ''}
                 contentStyle={{
                   backgroundColor: 'white',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                  fontSize: '14px',
-                  fontWeight: '500'
+                  border: '1px solid #3b82f6',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                 }}
               />
             </RechartsPieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-3xl font-bold text-slate-800 break-words">
+              <div className="text-3xl font-bold text-gray-900 break-words">
                 {Math.round(netSalary).toLocaleString()} kr
               </div>
-              <div className="text-lg font-semibold text-slate-600 mt-1">
+              <div className="text-lg font-medium text-gray-600 mt-1">
                 Nettoinkomst
               </div>
             </div>
@@ -77,14 +75,14 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
         <div className="grid grid-cols-2 gap-8 text-center w-full">
           {pieChartData.map((entry, index) => (
             <div key={entry.name} className="flex flex-col items-center">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-1">
                 <div 
-                  className="w-4 h-4 rounded-full shadow-sm" 
+                  className="w-3 h-3 rounded-full" 
                   style={{ backgroundColor: COLORS[index] }}
                 ></div>
-                <span className="text-sm font-semibold text-slate-600">{entry.name}</span>
+                <span className="text-sm font-medium text-gray-600">{entry.name}</span>
               </div>
-              <div className="text-xl font-bold text-slate-800 break-words">
+              <div className="text-xl font-bold text-gray-900 break-words">
                 {entry.value.toLocaleString()} kr
               </div>
             </div>

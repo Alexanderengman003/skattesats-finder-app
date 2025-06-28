@@ -122,17 +122,17 @@ const TaxColumnSelector = ({
 
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
-      <Card className="shadow-xl rounded-2xl border-0 overflow-hidden w-full">
-        <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-          <CardTitle className="flex items-center gap-3 text-xl font-semibold">
-            <Calculator className="h-6 w-6" />
+      <Card className="shadow-lg rounded-xl w-full">
+        <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
+          <CardTitle className="flex items-center gap-2">
+            <Calculator className="h-5 w-5" />
             Skatteberäkning
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-8 bg-gradient-to-br from-slate-50 to-blue-50/30 w-full">
+        <CardContent className="p-6 bg-blue-50 rounded-b-xl w-full">
           {/* Tax Result Display - Side by Side Layout */}
           {result.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
               <TaxRateDisplay 
                 result={result}
                 includeSvenskaKyrkan={includeSvenskaKyrkan}
@@ -151,7 +151,7 @@ const TaxColumnSelector = ({
           )}
 
           {kommun && taxAmount && getTotalIncomeForTax() > 0 ? (
-            <div className="space-y-6 w-full">
+            <div className="space-y-4 w-full">
               {/* Net Salary Display with Pie Chart */}
               <TaxPieChart 
                 netSalary={getNetSalary()}
@@ -178,15 +178,13 @@ const TaxColumnSelector = ({
               />
             </div>
           ) : (
-            <div className="text-center text-slate-600 py-12 bg-gradient-to-r from-slate-100 to-blue-100/60 border border-slate-200/60 rounded-2xl w-full">
-              <div className="text-lg font-medium">
-                {!kommun 
-                  ? 'Gör en skattesats-sökning först'
-                  : getTotalIncomeForTax() === 0
-                  ? 'Ange månadsinkomst (kr) för att se skatteberäkning'
-                  : 'Beräknar skatt...'
-                }
-              </div>
+            <div className="text-center text-gray-500 py-8 bg-blue-100 border border-blue-300 rounded-xl w-full">
+              {!kommun 
+                ? 'Gör en skattesats-sökning först'
+                : getTotalIncomeForTax() === 0
+                ? 'Ange månadsinkomst (kr) för att se skatteberäkning'
+                : 'Beräknar skatt...'
+              }
             </div>
           )}
         </CardContent>
