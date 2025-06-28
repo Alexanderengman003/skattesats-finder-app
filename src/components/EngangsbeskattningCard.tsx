@@ -58,12 +58,12 @@ const EngangsbeskattningCard = ({
     
     if (adjustedSalary > 0 && adjustedMonths > 0 && adjustedMonths <= 12) {
       const remainingMonths = 12 - adjustedMonths;
-      breakdown.push(`Justerad inkomst: ${adjustedSalary.toLocaleString()} kr × ${adjustedMonths} månader = ${(adjustedSalary * adjustedMonths).toLocaleString()} kr`);
+      breakdown.push(`Justerad inkomst: ${adjustedSalary.toLocaleString()} kr × ${adjustedMonths} månader = ${Math.round(adjustedSalary * adjustedMonths).toLocaleString()} kr`);
       if (remainingMonths > 0) {
-        breakdown.push(`Nuvarande inkomst: ${baseMonthlyIncome.toLocaleString()} kr × ${remainingMonths} månader = ${(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`);
+        breakdown.push(`Nuvarande inkomst: ${baseMonthlyIncome.toLocaleString()} kr × ${remainingMonths} månader = ${Math.round(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`);
       }
     } else {
-      breakdown.push(`Månadsinkomst: ${baseMonthlyIncome.toLocaleString()} kr × 12 månader = ${(baseMonthlyIncome * 12).toLocaleString()} kr`);
+      breakdown.push(`Månadsinkomst: ${baseMonthlyIncome.toLocaleString()} kr × 12 månader = ${Math.round(baseMonthlyIncome * 12).toLocaleString()} kr`);
     }
     
     const vacationPay = calculateVacationPay();
@@ -261,7 +261,7 @@ const EngangsbeskattningCard = ({
                     i skatt
                   </div>
                   <div className="text-xs text-gray-500 mt-2 break-words">
-                    Baserat på total årsinkomst: {calculateYearlyIncome().toLocaleString()} kr
+                    Baserat på total årsinkomst: {Math.round(calculateYearlyIncome()).toLocaleString()} kr
                   </div>
                   <div className="text-xs text-gray-500 mt-3 text-left bg-white/60 p-3 rounded-lg border border-gray-200 shadow-sm">
                     <div className="font-semibold mb-2 text-gray-700">Årsinkomsten inkluderar:</div>
@@ -274,7 +274,7 @@ const EngangsbeskattningCard = ({
                       ))}
                       <div className="flex items-start gap-2 text-xs pt-2 border-t border-gray-300 font-bold text-gray-700">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 flex-shrink-0"></div>
-                        <span>Total årsinkomst: {calculateYearlyIncome().toLocaleString()} kr</span>
+                        <span>Total årsinkomst: {Math.round(calculateYearlyIncome()).toLocaleString()} kr</span>
                       </div>
                     </div>
                   </div>

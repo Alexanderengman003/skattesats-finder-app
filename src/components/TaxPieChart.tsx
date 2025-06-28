@@ -25,16 +25,16 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
 
   return (
     <div className="text-center p-3 bg-blue-100 border border-blue-300 rounded-xl w-full">
-      <div className="flex flex-col items-center gap-1 w-full">
-        <div className="relative w-full max-w-xs" style={{ height: 250 }}>
+      <div className="flex flex-col items-center w-full">
+        <div className="relative w-full max-w-xs" style={{ height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
             <RechartsPieChart>
               <Pie
                 data={pieChartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={90}
-                outerRadius={110}
+                innerRadius={70}
+                outerRadius={90}
                 paddingAngle={0}
                 dataKey="value"
                 stroke="none"
@@ -61,10 +61,10 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900 break-words">
+              <div className="text-xl font-bold text-gray-900 break-words">
                 {Math.round(netSalary).toLocaleString()} kr
               </div>
-              <div className="text-base font-medium text-gray-600 mt-1">
+              <div className="text-sm font-medium text-gray-600 mt-1">
                 Nettoinkomst
               </div>
             </div>
@@ -72,7 +72,7 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
         </div>
         
         {/* Legend - moved closer to pie chart */}
-        <div className="grid grid-cols-2 gap-3 text-center w-full">
+        <div className="grid grid-cols-2 gap-3 text-center w-full mt-2">
           {pieChartData.map((entry, index) => (
             <div key={entry.name} className="flex flex-col items-center">
               <div className="flex items-center gap-2 mb-0.5">
@@ -82,7 +82,7 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
                 ></div>
                 <span className="text-sm font-medium text-gray-600">{entry.name}</span>
               </div>
-              <div className="text-lg font-bold text-gray-900 break-words">
+              <div className="text-base font-bold text-gray-900 break-words">
                 {entry.value.toLocaleString()} kr
               </div>
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -135,13 +134,13 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
           </div>
         </div>
         
-        <ScrollArea className="h-80">
+        <ScrollArea className="h-64 rounded-b-xl">
           <Table>
             <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
-              <TableRow className="bg-blue-50 h-8">
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-2 text-sm">Inkomst från</TableHead>
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-2 text-sm">Inkomst till</TableHead>
-                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-2 text-sm">
+              <TableRow className="bg-blue-50 h-7">
+                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-1 text-sm">Inkomst från</TableHead>
+                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-1 text-sm">Inkomst till</TableHead>
+                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm">
                   Skatt
                 </TableHead>
               </TableRow>
@@ -154,7 +153,7 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                 return (
                   <TableRow 
                     key={`${row.InkomstFrån}-${row.InkomstTill}-${index}`}
-                    className={`transition-colors h-8 ${
+                    className={`transition-colors h-7 ${
                       isCurrentRow 
                         ? 'bg-blue-200 border-l-4 border-blue-500' 
                         : index % 2 === 0 
@@ -162,13 +161,13 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                         : 'bg-gray-50 hover:bg-blue-50'
                     }`}
                   >
-                    <TableCell className={`font-medium py-1 text-sm ${isCurrentRow ? 'text-blue-900' : 'text-gray-900'}`}>
+                    <TableCell className={`font-medium py-1 text-sm px-3 ${isCurrentRow ? 'text-blue-900' : 'text-gray-900'}`}>
                       {formatIncome(row.InkomstFrån)}
                     </TableCell>
-                    <TableCell className={`py-1 text-sm ${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
+                    <TableCell className={`py-1 text-sm px-3 ${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
                       {formatIncome(row.InkomstTill)}
                     </TableCell>
-                    <TableCell className={`text-center font-semibold py-1 text-sm ${
+                    <TableCell className={`text-center font-semibold py-1 text-sm px-3 ${
                       isCurrentRow ? 'text-blue-900' : 'text-blue-700'
                     }`}>
                       {getTaxFromColumn(row, selectedTaxColumn, originalIndex)}
