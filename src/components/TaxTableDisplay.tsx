@@ -1,10 +1,10 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { List, Search } from 'lucide-react';
+import CollapsibleCard from './CollapsibleCard';
 
 interface SkattetabellData {
   År: number;
@@ -112,75 +112,112 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
     );
   }, [skattetabellData, searchTerm]);
 
+  // Get all available columns
+  const availableColumns = useMemo(() => {
+    if (skattetabellData.length === 0) return [];
+    
+    const columns = [];
+    for (let i = 1; i <= 7; i++) {
+      const columnKey = `Kolumn${i}`;
+      const hasData = skattetabellData.some(item => item[columnKey] && item[columnKey] !== 'Ej tillgänglig');
+      if (hasData) {
+        columns.push(i);
+      }
+    }
+    return columns;
+  }, [skattetabellData]);
+
   return (
-    <Card className="shadow-lg rounded-xl">
-      <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
-        <CardTitle className="flex items-center gap-2">
-          <List className="h-5 w-5" />
-          Skattetabell {skattetabellData[0]?.Tabell}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0 bg-blue-50 rounded-b-xl">
-        {/* Search Input */}
-        <div className="p-4 border-b border-blue-200">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-            <Input
-              type="text"
-              placeholder="Sök efter inkomst..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white border-blue-200 focus:border-blue-400"
-            />
-          </div>
+    <CollapsibleCard
+      title={`Skattetabell ${skattetabellData[0]?.Tabell}`}
+      icon={<List className="h-5 w-5" />}
+      defaultOpen={true}
+      headerClassName="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl"
+      contentClassName="p-0 bg-blue-50 rounded-b-xl"
+    >
+      {/* Search Input */}
+      <div className="p-4 border-b border-blue-200">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input
+            type="text"
+            placeholder="Sök efter inkomst..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-white border-blue-200 focus:border-blue-400"
+          />
         </div>
-        
-        <ScrollArea className="h-96">
-          <Table>
-            <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
-              <TableRow className="bg-blue-50">
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50">Inkomst från</TableHead>
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50">Inkomst till</TableHead>
-                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50">
-                  Skatt
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredData.map((row, index) => {
-                const isCurrentRow = isCurrentIncomeBracket(row);
-                const originalIndex = skattetabellData.indexOf(row);
-                
-                return (
-                  <TableRow 
-                    key={`${row.InkomstFrån}-${row.InkomstTill}-${index}`}
-                    className={`transition-colors ${
-                      isCurrentRow 
-                        ? 'bg-blue-200 border-l-4 border-blue-500' 
-                        : index % 2 === 0 
-                        ? 'bg-white hover:bg-blue-50' 
-                        : 'bg-gray-50 hover:bg-blue-50'
-                    }`}
-                  >
-                    <TableCell className={`font-medium ${isCurrentRow ? 'text-blue-900' : 'text-gray-900'}`}>
-                      {formatIncome(row.InkomstFrån)}
-                    </TableCell>
-                    <TableCell className={`${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
-                      {formatIncome(row.InkomstTill)}
-                    </TableCell>
-                    <TableCell className={`text-center font-semibold ${
-                      isCurrentRow ? 'text-blue-900' : 'text-blue-700'
-                    }`}>
-                      {getTaxFromColumn(row, selectedTaxColumn, originalIndex)}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+      </div>
+      
+      <div className="relative">
+        <ScrollArea className="h-96 w-full">
+          <div className="overflow-x-auto">
+            <Table className="min-w-full">
+              <TableHeader className="sticky top-0 bg-white z-20 shadow-sm">
+                <TableRow className="bg-blue-50">
+                  <TableHead className="font-semibold text-blue-900 sticky left-0 bg-blue-50 z-10 min-w-[120px] border-r-2 border-blue-200">
+                    Inkomst från
+                  </TableHead>
+                  <TableHead className="font-semibold text-blue-900 sticky left-[120px] bg-blue-50 z-10 min-w-[120px] border-r-2 border-blue-200">
+                    Inkomst till
+                  </TableHead>
+                  {availableColumns.map(column => (
+                    <TableHead 
+                      key={column} 
+                      className={`font-semibold text-blue-900 text-center min-w-[100px] ${
+                        column === selectedTaxColumn ? 'bg-blue-200' : ''
+                      }`}
+                    >
+                      Kolumn {column}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredData.map((row, index) => {
+                  const isCurrentRow = isCurrentIncomeBracket(row);
+                  const originalIndex = skattetabellData.indexOf(row);
+                  
+                  return (
+                    <TableRow 
+                      key={`${row.InkomstFrån}-${row.InkomstTill}-${index}`}
+                      className={`transition-colors ${
+                        isCurrentRow 
+                          ? 'bg-blue-200 border-l-4 border-blue-500' 
+                          : index % 2 === 0 
+                          ? 'bg-white hover:bg-blue-50' 
+                          : 'bg-gray-50 hover:bg-blue-50'
+                      }`}
+                    >
+                      <TableCell className={`font-medium sticky left-0 z-10 min-w-[120px] border-r-2 border-blue-200 ${
+                        isCurrentRow ? 'text-blue-900 bg-blue-200' : 'text-gray-900 bg-inherit'
+                      }`}>
+                        {formatIncome(row.InkomstFrån)}
+                      </TableCell>
+                      <TableCell className={`sticky left-[120px] z-10 min-w-[120px] border-r-2 border-blue-200 ${
+                        isCurrentRow ? 'text-blue-900 bg-blue-200' : 'text-gray-600 bg-inherit'
+                      }`}>
+                        {formatIncome(row.InkomstTill)}
+                      </TableCell>
+                      {availableColumns.map(column => (
+                        <TableCell 
+                          key={column}
+                          className={`text-center font-semibold min-w-[100px] ${
+                            isCurrentRow ? 'text-blue-900' : 'text-blue-700'
+                          } ${column === selectedTaxColumn ? 'bg-blue-100' : ''}`}
+                        >
+                          {getTaxFromColumn(row, column, originalIndex)}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </ScrollArea>
-      </CardContent>
-    </Card>
+      </div>
+    </CollapsibleCard>
   );
 };
 
