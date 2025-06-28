@@ -365,16 +365,16 @@ const Index = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 bg-blue-50 rounded-b-xl w-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Left Column - Personal Information */}
                   <div className="space-y-6">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                    <h3 className="font-semibold flex items-center gap-2 text-lg">
+                      <Calendar className="h-5 w-5" />
                       Personuppgifter
                     </h3>
                     
                     <div className="space-y-6">
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
                           <Calendar className="h-4 w-4" />
                           Inkomstår
@@ -383,7 +383,7 @@ const Index = () => {
                           onValueChange={(value) => setSelectedYear(parseInt(value))}
                           value={selectedYear?.toString() || ''}
                         >
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full h-10">
                             <SelectValue placeholder="Välj år" />
                           </SelectTrigger>
                           <SelectContent>
@@ -396,7 +396,7 @@ const Index = () => {
                         </Select>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <label htmlFor="kommun" className="flex items-center gap-2 text-sm font-medium">
                           <MapPin className="h-4 w-4" />
                           Kommun
@@ -411,16 +411,18 @@ const Index = () => {
                       </div>
 
                       {availableForsamlingar.length > 1 && (
-                        <ForsamlingSelect
-                          forsamlingar={availableForsamlingar}
-                          value={forsamling}
-                          onValueChange={setForsamling}
-                          disabled={!kommun}
-                        />
+                        <div className="space-y-3">
+                          <ForsamlingSelect
+                            forsamlingar={availableForsamlingar}
+                            value={forsamling}
+                            onValueChange={setForsamling}
+                            disabled={!kommun}
+                          />
+                        </div>
                       )}
 
-                      <div className="space-y-2">
-                        <Label htmlFor="birthday" className="flex items-center gap-2">
+                      <div className="space-y-3">
+                        <Label htmlFor="birthday" className="flex items-center gap-2 text-sm font-medium">
                           Födelsedatum
                           <TooltipProvider>
                             <Tooltip>
@@ -441,11 +443,11 @@ const Index = () => {
                           placeholder="Välj födelsedatum"
                           max={new Date().toISOString().split('T')[0]}
                           min="1900-01-01"
-                          className="w-full"
+                          className="w-full h-10"
                         />
                       </div>
 
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3 pt-2">
                         <Checkbox 
                           id="svenskaKyrkan" 
                           checked={includeSvenskaKyrkan}
@@ -469,29 +471,18 @@ const Index = () => {
                         </label>
                       </div>
                     </div>
-
-                    {/* Tax Table Display */}
-                    {skattetabellData.length > 0 && (
-                      <div className="mt-6">
-                        <TaxTableDisplay
-                          skattetabellData={skattetabellData}
-                          selectedTaxColumn={selectedTaxColumn}
-                          currentIncome={getTotalIncome()}
-                        />
-                      </div>
-                    )}
                   </div>
 
                   {/* Right Column - Income Info */}
                   <div className="space-y-6">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <Coins className="h-4 w-4" />
+                    <h3 className="font-semibold flex items-center gap-2 text-lg">
+                      <Coins className="h-5 w-5" />
                       Inkomstuppgifter
                     </h3>
                     
                     <div className="space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="monthlyIncome" className="flex items-center gap-2">
+                      <div className="space-y-3">
+                        <Label htmlFor="monthlyIncome" className="flex items-center gap-2 text-sm font-medium">
                           Månadsinkomst (kr)
                           <TooltipProvider>
                             <Tooltip>
@@ -512,12 +503,12 @@ const Index = () => {
                           placeholder="Ange månadsinkomst"
                           min="0"
                           max="1000000000"
-                          className="w-full"
+                          className="w-full h-10"
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="taxableBenefit" className="flex items-center gap-2">
+                      <div className="space-y-3">
+                        <Label htmlFor="taxableBenefit" className="flex items-center gap-2 text-sm font-medium">
                           Skattepliktig förmån (kr)
                           <TooltipProvider>
                             <Tooltip>
@@ -537,12 +528,12 @@ const Index = () => {
                           onChange={handleTaxableBenefitChange}
                           placeholder="Ange skattepliktig förmån"
                           min="0"
-                          className="w-full"
+                          className="w-full h-10"
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="incomeType" className="flex items-center gap-2">
+                      <div className="space-y-3">
+                        <Label htmlFor="incomeType" className="flex items-center gap-2 text-sm font-medium">
                           Typ av inkomst
                           <TooltipProvider>
                             <Tooltip>
@@ -556,7 +547,7 @@ const Index = () => {
                           </TooltipProvider>
                         </Label>
                         <Select onValueChange={setIncomeType} value={incomeType}>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full h-10">
                             <SelectValue placeholder="Välj inkomsttyp" />
                           </SelectTrigger>
                           <SelectContent>
@@ -569,13 +560,13 @@ const Index = () => {
                       </div>
 
                       {incomeType === 'unemployment' && (
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-3 pt-2">
                           <Checkbox 
                             id="pensionContributing" 
                             checked={isPensionContributing}
                             onCheckedChange={(checked) => setIsPensionContributing(checked === true)}
                           />
-                          <Label htmlFor="pensionContributing">
+                          <Label htmlFor="pensionContributing" className="text-sm font-medium">
                             Utgör grund för allmän pensionsavgift
                           </Label>
                         </div>
@@ -590,13 +581,13 @@ const Index = () => {
                           </h4>
                           
                           <div className="space-y-4">
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-3">
                               <Checkbox 
                                 id="collectiveAgreement" 
                                 checked={hasCollectiveAgreement}
                                 onCheckedChange={(checked) => setHasCollectiveAgreement(checked === true)}
                               />
-                              <Label htmlFor="collectiveAgreement" className="flex items-center gap-2">
+                              <Label htmlFor="collectiveAgreement" className="flex items-center gap-2 text-sm font-medium">
                                 Kollektivavtal
                                 <TooltipProvider>
                                   <Tooltip>
@@ -612,8 +603,8 @@ const Index = () => {
                               </Label>
                             </div>
 
-                            <div className="space-y-2">
-                              <Label htmlFor="vacationDays" className="flex items-center gap-2">
+                            <div className="space-y-3">
+                              <Label htmlFor="vacationDays" className="flex items-center gap-2 text-sm font-medium">
                                 Antal semesterdagar
                                 <TooltipProvider>
                                   <Tooltip>
@@ -639,12 +630,12 @@ const Index = () => {
                                 placeholder="Antal semesterdagar"
                                 min="0"
                                 max="50"
-                                className="w-full"
+                                className="w-full h-10"
                               />
                             </div>
 
-                            <div className="space-y-2">
-                              <Label htmlFor="variableSalary" className="flex items-center gap-2">
+                            <div className="space-y-3">
+                              <Label htmlFor="variableSalary" className="flex items-center gap-2 text-sm font-medium">
                                 Rörlig lön per månad (kr)
                                 <TooltipProvider>
                                   <Tooltip>
@@ -669,7 +660,7 @@ const Index = () => {
                                 }}
                                 placeholder="Rörlig månadslön"
                                 min="0"
-                                className="w-full"
+                                className="w-full h-10"
                               />
                             </div>
                           </div>
@@ -678,6 +669,17 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Tax Table Display - Full Width */}
+                {skattetabellData.length > 0 && (
+                  <div className="mt-8 pt-6 border-t border-blue-200">
+                    <TaxTableDisplay
+                      skattetabellData={skattetabellData}
+                      selectedTaxColumn={selectedTaxColumn}
+                      currentIncome={getTotalIncome()}
+                    />
+                  </div>
+                )}
 
                 {/* Error */}
                 {error && (

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -43,8 +42,21 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
     if (!taxValue || taxValue === 'Ej tillgänglig') {
       return 'Ej tillgänglig';
     }
-    // Add 'kr' suffix for tax amounts
-    return taxValue + ' kr';
+    
+    // Check if the value is a percentage (typically values under 100 for tax rates)
+    const numericValue = parseFloat(taxValue.toString().replace(/[^\d.-]/g, ''));
+    
+    // If the value is likely a percentage (between 0 and 100), add %
+    if (numericValue > 0 && numericValue <= 100 && !taxValue.toString().includes('kr')) {
+      return taxValue + '%';
+    }
+    
+    // If it already has 'kr' or is a large number, add 'kr'
+    if (!taxValue.toString().includes('kr') && !taxValue.toString().includes('%')) {
+      return taxValue + ' kr';
+    }
+    
+    return taxValue;
   };
 
   const isCurrentIncomeBracket = (item: SkattetabellData): boolean => {
