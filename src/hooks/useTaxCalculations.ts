@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { fetchEngangsbeskattningData } from '@/utils/taxData';
 
@@ -153,8 +154,9 @@ export const useTaxCalculations = ({
       if (isPercentageValue(currentTaxValue, currentIncome)) {
         return currentTaxValue.toFixed(1);
       }
-      // For the highest bracket with kr values, marginal rate is effectively 0
-      return '0';
+      // For the highest bracket with kr values, use the current tax value as marginal rate
+      console.log('At highest bracket with kr values, using current tax value:', currentTaxValue);
+      return currentTaxValue.toFixed(1);
     }
     
     // Get tax values from both brackets
