@@ -15,22 +15,22 @@ const TaxCalculationDisplay = ({
   marginalTaxRate 
 }: TaxCalculationDisplayProps) => {
   return (
-    <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl w-full">
+    <div className="p-6 bg-gradient-to-r from-slate-100 to-blue-100/60 border border-slate-200/60 rounded-2xl shadow-sm w-full">
       <div className="text-center">
-        <div className="text-sm font-medium text-black mb-1">
+        <div className="text-sm font-semibold text-slate-600 mb-2">
           Total skatt
         </div>
-        <div className="text-2xl font-bold text-black mb-2 break-words">
+        <div className="text-3xl font-bold text-slate-800 mb-3 break-words">
           {Math.round(actualTaxAmount).toLocaleString()} kr
         </div>
-        <div className="text-sm font-medium text-black mb-2 break-words">
+        <div className="text-sm font-semibold text-slate-600 mb-3 break-words">
           Månadsinkomst (kr) beräknad på {Math.round(totalIncome).toLocaleString()} kr
         </div>
-        <div className="text-sm font-medium text-black mb-1">
-          Du betalar <span className="font-bold">{taxPercentage}%</span> i skatt
+        <div className="text-sm font-semibold text-slate-700 mb-2">
+          Du betalar <span className="font-bold text-blue-700 text-lg">{taxPercentage}%</span> i skatt
         </div>
-        <div className="text-sm font-medium text-black">
-          Din marginalskatt är <span className="font-bold">{marginalTaxRate}%</span>
+        <div className="text-sm font-semibold text-slate-700">
+          Din marginalskatt är <span className="font-bold text-blue-700 text-lg">{marginalTaxRate}%</span>
         </div>
       </div>
     </div>

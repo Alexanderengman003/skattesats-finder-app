@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -312,21 +311,23 @@ const Index = () => {
   const taxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-full overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 w-full overflow-x-hidden">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b w-full">
-        <div className="container mx-auto px-4 py-6 max-w-full">
-          <div className="flex items-center gap-3">
-            <Coins className="h-8 w-8 text-blue-600" />
+      <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-slate-200/60 w-full">
+        <div className="container mx-auto px-4 py-8 max-w-full">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
+              <Coins className="h-8 w-8 text-white" />
+            </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Min skatt</h1>
-              <p className="text-gray-600">Hitta din inkomstskatt på ett enklare sätt</p>
+              <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Min skatt</h1>
+              <p className="text-slate-600 text-lg font-medium">Hitta din inkomstskatt på ett enklare sätt</p>
             </div>
           </div>
           
           {/* Info Text */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-            <p className="text-gray-700 leading-relaxed">
+          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/60 rounded-2xl shadow-sm">
+            <p className="text-slate-700 leading-relaxed text-lg">
               Att hitta och förstå den skatt man som anställd i Sverige betalar på sin inkomst kan vara komplicerad och frustrerande. Denna applikation hjälper dig att snabbt och enkelt hitta exakt hur mycket du ska betala i skatt, så att du slipper leta fram det själv.
             </p>
           </div>
@@ -337,24 +338,24 @@ const Index = () => {
         <div className="grid lg:grid-cols-2 gap-8 w-full">
           {/* Input Section */}
           <div className="space-y-6 w-full">
-            <Card className="shadow-lg rounded-xl w-full">
-              <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
-                <CardTitle className="flex items-center gap-2">
-                  <Search className="h-5 w-5" />
+            <Card className="shadow-xl rounded-2xl border-0 overflow-hidden w-full">
+              <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+                <CardTitle className="flex items-center gap-3 text-xl font-semibold">
+                  <Search className="h-6 w-6" />
                   Skattesats
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-4 bg-blue-50 rounded-b-xl w-full">
-                <div className="space-y-2">
-                  <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
-                    <Calendar className="h-4 w-4" />
+              <CardContent className="p-8 space-y-6 bg-gradient-to-br from-slate-50 to-blue-50/30 w-full">
+                <div className="space-y-3">
+                  <label htmlFor="year" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <Calendar className="h-4 w-4 text-blue-500" />
                     Inkomstår
                   </label>
                   <Select 
                     onValueChange={(value) => setSelectedYear(parseInt(value))}
                     value={selectedYear?.toString() || ''}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full h-12 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm">
                       <SelectValue placeholder="Välj år" />
                     </SelectTrigger>
                     <SelectContent>
@@ -367,9 +368,9 @@ const Index = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="kommun" className="flex items-center gap-2 text-sm font-medium">
-                    <MapPin className="h-4 w-4" />
+                <div className="space-y-3">
+                  <label htmlFor="kommun" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <MapPin className="h-4 w-4 text-blue-500" />
                     Kommun
                   </label>
                   <KommunSearch
@@ -390,21 +391,22 @@ const Index = () => {
                   />
                 )}
 
-                <div className="flex items-center space-x-2 pt-2">
+                <div className="flex items-center space-x-3 pt-2">
                   <Checkbox 
                     id="svenskaKyrkan" 
                     checked={includeSvenskaKyrkan}
                     onCheckedChange={(checked) => setIncludeSvenskaKyrkan(checked === true)}
+                    className="rounded-md"
                   />
                   <label 
                     htmlFor="svenskaKyrkan" 
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                    className="text-sm font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-slate-700"
                   >
                     Medlem i svenska kyrkan
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                          <HelpCircle className="h-4 w-4 text-slate-500 cursor-help" />
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
                           <p>Ditt medlemskap i Svenska Kyrkan kan du hitta här: https://www.svenskakyrkan.se/medlem</p>
@@ -422,19 +424,19 @@ const Index = () => {
                 )}
 
                 {/* Income Input Fields */}
-                <div className="border-t pt-4 space-y-4 w-full">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    <Coins className="h-4 w-4" />
+                <div className="border-t border-slate-200 pt-6 space-y-6 w-full">
+                  <h3 className="font-bold text-lg flex items-center gap-2 text-slate-800">
+                    <Coins className="h-5 w-5 text-blue-500" />
                     Inkomstuppgifter
                   </h3>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="birthday" className="flex items-center gap-2">
+                  <div className="space-y-3">
+                    <Label htmlFor="birthday" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                       Födelsedatum
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                            <HelpCircle className="h-4 w-4 text-slate-500 cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs">
                             <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
@@ -450,12 +452,12 @@ const Index = () => {
                       placeholder="Välj födelsedatum"
                       max={new Date().toISOString().split('T')[0]}
                       min="1900-01-01"
-                      className="w-full"
+                      className="w-full h-12 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
+                  <div className="space-y-3">
+                    <Label htmlFor="monthlyIncome" className="text-sm font-semibold text-slate-700">Månadsinkomst (kr)</Label>
                     <Input
                       id="monthlyIncome"
                       type="number"
@@ -464,12 +466,12 @@ const Index = () => {
                       placeholder="Ange månadsinkomst"
                       min="0"
                       max="1000000000"
-                      className="w-full"
+                      className="w-full h-12 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="taxableBenefit">Skattepliktig förmån (kr)</Label>
+                  <div className="space-y-3">
+                    <Label htmlFor="taxableBenefit" className="text-sm font-semibold text-slate-700">Skattepliktig förmån (kr)</Label>
                     <Input
                       id="taxableBenefit"
                       type="number"
@@ -477,14 +479,14 @@ const Index = () => {
                       onChange={handleTaxableBenefitChange}
                       placeholder="Ange skattepliktig förmån"
                       min="0"
-                      className="w-full"
+                      className="w-full h-12 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="incomeType">Typ av inkomst</Label>
+                  <div className="space-y-3">
+                    <Label htmlFor="incomeType" className="text-sm font-semibold text-slate-700">Typ av inkomst</Label>
                     <Select onValueChange={setIncomeType} value={incomeType}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full h-12 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm">
                         <SelectValue placeholder="Välj inkomsttyp" />
                       </SelectTrigger>
                       <SelectContent>
@@ -497,22 +499,23 @@ const Index = () => {
                   </div>
 
                   {incomeType === 'unemployment' && (
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
                       <Checkbox 
                         id="pensionContributing" 
                         checked={isPensionContributing}
                         onCheckedChange={(checked) => setIsPensionContributing(checked === true)}
+                        className="rounded-md"
                       />
-                      <Label htmlFor="pensionContributing">
+                      <Label htmlFor="pensionContributing" className="text-sm font-semibold text-slate-700">
                         Utgör grund för allmän pensionsavgift
                       </Label>
                     </div>
                   )}
 
-                  <div className="mt-4 p-4 bg-blue-100 border border-blue-300 rounded-xl">
+                  <div className="mt-6 p-6 bg-gradient-to-r from-blue-100 to-indigo-100 border border-blue-200/60 rounded-2xl shadow-sm">
                     <div className="text-center">
-                      <span className="text-sm font-medium text-blue-600">Du tillhör</span>
-                      <div className="text-2xl font-bold text-blue-800">
+                      <span className="text-sm font-semibold text-blue-700">Du tillhör</span>
+                      <div className="text-3xl font-bold text-blue-800 mt-1">
                         Skattekolumn {getCurrentTaxColumn()}
                       </div>
                     </div>
