@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -344,136 +345,140 @@ const Index = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4 bg-blue-50 rounded-b-xl w-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Left Column */}
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
-                        <Calendar className="h-4 w-4" />
-                        Inkomstår
-                      </label>
-                      <Select 
-                        onValueChange={(value) => setSelectedYear(parseInt(value))}
-                        value={selectedYear?.toString() || ''}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Välj år" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableYears.map((year) => (
-                            <SelectItem key={year} value={year.toString()}>
-                              {year}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="kommun" className="flex items-center gap-2 text-sm font-medium">
-                        <MapPin className="h-4 w-4" />
-                        Kommun
-                      </label>
-                      <KommunSearch
-                        municipalities={availableMunicipalities}
-                        value={kommun}
-                        onValueChange={setKommun}
-                        disabled={!selectedYear}
-                        placeholder={selectedYear ? "Sök kommun..." : "Välj år först"}
-                      />
-                    </div>
-
-                    {availableForsamlingar.length > 1 && (
-                      <ForsamlingSelect
-                        forsamlingar={availableForsamlingar}
-                        value={forsamling}
-                        onValueChange={setForsamling}
-                        disabled={!kommun}
-                      />
-                    )}
-                  </div>
-
-                  {/* Right Column */}
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="birthday" className="flex items-center gap-2">
-                        Födelsedatum
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-xs">
-                              <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </Label>
-                      <Input
-                        id="birthday"
-                        type="date"
-                        value={birthday}
-                        onChange={handleBirthdayChange}
-                        placeholder="Välj födelsedatum"
-                        max={new Date().toISOString().split('T')[0]}
-                        min="1900-01-01"
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
-                      <Input
-                        id="monthlyIncome"
-                        type="number"
-                        value={monthlyIncome || ''}
-                        onChange={handleIncomeChange}
-                        placeholder="Ange månadsinkomst"
-                        min="0"
-                        max="1000000000"
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="taxableBenefit">Skattepliktig förmån (kr)</Label>
-                      <Input
-                        id="taxableBenefit"
-                        type="number"
-                        value={taxableBenefit === 0 ? '' : taxableBenefit}
-                        onChange={handleTaxableBenefitChange}
-                        placeholder="Ange skattepliktig förmån"
-                        min="0"
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <label htmlFor="year" className="flex items-center gap-2 text-sm font-medium">
+                    <Calendar className="h-4 w-4" />
+                    Inkomstår
+                  </label>
+                  <Select 
+                    onValueChange={(value) => setSelectedYear(parseInt(value))}
+                    value={selectedYear?.toString() || ''}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Välj år" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableYears.map((year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                {/* Full width elements */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2 pt-2">
-                    <Checkbox 
-                      id="svenskaKyrkan" 
-                      checked={includeSvenskaKyrkan}
-                      onCheckedChange={(checked) => setIncludeSvenskaKyrkan(checked === true)}
-                    />
-                    <label 
-                      htmlFor="svenskaKyrkan" 
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
-                    >
-                      Medlem i svenska kyrkan
+                <div className="space-y-2">
+                  <label htmlFor="kommun" className="flex items-center gap-2 text-sm font-medium">
+                    <MapPin className="h-4 w-4" />
+                    Kommun
+                  </label>
+                  <KommunSearch
+                    municipalities={availableMunicipalities}
+                    value={kommun}
+                    onValueChange={setKommun}
+                    disabled={!selectedYear}
+                    placeholder={selectedYear ? "Sök kommun..." : "Välj år först"}
+                  />
+                </div>
+
+                {availableForsamlingar.length > 1 && (
+                  <ForsamlingSelect
+                    forsamlingar={availableForsamlingar}
+                    value={forsamling}
+                    onValueChange={setForsamling}
+                    disabled={!kommun}
+                  />
+                )}
+
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox 
+                    id="svenskaKyrkan" 
+                    checked={includeSvenskaKyrkan}
+                    onCheckedChange={(checked) => setIncludeSvenskaKyrkan(checked === true)}
+                  />
+                  <label 
+                    htmlFor="svenskaKyrkan" 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                  >
+                    Medlem i svenska kyrkan
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Ditt medlemskap i Svenska Kyrkan kan du hitta här: https://www.svenskakyrkan.se/medlem</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </label>
+                </div>
+
+                {/* Error */}
+                {error && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                    {error}
+                  </div>
+                )}
+
+                {/* Income Input Fields */}
+                <div className="border-t pt-4 space-y-4 w-full">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Coins className="h-4 w-4" />
+                    Inkomstuppgifter
+                  </h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="birthday" className="flex items-center gap-2">
+                      Födelsedatum
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs">
-                            <p>Ditt medlemskap i Svenska Kyrkan kan du hitta här: https://www.svenskakyrkan.se/medlem</p>
+                            <p>Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                    </label>
+                    </Label>
+                    <Input
+                      id="birthday"
+                      type="date"
+                      value={birthday}
+                      onChange={handleBirthdayChange}
+                      placeholder="Välj födelsedatum"
+                      max={new Date().toISOString().split('T')[0]}
+                      min="1900-01-01"
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="monthlyIncome">Månadsinkomst (kr)</Label>
+                    <Input
+                      id="monthlyIncome"
+                      type="number"
+                      value={monthlyIncome || ''}
+                      onChange={handleIncomeChange}
+                      placeholder="Ange månadsinkomst"
+                      min="0"
+                      max="1000000000"
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="taxableBenefit">Skattepliktig förmån (kr)</Label>
+                    <Input
+                      id="taxableBenefit"
+                      type="number"
+                      value={taxableBenefit === 0 ? '' : taxableBenefit}
+                      onChange={handleTaxableBenefitChange}
+                      placeholder="Ange skattepliktig förmån"
+                      min="0"
+                      className="w-full"
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -513,13 +518,6 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Error */}
-                {error && (
-                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-                    {error}
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>

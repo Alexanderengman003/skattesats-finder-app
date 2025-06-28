@@ -7,7 +7,6 @@ import TaxCalculationDisplay from './TaxCalculationDisplay';
 import TaxPieChart from './TaxPieChart';
 import EngangsbeskattningCard from './EngangsbeskattningCard';
 import TaxTableDisplay from './TaxTableDisplay';
-import VacationPayCard from './VacationPayCard';
 
 interface SkattetabellData {
   År: number;
@@ -76,21 +75,14 @@ const TaxColumnSelector = ({
     setAdjustedSalary,
     adjustedMonths,
     setAdjustedMonths,
-    hasCollectiveAgreement,
-    setHasCollectiveAgreement,
-    vacationDays,
-    setVacationDays,
-    variableSalary,
-    setVariableSalary,
     getTotalIncomeForTax,
-    calculateYearlyIncome,
-    calculateVacationPay,
     getTaxPercentage,
     getActualTaxAmount,
     getNetSalary,
     getMarginalTaxRate,
     getEngangsbeskattningRate,
-    calculateEngangsbeskattning
+    calculateEngangsbeskattning,
+    calculateYearlyIncome
   } = useTaxCalculations({
     monthlyIncome,
     taxableBenefit,
@@ -128,20 +120,6 @@ const TaxColumnSelector = ({
     setAdjustedMonths(cappedValue);
   };
 
-  const handleVacationDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
-    const cappedValue = Math.min(Math.max(0, numericValue), 50);
-    setVacationDays(cappedValue);
-  };
-
-  const handleVariableSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
-    const cappedValue = Math.min(numericValue, 1000000000);
-    setVariableSalary(cappedValue);
-  };
-
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
       <Card className="shadow-lg rounded-xl w-full">
@@ -174,39 +152,13 @@ const TaxColumnSelector = ({
 
           {kommun && taxAmount && getTotalIncomeForTax() > 0 ? (
             <div className="space-y-4 w-full">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-                {/* Left Column - Charts and Calculations */}
-                <div className="space-y-4">
-                  {/* Net Salary Display with Pie Chart */}
-                  <TaxPieChart 
-                    netSalary={getNetSalary()}
-                    taxAmount={getActualTaxAmount()}
-                  />
+              {/* Net Salary Display with Pie Chart */}
+              <TaxPieChart 
+                netSalary={getNetSalary()}
+                taxAmount={getActualTaxAmount()}
+              />
 
-                  {/* Vacation Pay Card */}
-                  <VacationPayCard
-                    hasCollectiveAgreement={hasCollectiveAgreement}
-                    onHasCollectiveAgreementChange={setHasCollectiveAgreement}
-                    vacationDays={vacationDays}
-                    onVacationDaysChange={handleVacationDaysChange}
-                    variableSalary={variableSalary}
-                    onVariableSalaryChange={handleVariableSalaryChange}
-                    calculateVacationPay={calculateVacationPay}
-                    monthlyIncome={monthlyIncome}
-                  />
-                </div>
-
-                {/* Right Column - Tax Table */}
-                <div className="space-y-4">
-                  <TaxTableDisplay
-                    skattetabellData={skattetabellData}
-                    selectedTaxColumn={selectedTaxColumn}
-                    currentIncome={getTotalIncomeForTax()}
-                  />
-                </div>
-              </div>
-
-              {/* Engångsbeskattning Card - Full Width */}
+              {/* Engångsbeskattning Card */}
               <EngangsbeskattningCard
                 engangsbeskattningAmount={engangsbeskattningAmount}
                 onEngangsbeskattningAmountChange={handleEngangsbeskattningAmountChange}
@@ -225,6 +177,13 @@ const TaxColumnSelector = ({
                 selectedYear={selectedYear}
                 monthlyIncome={monthlyIncome}
                 taxableBenefit={taxableBenefit}
+              />
+
+              {/* Tax Table Display */}
+              <TaxTableDisplay
+                skattetabellData={skattetabellData}
+                selectedTaxColumn={selectedTaxColumn}
+                currentIncome={getTotalIncomeForTax()}
               />
             </div>
           ) : (
