@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { fetchEngangsbeskattningData } from '@/utils/taxData';
 
@@ -129,12 +128,38 @@ export const useTaxCalculations = ({
     if (skattetabellData.length === 0 || getTotalIncomeForTax() === 0) return '0';
     
     const currentIncome = getTotalIncomeForTax();
-    const nextIncome = currentIncome + 1;
     
-    const currentTax = getTaxForIncome(currentIncome);
-    const nextTax = getTaxForIncome(nextIncome);
+    console.log('Calculating marginal tax rate for income:', currentIncome);
     
-    const marginalRate = (nextTax - currentTax) * 100;
+    // Find current bracket
+    const currentBracket = skattetabellData.find(item => 
+      currentIncome >= item.InkomstFrån && currentIncome <= item.InkomstTill
+    );
+    
+    if (!currentBracket) {
+      console.log('No bracket found for income:', currentIncome);
+      return '0';
+    }
+    
+    console.log('Current bracket:', currentBracket);
+    
+    // Get the current tax value from the bracket
+    const currentTaxValue = parseFloat(currentBracket[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    
+    console.log('Current tax value from table:', currentTaxValue);
+    
+    // Check if this is a percentage value
+    if (isPercentageValue(currentTaxValue, currentIncome)) {
+      console.log('Tax value is percentage:', currentTaxValue);
+      return currentTaxValue.toFixed(1);
+    }
+    
+    // For kr values, we need to calculate the rate within the bracket
+    // The marginal rate is the rate that applies to the next kr of income
+    const bracketSize = currentBracket.InkomstTill - currentBracket.InkomstFrån + 1;
+    const marginalRate = (currentTaxValue / bracketSize) * 100;
+    
+    console.log('Bracket size:', bracketSize, 'Tax for bracket:', currentTaxValue, 'Marginal rate:', marginalRate);
     
     return Math.max(0, marginalRate).toFixed(1);
   };
