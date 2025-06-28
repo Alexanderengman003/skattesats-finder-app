@@ -68,15 +68,6 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
     return currentIncome >= item.InkomstFrån && currentIncome <= item.InkomstTill;
   };
 
-  // Get available columns (1-7)
-  const availableColumns = [];
-  for (let i = 1; i <= 7; i++) {
-    const hasData = skattetabellData.some(row => row[`Kolumn${i}`] && row[`Kolumn${i}`] !== 'Ej tillgänglig');
-    if (hasData) {
-      availableColumns.push(i);
-    }
-  }
-
   return (
     <Card className="shadow-lg rounded-xl">
       <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-t-xl">
@@ -92,11 +83,9 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
               <TableRow className="bg-blue-50">
                 <TableHead className="font-semibold text-blue-900">Inkomst från</TableHead>
                 <TableHead className="font-semibold text-blue-900">Inkomst till</TableHead>
-                {availableColumns.map(col => (
-                  <TableHead key={col} className="font-semibold text-blue-900 text-center">
-                    Kol. {col}
-                  </TableHead>
-                ))}
+                <TableHead className="font-semibold text-blue-900 text-center">
+                  Skatt
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -119,14 +108,11 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                     <TableCell className={`${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
                       {formatIncome(row.InkomstTill)}
                     </TableCell>
-                    {availableColumns.map(col => (
-                      <TableCell key={col} className={`text-center font-semibold ${
-                        isCurrentRow ? 'text-blue-900' : 
-                        col === selectedTaxColumn ? 'text-blue-700' : 'text-gray-600'
-                      }`}>
-                        {getTaxFromColumn(row, col)}
-                      </TableCell>
-                    ))}
+                    <TableCell className={`text-center font-semibold ${
+                      isCurrentRow ? 'text-blue-900' : 'text-blue-700'
+                    }`}>
+                      {getTaxFromColumn(row, selectedTaxColumn)}
+                    </TableCell>
                   </TableRow>
                 );
               })}

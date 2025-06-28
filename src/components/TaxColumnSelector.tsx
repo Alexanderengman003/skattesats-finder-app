@@ -6,6 +6,7 @@ import { useTaxCalculations } from '@/hooks/useTaxCalculations';
 import TaxRateDisplay from './TaxRateDisplay';
 import TaxCalculationDisplay from './TaxCalculationDisplay';
 import TaxPieChart from './TaxPieChart';
+import TaxTableDisplay from './TaxTableDisplay';
 import EngangsbeskattningCard from './EngangsbeskattningCard';
 
 interface SkattetabellData {
@@ -167,13 +168,31 @@ const TaxColumnSelector = ({
             </div>
           )}
 
+          {/* Column indicator */}
+          {kommun && taxAmount && selectedTaxColumn && (
+            <div className="mb-4">
+              <div className="inline-block bg-blue-200 border border-blue-300 px-3 py-2 rounded-lg">
+                <span className="text-sm font-medium text-blue-900">Du tillhör</span>
+                <span className="text-sm font-bold text-blue-900 ml-2">Kolumn {selectedTaxColumn}</span>
+              </div>
+            </div>
+          )}
+
           {kommun && taxAmount && getTotalIncomeForTax() > 0 ? (
             <div className="space-y-4 w-full">
-              {/* Net Salary Display with Pie Chart */}
-              <TaxPieChart 
-                netSalary={getNetSalary()}
-                taxAmount={getActualTaxAmount()}
-              />
+              {/* Pie Chart and Tax Table - Side by Side */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TaxPieChart 
+                  netSalary={getNetSalary()}
+                  taxAmount={getActualTaxAmount()}
+                />
+                
+                <TaxTableDisplay
+                  skattetabellData={skattetabellData}
+                  selectedTaxColumn={selectedTaxColumn}
+                  currentIncome={getTotalIncomeForTax()}
+                />
+              </div>
 
               {/* Engångsbeskattning Card */}
               <EngangsbeskattningCard
