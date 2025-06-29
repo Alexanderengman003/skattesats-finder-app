@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -72,77 +71,27 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
     return numericValue < 1 && numericValue > 0;
   };
 
-  const getTaxFromColumn = (item: any, column: number, rowIndex: number): { value: string; numericValue: number; isPercentage: boolean } => {
+  const getTaxFromColumn = (item: any, column: number, rowIndex: number): string => {
     const columnKey = `Kolumn${column}`;
     const taxValue = item[columnKey];
     
     if (!taxValue || taxValue === 'Ej tillgänglig') {
-      return { value: 'Ej tillgänglig', numericValue: 0, isPercentage: false };
+      return 'Ej tillgänglig';
     }
     
     const numericValue = parseFloat(taxValue.toString().replace(/[^\d.-]/g, ''));
     
     // Handle NaN values
     if (isNaN(numericValue)) {
-      return { value: '', numericValue: 0, isPercentage: false };
+      return '';
     }
     
     // Use improved percentage detection
-    const isPercentage = isPercentageValue(taxValue, rowIndex, columnKey);
-    if (isPercentage) {
-      return { value: numericValue + '%', numericValue, isPercentage: true };
+    if (isPercentageValue(taxValue, rowIndex, columnKey)) {
+      return numericValue + '%';
     } else {
-      return { value: numericValue + ' kr', numericValue, isPercentage: false };
+      return numericValue + ' kr';
     }
-  };
-
-  const calculateTaxRate = (item: SkattetabellData, rowIndex: number): string => {
-    const taxInfo = getTaxFromColumn(item, selectedTaxColumn, rowIndex);
-    
-    if (taxInfo.numericValue === 0 || item.InkomstFrån === 0) {
-      return '0%';
-    }
-    
-    if (taxInfo.isPercentage) {
-      return taxInfo.numericValue.toFixed(1) + '%';
-    } else {
-      // Calculate percentage from kr amount
-      const percentage = (taxInfo.numericValue / item.InkomstFrån) * 100;
-      return percentage.toFixed(1) + '%';
-    }
-  };
-
-  const calculateMarginalTaxRate = (currentIndex: number): string => {
-    if (currentIndex === 0) return calculateTaxRate(skattetabellData[0], 0);
-    
-    const currentItem = skattetabellData[currentIndex];
-    const previousItem = skattetabellData[currentIndex - 1];
-    
-    const currentTaxInfo = getTaxFromColumn(currentItem, selectedTaxColumn, currentIndex);
-    const previousTaxInfo = getTaxFromColumn(previousItem, selectedTaxColumn, currentIndex - 1);
-    
-    if (currentTaxInfo.numericValue === 0 || previousTaxInfo.numericValue === 0) {
-      return calculateTaxRate(currentItem, currentIndex);
-    }
-    
-    // If both are percentages, return current percentage
-    if (currentTaxInfo.isPercentage && previousTaxInfo.isPercentage) {
-      return currentTaxInfo.numericValue.toFixed(1) + '%';
-    }
-    
-    // If both are kr values, calculate marginal rate
-    if (!currentTaxInfo.isPercentage && !previousTaxInfo.isPercentage) {
-      const incomeDiff = currentItem.InkomstFrån - previousItem.InkomstFrån;
-      const taxDiff = currentTaxInfo.numericValue - previousTaxInfo.numericValue;
-      
-      if (incomeDiff === 0) return calculateTaxRate(currentItem, currentIndex);
-      
-      const marginalRate = (taxDiff / incomeDiff) * 100;
-      return Math.max(0, marginalRate).toFixed(1) + '%';
-    }
-    
-    // Mixed case - return current rate
-    return calculateTaxRate(currentItem, currentIndex);
   };
 
   const isCurrentIncomeBracket = (item: SkattetabellData): boolean => {
@@ -189,16 +138,10 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
           <Table>
             <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
               <TableRow className="bg-blue-50 h-7">
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-1 text-xs">Inkomst från</TableHead>
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-1 text-xs">Inkomst till</TableHead>
-                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-xs">
+                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-1 text-sm">Inkomst från</TableHead>
+                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-1 text-sm">Inkomst till</TableHead>
+                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm">
                   Skatt
-                </TableHead>
-                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-xs">
-                  Skattesats
-                </TableHead>
-                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-xs">
-                  Marginalskatt
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -206,7 +149,6 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
               {filteredData.map((row, index) => {
                 const isCurrentRow = isCurrentIncomeBracket(row);
                 const originalIndex = skattetabellData.indexOf(row);
-                const taxInfo = getTaxFromColumn(row, selectedTaxColumn, originalIndex);
                 
                 return (
                   <TableRow 
@@ -219,26 +161,16 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                         : 'bg-gray-50 hover:bg-blue-50'
                     }`}
                   >
-                    <TableCell className={`font-medium py-1 text-xs px-2 ${isCurrentRow ? 'text-blue-900' : 'text-gray-900'}`}>
+                    <TableCell className={`font-medium py-1 text-sm px-3 ${isCurrentRow ? 'text-blue-900' : 'text-gray-900'}`}>
                       {formatIncome(row.InkomstFrån)}
                     </TableCell>
-                    <TableCell className={`py-1 text-xs px-2 ${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
+                    <TableCell className={`py-1 text-sm px-3 ${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
                       {formatIncome(row.InkomstTill)}
                     </TableCell>
-                    <TableCell className={`text-center font-semibold py-1 text-xs px-2 ${
+                    <TableCell className={`text-center font-semibold py-1 text-sm px-3 ${
                       isCurrentRow ? 'text-blue-900' : 'text-blue-700'
                     }`}>
-                      {taxInfo.value}
-                    </TableCell>
-                    <TableCell className={`text-center py-1 text-xs px-2 ${
-                      isCurrentRow ? 'text-blue-900' : 'text-gray-700'
-                    }`}>
-                      {calculateTaxRate(row, originalIndex)}
-                    </TableCell>
-                    <TableCell className={`text-center py-1 text-xs px-2 ${
-                      isCurrentRow ? 'text-blue-900' : 'text-gray-700'
-                    }`}>
-                      {calculateMarginalTaxRate(originalIndex)}
+                      {getTaxFromColumn(row, selectedTaxColumn, originalIndex)}
                     </TableCell>
                   </TableRow>
                 );
