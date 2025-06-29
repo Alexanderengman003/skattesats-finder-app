@@ -1,25 +1,51 @@
 
-import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Languages } from 'lucide-react';
+import React, { useState } from 'react';
+import { Languages, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const LanguageSelector = () => {
   const { language, setLanguage, t } = useLanguage();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleLanguageChange = (newLanguage: 'sv' | 'en') => {
+    setLanguage(newLanguage);
+    setIsOpen(false);
+  };
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2">
-      <Languages className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 flex-shrink-0" />
-      <Select value={language} onValueChange={(value: 'sv' | 'en') => setLanguage(value)}>
-        <SelectTrigger className="w-20 sm:w-32 h-8 sm:h-10 text-xs sm:text-sm">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent className="min-w-[80px] sm:min-w-[128px]">
-          <SelectItem value="sv" className="text-xs sm:text-sm">{t('swedish')}</SelectItem>
-          <SelectItem value="en" className="text-xs sm:text-sm">{t('english')}</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="h-8 w-8 p-0 hover:bg-gray-100"
+        >
+          <Languages className="h-4 w-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-32 p-2">
+        <div className="space-y-1">
+          <Button
+            variant={language === 'sv' ? 'default' : 'ghost'}
+            size="sm"
+            className="w-full justify-start text-sm"
+            onClick={() => handleLanguageChange('sv')}
+          >
+            {t('swedish')}
+          </Button>
+          <Button
+            variant={language === 'en' ? 'default' : 'ghost'}
+            size="sm"
+            className="w-full justify-start text-sm"
+            onClick={() => handleLanguageChange('en')}
+          >
+            {t('english')}
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 };
 
