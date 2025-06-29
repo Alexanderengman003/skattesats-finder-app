@@ -25,10 +25,10 @@ const CollapsibleCard = ({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <Card className="shadow-lg rounded-xl">
+    <Card className={`shadow-lg ${isOpen ? 'rounded-xl' : 'rounded-xl'}`}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <CardHeader className={`${headerClassName} cursor-pointer hover:opacity-90 transition-opacity`}>
+          <CardHeader className={`${headerClassName} cursor-pointer hover:opacity-90 transition-opacity ${!isOpen ? 'rounded-b-xl' : ''}`}>
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {icon}
