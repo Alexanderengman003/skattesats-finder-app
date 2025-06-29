@@ -153,13 +153,13 @@ const EngangsbeskattningCard = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600">{t('baseSalary')}:</span>
+                <span className="text-gray-600">{t('baseSalary')} ({formatCurrency(monthlyIncome + taxableBenefit)} × 12):</span>
                 <span className="font-medium">{formatCurrency(baseSalary)}</span>
               </div>
               
               {vacationPay > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">{t('vacationPay')}:</span>
+                  <span className="text-gray-600">{t('vacationPay')} ({vacationDays} {t('days')}):</span>
                   <span className="font-medium">{formatCurrency(vacationPay)}</span>
                 </div>
               )}
@@ -182,7 +182,7 @@ const EngangsbeskattningCard = ({
               
               {adjustedSalary > 0 && adjustedMonths > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">{t('adjustedSalary')} ({adjustedMonths} {t('months')}):</span>
+                  <span className="text-gray-600">{t('adjustedSalary')} ({formatCurrency(adjustedSalary)} × {adjustedMonths} {t('months')}):</span>
                   <span className="font-medium">{formatCurrency(adjustedSalary * adjustedMonths)}</span>
                 </div>
               )}
