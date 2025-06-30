@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Download, Eye, EyeOff, Filter, X, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,6 +67,7 @@ const DEFAULT_VISIBLE_COLUMNS: ColumnKey[] = [
 export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations, onCalculationDeleted }) => {
   const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(DEFAULT_VISIBLE_COLUMNS);
   const [filters, setFilters] = useState<Record<ColumnKey, string>>({} as Record<ColumnKey, string>);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const deleteCalculation = async (id: string) => {
     try {
@@ -83,6 +85,46 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
     } catch (error) {
       console.error('Error deleting calculation:', error);
       toast.error('Failed to delete calculation');
+    }
+  };
+
+  const deleteSelectedCalculations = async () => {
+    if (selectedIds.size === 0) return;
+
+    try {
+      const { error } = await supabase
+        .from('analytics_sessions')
+        .delete()
+        .in('id', Array.from(selectedIds));
+
+      if (error) throw error;
+
+      toast.success(`${selectedIds.size} calculation${selectedIds.size > 1 ? 's' : ''} deleted successfully`);
+      setSelectedIds(new Set());
+      if (onCalculationDeleted) {
+        onCalculationDeleted();
+      }
+    } catch (error) {
+      console.error('Error deleting calculations:', error);
+      toast.error('Failed to delete calculations');
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredCalculations.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredCalculations.map(calc => calc.id)));
     }
   };
 
@@ -395,6 +437,30 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
               </CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              {selectedIds.size > 0 && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="w-full sm:w-auto">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected ({selectedIds.size})
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Selected Calculations</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete {selectedIds.size} calculation{selectedIds.size > 1 ? 's' : ''}? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={deleteSelectedCalculations}>
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
               {activeFiltersCount > 0 && (
                 <Button onClick={clearAllFilters} variant="outline" size="sm" className="w-full sm:w-auto">
                   <X className="h-4 w-4 mr-2" />
@@ -446,6 +512,13 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={selectedIds.size === filteredCalculations.length && filteredCalculations.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
                   {visibleColumns.map((columnKey) => (
                     <TableHead key={columnKey} className="space-y-2 min-w-[120px]">
                       <div className="font-medium text-xs md:text-sm">
@@ -464,6 +537,13 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
               <TableBody>
                 {filteredCalculations.map((calc, index) => (
                   <TableRow key={calc.id || index}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(calc.id)}
+                        onCheckedChange={() => toggleSelection(calc.id)}
+                        aria-label={`Select calculation ${calc.id}`}
+                      />
+                    </TableCell>
                     {visibleColumns.map((columnKey) => (
                       <TableCell key={columnKey} className={`text-xs md:text-sm ${columnKey === 'created_at' ? 'font-mono' : ''}`}>
                         {renderCellContent(calc, columnKey)}
