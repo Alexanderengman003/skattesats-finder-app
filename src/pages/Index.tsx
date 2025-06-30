@@ -14,6 +14,7 @@ import ForsamlingSelect from '@/components/ForsamlingSelect';
 import TaxColumnSelector from '@/components/TaxColumnSelector';
 import TaxTableDisplay from '@/components/TaxTableDisplay';
 import VacationPayCard from '@/components/VacationPayCard';
+import { FormAnalyticsTracker } from '@/components/FormAnalyticsTracker';
 import { 
   fetchTaxData, 
   findTaxRateFromAPI, 
@@ -718,6 +719,21 @@ const Index = () => {
           </div>
         </div>
       </div>
+      
+      {/* Add form tracking */}
+      <FormAnalyticsTracker
+        municipality={kommun}
+        parish={forsamling}
+        age={age}
+        monthlyIncome={monthlyIncome}
+        taxableBenefit={taxableBenefit}
+        incomeType={incomeType}
+        hasCollectiveAgreement={hasCollectiveAgreement}
+        vacationDays={vacationDays}
+        variableSalary={variableSalary}
+        includesSvenskaKyrkan={includeSvenskaKyrkan}
+        selectedYear={selectedYear}
+      />
     </div>
   );
 };

@@ -14,6 +14,7 @@ export type Database = {
           created_at: string
           event_name: string
           event_type: string
+          form_data: Json | null
           id: string
           ip_address: unknown | null
           page_url: string | null
@@ -27,6 +28,7 @@ export type Database = {
           created_at?: string
           event_name: string
           event_type: string
+          form_data?: Json | null
           id?: string
           ip_address?: unknown | null
           page_url?: string | null
@@ -40,6 +42,7 @@ export type Database = {
           created_at?: string
           event_name?: string
           event_type?: string
+          form_data?: Json | null
           id?: string
           ip_address?: unknown | null
           page_url?: string | null
@@ -58,16 +61,27 @@ export type Database = {
           country: string | null
           device_type: string | null
           events_count: number | null
+          has_collective_agreement: boolean | null
           id: string
+          includes_swedish_church: boolean | null
+          income_type: string | null
           ip_address: unknown | null
           landing_page: string | null
+          monthly_income: number | null
+          municipality: string | null
           os: string | null
           page_views: number | null
+          parish: string | null
           referrer: string | null
+          selected_year: number | null
           session_end: string | null
           session_start: string
+          taxable_benefit: number | null
+          user_age: number | null
           user_agent: string | null
           user_id: string | null
+          vacation_days: number | null
+          variable_salary: number | null
         }
         Insert: {
           browser?: string | null
@@ -75,16 +89,27 @@ export type Database = {
           country?: string | null
           device_type?: string | null
           events_count?: number | null
+          has_collective_agreement?: boolean | null
           id?: string
+          includes_swedish_church?: boolean | null
+          income_type?: string | null
           ip_address?: unknown | null
           landing_page?: string | null
+          monthly_income?: number | null
+          municipality?: string | null
           os?: string | null
           page_views?: number | null
+          parish?: string | null
           referrer?: string | null
+          selected_year?: number | null
           session_end?: string | null
           session_start?: string
+          taxable_benefit?: number | null
+          user_age?: number | null
           user_agent?: string | null
           user_id?: string | null
+          vacation_days?: number | null
+          variable_salary?: number | null
         }
         Update: {
           browser?: string | null
@@ -92,16 +117,27 @@ export type Database = {
           country?: string | null
           device_type?: string | null
           events_count?: number | null
+          has_collective_agreement?: boolean | null
           id?: string
+          includes_swedish_church?: boolean | null
+          income_type?: string | null
           ip_address?: unknown | null
           landing_page?: string | null
+          monthly_income?: number | null
+          municipality?: string | null
           os?: string | null
           page_views?: number | null
+          parish?: string | null
           referrer?: string | null
+          selected_year?: number | null
           session_end?: string | null
           session_start?: string
+          taxable_benefit?: number | null
+          user_age?: number | null
           user_agent?: string | null
           user_id?: string | null
+          vacation_days?: number | null
+          variable_salary?: number | null
         }
         Relationships: []
       }

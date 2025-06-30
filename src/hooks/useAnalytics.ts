@@ -7,6 +7,7 @@ interface AnalyticsEvent {
   event_name: string;
   properties?: Record<string, any>;
   page_url?: string;
+  form_data?: Record<string, any>;
 }
 
 interface AnalyticsSession {
@@ -15,6 +16,17 @@ interface AnalyticsSession {
   session_start: string;
   page_views: number;
   events_count: number;
+  municipality?: string;
+  parish?: string;
+  user_age?: number;
+  monthly_income?: number;
+  taxable_benefit?: number;
+  income_type?: string;
+  has_collective_agreement?: boolean;
+  vacation_days?: number;
+  variable_salary?: number;
+  includes_swedish_church?: boolean;
+  selected_year?: number;
 }
 
 export const useAnalytics = () => {
@@ -80,7 +92,8 @@ export const useAnalytics = () => {
   const trackEvent = useCallback(async (
     eventType: string,
     eventName: string,
-    properties: Record<string, any> = {}
+    properties: Record<string, any> = {},
+    formData: Record<string, any> = {}
   ) => {
     if (!sessionId) return;
 
@@ -91,7 +104,8 @@ export const useAnalytics = () => {
         event_type: eventType,
         event_name: eventName,
         properties,
-        page_url: window.location.href
+        page_url: window.location.href,
+        form_data: formData
       };
 
       await supabase.from('analytics_events').insert({
@@ -117,6 +131,39 @@ export const useAnalytics = () => {
       console.error('Error tracking event:', error);
     }
   }, [sessionId, session]);
+
+  const trackFormData = useCallback(async (formData: {
+    municipality?: string;
+    parish?: string;
+    user_age?: number;
+    monthly_income?: number;
+    taxable_benefit?: number;
+    income_type?: string;
+    has_collective_agreement?: boolean;
+    vacation_days?: number;
+    variable_salary?: number;
+    includes_swedish_church?: boolean;
+    selected_year?: number;
+  }) => {
+    if (!sessionId) return;
+
+    try {
+      // Update session with form data
+      await supabase
+        .from('analytics_sessions')
+        .update(formData)
+        .eq('id', sessionId);
+
+      // Track form interaction event
+      await trackEvent('form_interaction', 'form_data_updated', {}, formData);
+
+      // Update local session state
+      setSession(prev => prev ? { ...prev, ...formData } : null);
+
+    } catch (error) {
+      console.error('Error tracking form data:', error);
+    }
+  }, [sessionId, trackEvent]);
 
   const trackClick = useCallback((elementType: string, elementText: string, additionalProps: Record<string, any> = {}) => {
     trackEvent('click', 'element_click', {
@@ -148,6 +195,7 @@ export const useAnalytics = () => {
     trackEvent,
     trackClick,
     trackPageView,
+    trackFormData,
     sessionId,
     session
   };
