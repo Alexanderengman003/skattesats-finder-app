@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TaxCalculationDisplayProps {
   totalIncome: number;
@@ -14,23 +15,25 @@ const TaxCalculationDisplay = ({
   taxPercentage, 
   marginalTaxRate 
 }: TaxCalculationDisplayProps) => {
+  const { t } = useLanguage();
+  
   return (
     <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl w-full">
       <div className="text-center">
         <div className="text-sm font-medium text-black mb-1">
-          Total skatt
+          {t('totalTax')}
         </div>
         <div className="text-2xl font-bold text-black mb-2 break-words">
           {Math.round(actualTaxAmount).toLocaleString()} kr
         </div>
         <div className="text-sm font-medium text-black mb-2 break-words">
-          Skatt beräknad på skattepliktig inkomst {Math.round(totalIncome).toLocaleString()} kr
+          {t('taxCalculatedOn')} {Math.round(totalIncome).toLocaleString()} kr
         </div>
         <div className="text-sm font-medium text-black mb-1">
-          Du betalar <span className="font-bold">{taxPercentage}%</span> i skatt
+          {t('youPay')} <span className="font-bold">{taxPercentage}%</span> {t('inTax')}
         </div>
         <div className="text-sm font-medium text-black">
-          Din marginalskatt är <span className="font-bold">{marginalTaxRate}%</span>
+          {t('marginalTax')} <span className="font-bold">{marginalTaxRate}%</span>
         </div>
       </div>
     </div>
