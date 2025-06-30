@@ -12,7 +12,7 @@ import CollapsibleCard from '@/components/CollapsibleCard';
 import KommunSearch from '@/components/KommunSearch';
 import ForsamlingSelect from '@/components/ForsamlingSelect';
 import TaxColumnSelector from '@/components/TaxColumnSelector';
-import TaxTableDisplay from '@/comparishponents/TaxTableDisplay';
+import TaxTableDisplay from '@/components/TaxTableDisplay';
 import VacationPayCard from '@/components/VacationPayCard';
 import { 
   fetchTaxData, 
