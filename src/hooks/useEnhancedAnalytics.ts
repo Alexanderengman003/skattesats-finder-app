@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -201,7 +202,8 @@ export const useEnhancedAnalytics = () => {
       const allCalculations: CalculationData[] = calculationEvents?.map(event => ({
         id: event.id,
         created_at: event.created_at,
-        ...event.form_data
+        // Only spread form_data if it exists and is an object
+        ...(event.form_data && typeof event.form_data === 'object' ? event.form_data : {})
       })) || [];
 
       setData({
