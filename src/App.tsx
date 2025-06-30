@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import Index from "./pages/Index";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
             <AnalyticsTracker>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/analytics" element={<Analytics />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
