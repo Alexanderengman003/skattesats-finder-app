@@ -209,14 +209,14 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
           <Table>
             <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
               <TableRow className="bg-blue-50 h-7">
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-1 text-sm">{t('incomeTo')}</TableHead>
-                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm">
+                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-1 text-sm whitespace-nowrap">{t('incomeTo')}</TableHead>
+                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm whitespace-nowrap">
                   {t('skatt')}
                 </TableHead>
-                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm">
+                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm whitespace-nowrap">
                   {t('skattesats')}
                 </TableHead>
-                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm">
+                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm whitespace-nowrap">
                   {t('marginalskatt')}
                 </TableHead>
               </TableRow>
@@ -237,20 +237,20 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                         : 'bg-gray-50 hover:bg-blue-50'
                     }`}
                   >
-                    <TableCell className={`py-1 text-sm px-3 ${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
+                    <TableCell className={`py-1 text-sm px-3 whitespace-nowrap ${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
                       {formatIncome(row.InkomstTill)}
                     </TableCell>
-                    <TableCell className={`text-center font-semibold py-1 text-sm px-3 ${
+                    <TableCell className={`text-center font-semibold py-1 text-sm px-3 whitespace-nowrap ${
                       isCurrentRow ? 'text-blue-900' : 'text-blue-700'
                     }`}>
                       {getTaxFromColumn(row, selectedTaxColumn, originalIndex)}
                     </TableCell>
-                    <TableCell className={`text-center font-semibold py-1 text-sm px-3 ${
+                    <TableCell className={`text-center font-semibold py-1 text-sm px-3 whitespace-nowrap ${
                       isCurrentRow ? 'text-blue-900' : 'text-green-700'
                     }`}>
                       {calculateTaxRate(row, originalIndex)}
                     </TableCell>
-                    <TableCell className={`text-center font-semibold py-1 text-sm px-3 ${
+                    <TableCell className={`text-center font-semibold py-1 text-sm px-3 whitespace-nowrap ${
                       isCurrentRow ? 'text-blue-900' : 'text-purple-700'
                     }`}>
                       {calculateMarginalTax(originalIndex)}
