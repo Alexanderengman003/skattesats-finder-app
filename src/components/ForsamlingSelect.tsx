@@ -3,6 +3,7 @@ import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Church, HelpCircle } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ForsamlingSelectProps {
   forsamlingar: string[];
@@ -17,18 +18,21 @@ const ForsamlingSelect = ({
   onValueChange, 
   disabled = false 
 }: ForsamlingSelectProps) => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-2">
       <label htmlFor="forsamling" className="flex items-center gap-2 text-sm font-medium">
         <Church className="h-4 w-4" />
-        Församling
+        {t('parish')}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
             </TooltipTrigger>
             <TooltipContent className="max-w-xs">
-              <p>Alla som är skrivna i en svensk kommun tillhör en församling. Om du inte vet vilken församling du tillhör kan du hitta det{' '}
+              <p>
+                {t('parishTooltip')}{' '}
                 <a 
                   href="https://www.svenskakyrkan.se/sokforsamling" 
                   target="_blank" 
@@ -48,7 +52,7 @@ const ForsamlingSelect = ({
         disabled={disabled}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Välj församling" />
+          <SelectValue placeholder={t('selectParish')} />
         </SelectTrigger>
         <SelectContent>
           {forsamlingar.map((forsamling) => (

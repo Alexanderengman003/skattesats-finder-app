@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HelpCircle, Calendar } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface VacationPayCardProps {
   hasCollectiveAgreement: boolean;
@@ -28,6 +29,8 @@ const VacationPayCard = ({
   vacationPayAmount,
   monthlyIncome
 }: VacationPayCardProps) => {
+  const { t } = useLanguage();
+
   const handleVacationDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
@@ -47,7 +50,7 @@ const VacationPayCard = ({
       <CardHeader className="bg-gradient-to-r from-green-400 to-green-500 text-white rounded-t-xl">
         <CardTitle className="flex items-center gap-2">
           <Calendar className="h-5 w-5" />
-          Semestertillägg
+          {t('vacationPay')}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6 bg-green-50 rounded-b-xl space-y-4">
@@ -58,15 +61,17 @@ const VacationPayCard = ({
             onCheckedChange={(checked) => onHasCollectiveAgreementChange(checked === true)}
           />
           <Label htmlFor="collectiveAgreement" className="flex items-center gap-2">
-            Kollektivavtal
+            {t('collectiveAgreement')}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Med kollektivavtal: 0.8% för grundlön + 0.5% för rörlig lön</p>
-                  <p>Utan kollektivavtal: 0.43% för grundlön + (12% / 25) för rörlig lön</p>
+                  <div className="space-y-1">
+                    <p>Med kollektivavtal: 0.8% för grundlön + 0.5% för rörlig lön</p>
+                    <p>Utan kollektivavtal: 0.43% för grundlön + (12% / 25) för rörlig lön</p>
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -74,13 +79,13 @@ const VacationPayCard = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="vacationDays">Antal semesterdagar</Label>
+          <Label htmlFor="vacationDays">{t('vacationDays')}</Label>
           <Input
             id="vacationDays"
             type="number"
             value={vacationDays || ''}
             onChange={handleVacationDaysChange}
-            placeholder="Antal semesterdagar"
+            placeholder={t('vacationDays')}
             min="0"
             max="50"
             className="w-full"
@@ -88,13 +93,13 @@ const VacationPayCard = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="variableSalary">Rörlig lön per månad (kr)</Label>
+          <Label htmlFor="variableSalary">{t('variableSalary')}</Label>
           <Input
             id="variableSalary"
             type="number"
             value={variableSalary === 0 ? '' : variableSalary}
             onChange={handleVariableSalaryChange}
-            placeholder="Rörlig månadslön"
+            placeholder={t('variableMonthlySalary')}
             min="0"
             className="w-full"
           />
