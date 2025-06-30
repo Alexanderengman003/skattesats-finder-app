@@ -5,7 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Download, Eye, EyeOff, Filter, X } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Download, Eye, EyeOff, Filter, X, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface CalculationData {
   id: string;
@@ -25,6 +28,7 @@ interface CalculationData {
 
 interface CalculationsListProps {
   calculations: CalculationData[];
+  onCalculationDeleted?: () => void;
 }
 
 type ColumnKey = keyof CalculationData;
@@ -59,9 +63,28 @@ const DEFAULT_VISIBLE_COLUMNS: ColumnKey[] = [
   'has_collective_agreement'
 ];
 
-export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations }) => {
+export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations, onCalculationDeleted }) => {
   const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(DEFAULT_VISIBLE_COLUMNS);
   const [filters, setFilters] = useState<Record<ColumnKey, string>>({} as Record<ColumnKey, string>);
+
+  const deleteCalculation = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('analytics_sessions')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Calculation deleted successfully');
+      if (onCalculationDeleted) {
+        onCalculationDeleted();
+      }
+    } catch (error) {
+      console.error('Error deleting calculation:', error);
+      toast.error('Failed to delete calculation');
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('sv-SE', {
@@ -433,6 +456,9 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
                       </div>
                     </TableHead>
                   ))}
+                  <TableHead className="min-w-[80px]">
+                    <div className="font-medium text-xs md:text-sm">Actions</div>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -443,6 +469,29 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
                         {renderCellContent(calc, columnKey)}
                       </TableCell>
                     ))}
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Calculation</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this calculation? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteCalculation(calc.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
