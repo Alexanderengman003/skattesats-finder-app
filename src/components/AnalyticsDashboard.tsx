@@ -4,6 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { AnalyticsCharts } from './AnalyticsCharts';
+import { GeographicInsights } from './GeographicInsights';
+import { useEnhancedAnalytics } from '@/hooks/useEnhancedAnalytics';
 
 interface AnalyticsStats {
   totalSessions: number;
@@ -18,6 +21,7 @@ interface AnalyticsStats {
 export const AnalyticsDashboard: React.FC = () => {
   const [stats, setStats] = useState<AnalyticsStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const { data: enhancedData, loading: enhancedLoading } = useEnhancedAnalytics();
 
   useEffect(() => {
     loadAnalyticsStats();
@@ -114,17 +118,17 @@ export const AnalyticsDashboard: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading || enhancedLoading) {
     return <div className="p-6">Loading analytics...</div>;
   }
 
-  if (!stats) {
+  if (!stats || !enhancedData) {
     return <div className="p-6">No analytics data available.</div>;
   }
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+      <h1 className="text-3xl font-bold">Enhanced Analytics Dashboard</h1>
       
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -165,12 +169,30 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="events" className="space-y-4">
+      <Tabs defaultValue="charts" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="charts">Charts & Trends</TabsTrigger>
+          <TabsTrigger value="geography">Geography</TabsTrigger>
           <TabsTrigger value="events">Top Events</TabsTrigger>
           <TabsTrigger value="pages">Top Pages</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="charts" className="space-y-4">
+          <AnalyticsCharts
+            dailyUsers={enhancedData.dailyUsers}
+            topCountries={enhancedData.topCountries}
+            clickHeatmap={enhancedData.clickHeatmap}
+            browserStats={enhancedData.browserStats}
+          />
+        </TabsContent>
+
+        <TabsContent value="geography" className="space-y-4">
+          <GeographicInsights
+            geographicData={enhancedData.geographicData}
+            totalSessions={stats.totalSessions}
+          />
+        </TabsContent>
         
         <TabsContent value="events" className="space-y-4">
           <Card>
