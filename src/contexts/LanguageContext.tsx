@@ -11,8 +11,8 @@ interface Translations {
 const translations: Translations = {
   // Header
   appTitle: { sv: 'Min skatt', en: 'My Tax' },
-  appSubtitle: { sv: 'Hitta din inkomstskatt på ett enklare sätt', en: 'Find your income tax the easy way' },
-  infoText: { sv: 'Att hitta och förstå den skatt man som anställd i Sverige betalar på sin inkomst kan vara komplicerad och frustrerande. Denna applikation hjälper dig att snabbt och enkelt hitta exakt hur mycket du ska betala i skatt, så att du slipper leta fram det själv.', en: 'Finding and understanding the tax that you as an employee in Sweden pay on your income can be complicated and frustrating. This application helps you quickly and easily find exactly how much you should pay in tax, so you don\'t have to look it up yourself.' },
+  appSubtitle: { sv: 'Hitta din inkomstskatt enklare', en: 'Find your income tax the easy way' },
+  infoText: { sv: 'Att hitta och förstå den skatt man som anställd i Sverige betalar på sin inkomst kan vara svårt och frustrerande. Denna applikation hjälper dig att snabbt och enkelt hitta exakt hur mycket du ska betala i skatt, så att du slipper leta fram det själv.', en: 'Finding and understanding the tax that you as an employee in Sweden pay on your income can be complicated and frustrating. This application helps you quickly and easily find exactly how much you should pay in tax, so you don\'t have to look it up yourself.' },
   
   // Form sections
   taxRate: { sv: 'Skattesats', en: 'Tax Rate' },
