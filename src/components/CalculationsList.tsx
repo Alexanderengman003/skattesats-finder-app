@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -8,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Download, Eye, EyeOff, Filter, X, Trash2 } from 'lucide-react';
+import { Download, Eye, EyeOff, Filter, X, Trash2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -69,67 +68,129 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
   const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(DEFAULT_VISIBLE_COLUMNS);
   const [filters, setFilters] = useState<Record<ColumnKey, string>>({} as Record<ColumnKey, string>);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [localCalculations, setLocalCalculations] = useState<CalculationData[]>(calculations);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  // Update local calculations when props change
+  React.useEffect(() => {
+    setLocalCalculations(calculations);
+  }, [calculations]);
 
   const deleteCalculation = async (id: string) => {
+    console.log('Starting delete operation for calculation ID:', id);
+    
     try {
-      console.log('Attempting to delete calculation with ID:', id);
+      setDeletingIds(prev => new Set(prev).add(id));
       
-      // Delete from analytics_events table where the calculation data is actually stored
-      const { error } = await supabase
+      // Optimistic update - remove from local state immediately
+      setLocalCalculations(prev => prev.filter(calc => calc.id !== id));
+      
+      console.log('Attempting to delete from analytics_events table...');
+      
+      const { error, count } = await supabase
         .from('analytics_events')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', id);
 
       if (error) {
         console.error('Supabase delete error:', error);
+        // Restore the item on error
+        const originalCalc = calculations.find(calc => calc.id === id);
+        if (originalCalc) {
+          setLocalCalculations(prev => [...prev, originalCalc].sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          ));
+        }
         throw error;
       }
 
-      console.log('Delete successful, calling refresh callback');
+      console.log('Delete operation completed. Rows affected:', count);
+      
+      if (count === 0) {
+        console.warn('No rows were deleted. The calculation might not exist.');
+        toast.error('Calculation not found or already deleted');
+        
+        // Still trigger refresh to sync with database state
+        if (onCalculationDeleted) {
+          onCalculationDeleted();
+        }
+        return;
+      }
+
+      console.log('Delete successful, triggering refresh callback');
       toast.success('Calculation deleted successfully');
       
-      // Trigger refresh by calling the callback
+      // Trigger refresh to ensure data consistency
       if (onCalculationDeleted) {
         onCalculationDeleted();
-      } else {
-        console.warn('No onCalculationDeleted callback provided');
       }
     } catch (error) {
       console.error('Error deleting calculation:', error);
-      toast.error('Failed to delete calculation');
+      toast.error('Failed to delete calculation. Please try again.');
+    } finally {
+      setDeletingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
     }
   };
 
   const deleteSelectedCalculations = async () => {
     if (selectedIds.size === 0) return;
 
+    const idsToDelete = Array.from(selectedIds);
+    console.log('Starting bulk delete operation for IDs:', idsToDelete);
+    
     try {
-      console.log('Attempting to delete calculations with IDs:', Array.from(selectedIds));
+      setBulkDeleting(true);
       
-      // Delete from analytics_events table where the calculation data is actually stored
-      const { error } = await supabase
+      // Optimistic update - remove from local state immediately
+      setLocalCalculations(prev => prev.filter(calc => !selectedIds.has(calc.id)));
+      
+      console.log('Attempting bulk delete from analytics_events table...');
+      
+      const { error, count } = await supabase
         .from('analytics_events')
-        .delete()
-        .in('id', Array.from(selectedIds));
+        .delete({ count: 'exact' })
+        .in('id', idsToDelete);
 
       if (error) {
         console.error('Supabase bulk delete error:', error);
+        // Restore the items on error
+        const originalCalcs = calculations.filter(calc => selectedIds.has(calc.id));
+        setLocalCalculations(prev => [...prev, ...originalCalcs].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ));
         throw error;
       }
 
-      console.log('Bulk delete successful, calling refresh callback');
-      toast.success(`${selectedIds.size} calculation${selectedIds.size > 1 ? 's' : ''} deleted successfully`);
+      console.log('Bulk delete operation completed. Rows affected:', count);
+      
+      if (count === 0) {
+        console.warn('No rows were deleted. The calculations might not exist.');
+        toast.error('No calculations were found to delete');
+      } else if (count < idsToDelete.length) {
+        console.warn(`Only ${count} of ${idsToDelete.length} calculations were deleted`);
+        toast.success(`${count} calculation${count > 1 ? 's' : ''} deleted successfully (${idsToDelete.length - count} were already gone)`);
+      } else {
+        toast.success(`${count} calculation${count > 1 ? 's' : ''} deleted successfully`);
+      }
+      
       setSelectedIds(new Set());
       
-      // Trigger refresh by calling the callback
+      console.log('Bulk delete successful, triggering refresh callback');
+      
+      // Trigger refresh to ensure data consistency
       if (onCalculationDeleted) {
         onCalculationDeleted();
-      } else {
-        console.warn('No onCalculationDeleted callback provided');
       }
     } catch (error) {
       console.error('Error deleting calculations:', error);
-      toast.error('Failed to delete calculations');
+      toast.error('Failed to delete calculations. Please try again.');
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -215,9 +276,9 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
     }
   };
 
-  // Filter calculations based on active filters
+  // Filter calculations based on active filters - use localCalculations instead of calculations
   const filteredCalculations = useMemo(() => {
-    return calculations.filter(calc => {
+    return localCalculations.filter(calc => {
       return Object.entries(filters).every(([key, filterValue]) => {
         if (!filterValue) return true; // No filter applied
         
@@ -256,7 +317,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
         }
       });
     });
-  }, [calculations, filters]);
+  }, [localCalculations, filters]);
 
   const setFilter = (columnKey: ColumnKey, value: string) => {
     setFilters(prev => ({
@@ -345,7 +406,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
 
   const getUniqueValues = (columnKey: ColumnKey) => {
     const values = new Set<string>();
-    calculations.forEach(calc => {
+    localCalculations.forEach(calc => {
       const value = calc[columnKey];
       if (columnKey === 'includes_swedish_church' || columnKey === 'has_collective_agreement') {
         const boolValue = value === null || value === undefined ? 'No' : (value ? 'Yes' : 'No');
@@ -451,7 +512,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
             <div>
               <CardTitle className="text-lg md:text-xl">All Calculations</CardTitle>
               <CardDescription className="text-sm">
-                Complete list of all tax calculations performed ({filteredCalculations.length} of {calculations.length} total)
+                Complete list of all tax calculations performed ({filteredCalculations.length} of {localCalculations.length} total)
                 {activeFiltersCount > 0 && (
                   <span className="ml-2 text-blue-600">
                     • {activeFiltersCount} filter{activeFiltersCount !== 1 ? 's' : ''} applied
@@ -463,9 +524,18 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
               {selectedIds.size > 0 && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" className="w-full sm:w-auto">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Selected ({selectedIds.size})
+                    <Button variant="destructive" size="sm" className="w-full sm:w-auto" disabled={bulkDeleting}>
+                      {bulkDeleting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Selected ({selectedIds.size})
+                        </>
+                      )}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -559,12 +629,13 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
               </TableHeader>
               <TableBody>
                 {filteredCalculations.map((calc, index) => (
-                  <TableRow key={calc.id || index}>
+                  <TableRow key={calc.id || index} className={deletingIds.has(calc.id) ? 'opacity-50' : ''}>
                     <TableCell>
                       <Checkbox
                         checked={selectedIds.has(calc.id)}
                         onCheckedChange={() => toggleSelection(calc.id)}
                         aria-label={`Select calculation ${calc.id}`}
+                        disabled={deletingIds.has(calc.id)}
                       />
                     </TableCell>
                     {visibleColumns.map((columnKey) => (
@@ -575,8 +646,12 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
                     <TableCell>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="sm">
-                            <Trash2 className="h-4 w-4" />
+                          <Button variant="destructive" size="sm" disabled={deletingIds.has(calc.id)}>
+                            {deletingIds.has(calc.id) ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -600,12 +675,12 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
               </TableBody>
             </Table>
           </div>
-          {filteredCalculations.length === 0 && calculations.length > 0 && (
+          {filteredCalculations.length === 0 && localCalculations.length > 0 && (
             <div className="text-center py-8 text-gray-500 text-sm">
               No calculations match the current filters
             </div>
           )}
-          {calculations.length === 0 && (
+          {localCalculations.length === 0 && (
             <div className="text-center py-8 text-gray-500 text-sm">
               No calculations found
             </div>
