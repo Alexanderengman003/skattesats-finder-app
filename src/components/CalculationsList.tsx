@@ -359,10 +359,10 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-start">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
             <div>
-              <CardTitle>All Calculations</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg md:text-xl">All Calculations</CardTitle>
+              <CardDescription className="text-sm">
                 Complete list of all tax calculations performed ({filteredCalculations.length} of {calculations.length} total)
                 {activeFiltersCount > 0 && (
                   <span className="ml-2 text-blue-600">
@@ -371,14 +371,14 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
                 )}
               </CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               {activeFiltersCount > 0 && (
-                <Button onClick={clearAllFilters} variant="outline" size="sm">
+                <Button onClick={clearAllFilters} variant="outline" size="sm" className="w-full sm:w-auto">
                   <X className="h-4 w-4 mr-2" />
                   Clear Filters
                 </Button>
               )}
-              <Button onClick={exportToCSV} variant="outline" size="sm">
+              <Button onClick={exportToCSV} variant="outline" size="sm" className="w-full sm:w-auto">
                 <Download className="h-4 w-4 mr-2" />
                 Export CSV
               </Button>
@@ -387,7 +387,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
         </CardHeader>
         <CardContent>
           {/* Column Visibility Controls */}
-          <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+          <div className="mb-4 p-3 md:p-4 bg-gray-50 rounded-lg">
             <h4 className="text-sm font-medium mb-3">Column Visibility</h4>
             <div className="flex flex-wrap gap-2">
               {Object.entries(COLUMN_LABELS).map(([key, label]) => {
@@ -403,12 +403,14 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
                     {isVisible ? (
                       <>
                         <Eye className="h-3 w-3 mr-1" />
-                        {label}
+                        <span className="hidden sm:inline">{label}</span>
+                        <span className="sm:hidden">{label.length > 8 ? label.substring(0, 8) + '...' : label}</span>
                       </>
                     ) : (
                       <>
                         <EyeOff className="h-3 w-3 mr-1" />
-                        {label}
+                        <span className="hidden sm:inline">{label}</span>
+                        <span className="sm:hidden">{label.length > 8 ? label.substring(0, 8) + '...' : label}</span>
                       </>
                     )}
                   </Button>
@@ -422,8 +424,8 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
               <TableHeader>
                 <TableRow>
                   {visibleColumns.map((columnKey) => (
-                    <TableHead key={columnKey} className="space-y-2">
-                      <div className="font-medium">
+                    <TableHead key={columnKey} className="space-y-2 min-w-[120px]">
+                      <div className="font-medium text-xs md:text-sm">
                         {COLUMN_LABELS[columnKey]}
                       </div>
                       <div className="font-normal">
@@ -437,7 +439,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
                 {filteredCalculations.map((calc, index) => (
                   <TableRow key={calc.id || index}>
                     {visibleColumns.map((columnKey) => (
-                      <TableCell key={columnKey} className={columnKey === 'created_at' ? 'font-mono text-sm' : ''}>
+                      <TableCell key={columnKey} className={`text-xs md:text-sm ${columnKey === 'created_at' ? 'font-mono' : ''}`}>
                         {renderCellContent(calc, columnKey)}
                       </TableCell>
                     ))}
@@ -447,12 +449,12 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
             </Table>
           </div>
           {filteredCalculations.length === 0 && calculations.length > 0 && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 text-sm">
               No calculations match the current filters
             </div>
           )}
           {calculations.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 text-sm">
               No calculations found
             </div>
           )}

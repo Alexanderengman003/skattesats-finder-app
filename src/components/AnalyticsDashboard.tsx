@@ -121,66 +121,68 @@ export const AnalyticsDashboard: React.FC = () => {
   };
 
   if (loading || enhancedLoading) {
-    return <div className="p-6">Loading analytics...</div>;
+    return <div className="p-4 md:p-6">Loading analytics...</div>;
   }
 
   if (!stats || !enhancedData) {
-    return <div className="p-6">No analytics data available.</div>;
+    return <div className="p-4 md:p-6">No analytics data available.</div>;
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Enhanced Analytics Dashboard</h1>
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+      <h1 className="text-2xl md:text-3xl font-bold">Enhanced Analytics Dashboard</h1>
       
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium">Total Sessions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSessions}</div>
+            <div className="text-lg md:text-2xl font-bold">{stats.totalSessions}</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium">Total Events</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalEvents}</div>
+            <div className="text-lg md:text-2xl font-bold">{stats.totalEvents}</div>
+          </CardContent>
+        </Card >
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs md:text-sm font-medium">Page Views</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg md:text-2xl font-bold">{stats.totalPageViews}</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Page Views</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium">Unique Users</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPageViews}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Unique Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.uniqueUsers}</div>
+            <div className="text-lg md:text-2xl font-bold">{stats.uniqueUsers}</div>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="charts" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="charts">Charts & Trends</TabsTrigger>
-          <TabsTrigger value="geography">Geography</TabsTrigger>
-          <TabsTrigger value="form-insights">Form Insights</TabsTrigger>
-          <TabsTrigger value="calculations">All Calculations</TabsTrigger>
-          <TabsTrigger value="events">Top Events</TabsTrigger>
-          <TabsTrigger value="pages">Top Pages</TabsTrigger>
-          <TabsTrigger value="devices">Devices</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 min-w-max md:min-w-0">
+            <TabsTrigger value="charts" className="text-xs md:text-sm">Charts</TabsTrigger>
+            <TabsTrigger value="geography" className="text-xs md:text-sm">Geography</TabsTrigger>
+            <TabsTrigger value="form-insights" className="text-xs md:text-sm">Form Insights</TabsTrigger>
+            <TabsTrigger value="calculations" className="text-xs md:text-sm">Calculations</TabsTrigger>
+            <TabsTrigger value="events" className="text-xs md:text-sm">Events</TabsTrigger>
+            <TabsTrigger value="pages" className="text-xs md:text-sm">Pages</TabsTrigger>
+            <TabsTrigger value="devices" className="text-xs md:text-sm">Devices</TabsTrigger>
+          </TabsList>
+        </div>
         
         <TabsContent value="charts" className="space-y-4">
           <AnalyticsCharts
@@ -209,15 +211,15 @@ export const AnalyticsDashboard: React.FC = () => {
         <TabsContent value="events" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Most Tracked Events</CardTitle>
-              <CardDescription>The most frequently tracked user interactions</CardDescription>
+              <CardTitle className="text-lg md:text-xl">Most Tracked Events</CardTitle>
+              <CardDescription className="text-sm">The most frequently tracked user interactions</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {stats.topEvents.map((event, index) => (
                   <div key={event.event_name} className="flex items-center justify-between">
-                    <span className="font-medium">{event.event_name}</span>
-                    <Badge variant="secondary">{event.count}</Badge>
+                    <span className="font-medium text-sm md:text-base truncate">{event.event_name}</span>
+                    <Badge variant="secondary" className="ml-2 shrink-0">{event.count}</Badge>
                   </div>
                 ))}
               </div>
@@ -228,15 +230,15 @@ export const AnalyticsDashboard: React.FC = () => {
         <TabsContent value="pages" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Most Visited Pages</CardTitle>
-              <CardDescription>Pages with the most views</CardDescription>
+              <CardTitle className="text-lg md:text-xl">Most Visited Pages</CardTitle>
+              <CardDescription className="text-sm">Pages with the most views</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {stats.topPages.map((page, index) => (
                   <div key={page.page_url} className="flex items-center justify-between">
-                    <span className="font-medium truncate">{page.page_url}</span>
-                    <Badge variant="secondary">{page.count}</Badge>
+                    <span className="font-medium text-sm md:text-base truncate flex-1 mr-2">{page.page_url}</span>
+                    <Badge variant="secondary" className="shrink-0">{page.count}</Badge>
                   </div>
                 ))}
               </div>
@@ -247,14 +249,14 @@ export const AnalyticsDashboard: React.FC = () => {
         <TabsContent value="devices" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Device Types</CardTitle>
-              <CardDescription>Breakdown of user devices</CardDescription>
+              <CardTitle className="text-lg md:text-xl">Device Types</CardTitle>
+              <CardDescription className="text-sm">Breakdown of user devices</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {stats.deviceTypes.map((device, index) => (
                   <div key={device.device_type} className="flex items-center justify-between">
-                    <span className="font-medium capitalize">{device.device_type}</span>
+                    <span className="font-medium text-sm md:text-base capitalize">{device.device_type}</span>
                     <Badge variant="secondary">{device.count}</Badge>
                   </div>
                 ))}
