@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -29,9 +28,31 @@ interface AnalyticsSession {
   selected_year?: number;
 }
 
+interface LocationData {
+  country?: string;
+  city?: string;
+}
+
 export const useAnalytics = () => {
   const [sessionId, setSessionId] = useState<string>('');
   const [session, setSession] = useState<AnalyticsSession | null>(null);
+
+  // Get location data from free IP service
+  const getLocationData = async (): Promise<LocationData> => {
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          country: data.country_name || 'Unknown',
+          city: data.city || null
+        };
+      }
+    } catch (error) {
+      console.log('Could not fetch location data:', error);
+    }
+    return { country: 'Unknown', city: null };
+  };
 
   // Initialize session on mount
   useEffect(() => {
@@ -53,6 +74,9 @@ export const useAnalytics = () => {
       const browser = getBrowserName(userAgent);
       const os = getOperatingSystem(userAgent);
 
+      // Get location data
+      const locationData = await getLocationData();
+
       // Create new session
       const { data: sessionData, error } = await supabase
         .from('analytics_sessions')
@@ -64,6 +88,8 @@ export const useAnalytics = () => {
           device_type: deviceType,
           browser,
           os,
+          country: locationData.country,
+          city: locationData.city,
           page_views: 1,
           events_count: 0
         })
@@ -151,6 +177,9 @@ export const useAnalytics = () => {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       
+      // Get location data for new session
+      const locationData = await getLocationData();
+      
       // Create a new session record for each calculation instead of updating the existing one
       const { data: newSessionData, error } = await supabase
         .from('analytics_sessions')
@@ -162,6 +191,8 @@ export const useAnalytics = () => {
           device_type: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop',
           browser: getBrowserName(navigator.userAgent),
           os: getOperatingSystem(navigator.userAgent),
+          country: locationData.country,
+          city: locationData.city,
           page_views: 1,
           events_count: 1,
           ...formData
