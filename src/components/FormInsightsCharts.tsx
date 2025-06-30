@@ -11,10 +11,12 @@ interface FormInsights {
   incomeRanges: Array<{ income_range: string; count: number }>;
   incomeTypes: Array<{ income_type: string; count: number }>;
   yearSelections: Array<{ year: number; count: number }>;
+  vacationDaysDistribution: Array<{ vacation_days: number; count: number }>;
   avgAge: number;
   avgIncome: number;
   avgTaxableBenefit: number;
   avgVariableSalary: number;
+  avgVacationDays: number;
   churchMembershipRate: number;
   collectiveAgreementRate: number;
 }
@@ -84,6 +86,16 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
 
       <Card>
         <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Average Vacation Days</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{formInsights.avgVacationDays || 'N/A'}</div>
+          <p className="text-xs text-muted-foreground">days per year</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Church Membership</CardTitle>
         </CardHeader>
         <CardContent>
@@ -129,11 +141,11 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
         </CardContent>
       </Card>
 
-      {/* Age Distribution - Changed from pie chart to bar chart */}
+      {/* Age Distribution */}
       <Card>
         <CardHeader>
           <CardTitle>Age Distribution</CardTitle>
-          <CardDescription>User age ranges</CardDescription>
+          <CardDescription>User age ranges (5-year increments)</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[200px]">
@@ -145,6 +157,30 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
                   angle={-45}
                   textAnchor="end"
                   height={60}
+                  fontSize={11}
+                />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill="var(--color-count)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      {/* Vacation Days Distribution */}
+      <Card className="col-span-1 md:col-span-2">
+        <CardHeader>
+          <CardTitle>Vacation Days Distribution</CardTitle>
+          <CardDescription>Distribution of vacation days per year</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={formInsights.vacationDaysDistribution.filter(item => item.count > 0)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="vacation_days" 
                   fontSize={11}
                 />
                 <YAxis />

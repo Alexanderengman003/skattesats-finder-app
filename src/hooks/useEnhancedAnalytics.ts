@@ -33,10 +33,12 @@ interface FormInsights {
   incomeRanges: Array<{ income_range: string; count: number }>;
   incomeTypes: Array<{ income_type: string; count: number }>;
   yearSelections: Array<{ year: number; count: number }>;
+  vacationDaysDistribution: Array<{ vacation_days: number; count: number }>;
   avgAge: number;
   avgIncome: number;
   avgTaxableBenefit: number;
   avgVariableSalary: number;
+  avgVacationDays: number;
   churchMembershipRate: number;
   collectiveAgreementRate: number;
 }
@@ -194,21 +196,24 @@ export const useEnhancedAnalytics = () => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // Age distribution
-    const ageRanges = ['Under 25', '25-34', '35-44', '45-54', '55-64', '65+'];
-    const ageDistribution = ageRanges.map(range => ({ age_range: range, count: 0 }));
-    
+    // Age distribution - Fixed to use 5-year increments with no upper bound
+    const ageMap = new Map<string, number>();
     sessionsData.forEach((session) => {
       if (session.user_age) {
         const age = session.user_age;
-        if (age < 25) ageDistribution[0].count++;
-        else if (age < 35) ageDistribution[1].count++;
-        else if (age < 45) ageDistribution[2].count++;
-        else if (age < 55) ageDistribution[3].count++;
-        else if (age < 65) ageDistribution[4].count++;
-        else ageDistribution[5].count++;
+        const ageGroup = Math.floor(age / 5) * 5;
+        const ageRange = `${ageGroup}-${ageGroup + 4}`;
+        ageMap.set(ageRange, (ageMap.get(ageRange) || 0) + 1);
       }
     });
+    
+    const ageDistribution = Array.from(ageMap.entries())
+      .map(([age_range, count]) => ({ age_range, count }))
+      .sort((a, b) => {
+        const aStart = parseInt(a.age_range.split('-')[0]);
+        const bStart = parseInt(b.age_range.split('-')[0]);
+        return aStart - bStart;
+      });
 
     // Updated income ranges - 5k increments starting from 0 with no upper bound
     const incomeRangeLabels = [
@@ -274,6 +279,17 @@ export const useEnhancedAnalytics = () => {
       .map(([year, count]) => ({ year, count }))
       .sort((a, b) => b.year - a.year);
 
+    // Vacation days distribution
+    const vacationDaysMap = new Map<number, number>();
+    sessionsData.forEach((session) => {
+      if (session.vacation_days !== null && session.vacation_days !== undefined) {
+        vacationDaysMap.set(session.vacation_days, (vacationDaysMap.get(session.vacation_days) || 0) + 1);
+      }
+    });
+    const vacationDaysDistribution = Array.from(vacationDaysMap.entries())
+      .map(([vacation_days, count]) => ({ vacation_days, count }))
+      .sort((a, b) => a.vacation_days - b.vacation_days);
+
     // Calculate averages and rates
     const validAges = sessionsData.filter(s => s.user_age).map(s => s.user_age);
     const avgAge = validAges.length > 0 ? validAges.reduce((a, b) => a + b, 0) / validAges.length : 0;
@@ -281,19 +297,21 @@ export const useEnhancedAnalytics = () => {
     const validIncomes = sessionsData.filter(s => s.monthly_income).map(s => s.monthly_income);
     const avgIncome = validIncomes.length > 0 ? validIncomes.reduce((a, b) => a + b, 0) / validIncomes.length : 0;
 
-    // Add new analytics calculations
     const validTaxableBenefits = sessionsData.filter(s => s.taxable_benefit && s.taxable_benefit > 0).map(s => s.taxable_benefit);
     const avgTaxableBenefit = validTaxableBenefits.length > 0 ? validTaxableBenefits.reduce((a, b) => a + b, 0) / validTaxableBenefits.length : 0;
 
     const validVariableSalaries = sessionsData.filter(s => s.variable_salary && s.variable_salary > 0).map(s => s.variable_salary);
     const avgVariableSalary = validVariableSalaries.length > 0 ? validVariableSalaries.reduce((a, b) => a + b, 0) / validVariableSalaries.length : 0;
 
-    // Fixed percentage calculations - only count sessions with actual data
-    const sessionsWithChurchData = sessionsData.filter(s => s.includes_swedish_church !== null && s.includes_swedish_church !== undefined);
+    const validVacationDays = sessionsData.filter(s => s.vacation_days !== null && s.vacation_days !== undefined).map(s => s.vacation_days);
+    const avgVacationDays = validVacationDays.length > 0 ? validVacationDays.reduce((a, b) => a + b, 0) / validVacationDays.length : 0;
+
+    // Fixed percentage calculations - only count sessions with actual boolean data
+    const sessionsWithChurchData = sessionsData.filter(s => typeof s.includes_swedish_church === 'boolean');
     const churchMembers = sessionsWithChurchData.filter(s => s.includes_swedish_church === true).length;
     const churchMembershipRate = sessionsWithChurchData.length > 0 ? (churchMembers / sessionsWithChurchData.length) * 100 : 0;
 
-    const sessionsWithAgreementData = sessionsData.filter(s => s.has_collective_agreement !== null && s.has_collective_agreement !== undefined);
+    const sessionsWithAgreementData = sessionsData.filter(s => typeof s.has_collective_agreement === 'boolean');
     const agreementMembers = sessionsWithAgreementData.filter(s => s.has_collective_agreement === true).length;
     const collectiveAgreementRate = sessionsWithAgreementData.length > 0 ? (agreementMembers / sessionsWithAgreementData.length) * 100 : 0;
 
@@ -303,10 +321,12 @@ export const useEnhancedAnalytics = () => {
       incomeRanges,
       incomeTypes,
       yearSelections,
+      vacationDaysDistribution,
       avgAge: Math.round(avgAge),
       avgIncome: Math.round(avgIncome),
       avgTaxableBenefit: Math.round(avgTaxableBenefit),
       avgVariableSalary: Math.round(avgVariableSalary),
+      avgVacationDays: Math.round(avgVacationDays * 10) / 10,
       churchMembershipRate: Math.round(churchMembershipRate * 10) / 10,
       collectiveAgreementRate: Math.round(collectiveAgreementRate * 10) / 10
     };
