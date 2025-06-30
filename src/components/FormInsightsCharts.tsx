@@ -124,16 +124,16 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
         </Card>
       </div>
 
-      {/* Charts - All on one row, bigger size */}
-      <div className="grid grid-cols-4 gap-4">
+      {/* Charts - 2x2 grid for bigger charts */}
+      <div className="grid grid-cols-2 gap-6">
         {/* Popular Municipalities */}
         <Card className="col-span-1">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <CardTitle className="text-sm">Popular Municipalities</CardTitle>
-            <CardDescription className="text-xs">Most searched municipalities</CardDescription>
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="text-lg">Popular Municipalities</CardTitle>
+            <CardDescription className="text-sm">Most searched municipalities</CardDescription>
           </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <ChartContainer config={chartConfig} className="h-[200px]">
+          <CardContent className="px-4 pb-4">
+            <ChartContainer config={chartConfig} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={formInsights.popularMunicipalities.slice(0, 8)}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -141,10 +141,10 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
                     dataKey="municipality" 
                     angle={-45}
                     textAnchor="end"
-                    height={60}
-                    fontSize={10}
+                    height={80}
+                    fontSize={11}
                   />
-                  <YAxis fontSize={10} />
+                  <YAxis fontSize={11} />
                   <Tooltip />
                   <Bar dataKey="count" fill="var(--color-count)" />
                 </BarChart>
@@ -155,12 +155,12 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
 
         {/* Age Distribution */}
         <Card className="col-span-1">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <CardTitle className="text-sm">Age Distribution</CardTitle>
-            <CardDescription className="text-xs">User age ranges (5-year increments)</CardDescription>
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="text-lg">Age Distribution</CardTitle>
+            <CardDescription className="text-sm">User age ranges (5-year increments)</CardDescription>
           </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <ChartContainer config={chartConfig} className="h-[200px]">
+          <CardContent className="px-4 pb-4">
+            <ChartContainer config={chartConfig} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={formInsights.ageDistribution.filter(item => item.count > 0)}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -168,10 +168,10 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
                     dataKey="age_range" 
                     angle={-45}
                     textAnchor="end"
-                    height={60}
-                    fontSize={10}
+                    height={80}
+                    fontSize={11}
                   />
-                  <YAxis fontSize={10} />
+                  <YAxis fontSize={11} />
                   <Tooltip />
                   <Bar dataKey="count" fill="var(--color-count)" />
                 </BarChart>
@@ -182,20 +182,20 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
 
         {/* Vacation Days Distribution */}
         <Card className="col-span-1">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <CardTitle className="text-sm">Vacation Days Distribution</CardTitle>
-            <CardDescription className="text-xs">Distribution of vacation days per year</CardDescription>
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="text-lg">Vacation Days Distribution</CardTitle>
+            <CardDescription className="text-sm">Distribution of vacation days per year</CardDescription>
           </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <ChartContainer config={chartConfig} className="h-[200px]">
+          <CardContent className="px-4 pb-4">
+            <ChartContainer config={chartConfig} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={formInsights.vacationDaysDistribution.filter(item => item.count > 0)}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="vacation_days" 
-                    fontSize={10}
+                    fontSize={11}
                   />
-                  <YAxis fontSize={10} />
+                  <YAxis fontSize={11} />
                   <Tooltip />
                   <Bar dataKey="count" fill="var(--color-count)" />
                 </BarChart>
@@ -206,12 +206,12 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
 
         {/* Income Ranges */}
         <Card className="col-span-1">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <CardTitle className="text-sm">Income Distribution</CardTitle>
-            <CardDescription className="text-xs">Monthly income ranges (SEK)</CardDescription>
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="text-lg">Income Distribution</CardTitle>
+            <CardDescription className="text-sm">Monthly income ranges (SEK)</CardDescription>
           </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <ChartContainer config={chartConfig} className="h-[200px]">
+          <CardContent className="px-4 pb-4">
+            <ChartContainer config={chartConfig} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={formInsights.incomeRanges.filter(item => item.count > 0)}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -219,10 +219,10 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
                     dataKey="income_range" 
                     angle={-45}
                     textAnchor="end"
-                    height={60}
-                    fontSize={10}
+                    height={80}
+                    fontSize={11}
                   />
-                  <YAxis fontSize={10} />
+                  <YAxis fontSize={11} />
                   <Tooltip />
                   <Bar dataKey="count" fill="var(--color-count)" />
                 </BarChart>
