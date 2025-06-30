@@ -38,7 +38,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
             className="adsbygoogle"
             style={{ display: 'block' }}
             data-ad-client="ca-pub-7512261773678420"
-            data-ad-slot="1234567890"
+            data-ad-slot="2320949496"
             data-ad-format="auto"
             data-full-width-responsive="true"
           />
