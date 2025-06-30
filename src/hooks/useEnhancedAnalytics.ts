@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -76,6 +77,16 @@ export const useEnhancedAnalytics = () => {
         .from('analytics_sessions')
         .select('*')
         .gte('session_start', thirtyDaysAgo.toISOString());
+
+      // Get calculation events (form_data_submitted events) for form insights
+      const { data: calculationEvents } = await supabase
+        .from('analytics_events')
+        .select('form_data, created_at')
+        .eq('event_name', 'form_data_submitted')
+        .gte('created_at', thirtyDaysAgo.toISOString());
+
+      console.log('Calculation events found:', calculationEvents?.length);
+      console.log('Sample calculation event:', calculationEvents?.[0]);
 
       // Process daily users data
       const dailyUsersMap = new Map<string, { users: Set<string>, sessions: number }>();
@@ -166,8 +177,8 @@ export const useEnhancedAnalytics = () => {
         .map(([browser, count]) => ({ browser, count }))
         .sort((a, b) => b.count - a.count);
 
-      // Process form insights
-      const formInsights = processFormInsights(sessionsData || []);
+      // Process form insights from calculation events
+      const formInsights = processFormInsights(calculationEvents || []);
 
       setData({
         dailyUsers,
@@ -186,12 +197,20 @@ export const useEnhancedAnalytics = () => {
     }
   };
 
-  const processFormInsights = (sessionsData: any[]): FormInsights => {
+  const processFormInsights = (calculationEvents: any[]): FormInsights => {
+    console.log('Processing form insights from', calculationEvents.length, 'calculation events');
+
+    // Extract form data from calculation events
+    const formDataList = calculationEvents.map(event => event.form_data).filter(data => data && Object.keys(data).length > 0);
+    
+    console.log('Valid form data entries:', formDataList.length);
+    console.log('Sample form data:', formDataList[0]);
+
     // Popular municipalities
     const municipalityMap = new Map<string, number>();
-    sessionsData.forEach((session) => {
-      if (session.municipality) {
-        municipalityMap.set(session.municipality, (municipalityMap.get(session.municipality) || 0) + 1);
+    formDataList.forEach((formData) => {
+      if (formData.municipality) {
+        municipalityMap.set(formData.municipality, (municipalityMap.get(formData.municipality) || 0) + 1);
       }
     });
     const popularMunicipalities = Array.from(municipalityMap.entries())
@@ -199,11 +218,11 @@ export const useEnhancedAnalytics = () => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // Age distribution - Fixed to use 5-year increments with no upper bound
+    // Age distribution
     const ageMap = new Map<string, number>();
-    sessionsData.forEach((session) => {
-      if (session.user_age) {
-        const age = session.user_age;
+    formDataList.forEach((formData) => {
+      if (formData.user_age) {
+        const age = formData.user_age;
         const ageGroup = Math.floor(age / 5) * 5;
         const ageRange = `${ageGroup}-${ageGroup + 4}`;
         ageMap.set(ageRange, (ageMap.get(ageRange) || 0) + 1);
@@ -218,7 +237,7 @@ export const useEnhancedAnalytics = () => {
         return aStart - bStart;
       });
 
-    // Updated income ranges - 5k increments starting from 0 with no upper bound
+    // Income ranges
     const incomeRangeLabels = [
       '0-5k', '5k-10k', '10k-15k', '15k-20k', '20k-25k', '25k-30k', 
       '30k-35k', '35k-40k', '40k-45k', '45k-50k', '50k-55k', '55k-60k',
@@ -228,9 +247,9 @@ export const useEnhancedAnalytics = () => {
     ];
     const incomeRanges = incomeRangeLabels.map(range => ({ income_range: range, count: 0 }));
     
-    sessionsData.forEach((session) => {
-      if (session.monthly_income) {
-        const income = session.monthly_income;
+    formDataList.forEach((formData) => {
+      if (formData.monthly_income) {
+        const income = formData.monthly_income;
         if (income < 5000) incomeRanges[0].count++;
         else if (income < 10000) incomeRanges[1].count++;
         else if (income < 15000) incomeRanges[2].count++;
@@ -262,9 +281,9 @@ export const useEnhancedAnalytics = () => {
 
     // Income types
     const incomeTypeMap = new Map<string, number>();
-    sessionsData.forEach((session) => {
-      if (session.income_type) {
-        incomeTypeMap.set(session.income_type, (incomeTypeMap.get(session.income_type) || 0) + 1);
+    formDataList.forEach((formData) => {
+      if (formData.income_type) {
+        incomeTypeMap.set(formData.income_type, (incomeTypeMap.get(formData.income_type) || 0) + 1);
       }
     });
     const incomeTypes = Array.from(incomeTypeMap.entries())
@@ -273,9 +292,9 @@ export const useEnhancedAnalytics = () => {
 
     // Year selections
     const yearMap = new Map<number, number>();
-    sessionsData.forEach((session) => {
-      if (session.selected_year) {
-        yearMap.set(session.selected_year, (yearMap.get(session.selected_year) || 0) + 1);
+    formDataList.forEach((formData) => {
+      if (formData.selected_year) {
+        yearMap.set(formData.selected_year, (yearMap.get(formData.selected_year) || 0) + 1);
       }
     });
     const yearSelections = Array.from(yearMap.entries())
@@ -284,40 +303,54 @@ export const useEnhancedAnalytics = () => {
 
     // Vacation days distribution
     const vacationDaysMap = new Map<number, number>();
-    sessionsData.forEach((session) => {
-      if (session.vacation_days !== null && session.vacation_days !== undefined) {
-        vacationDaysMap.set(session.vacation_days, (vacationDaysMap.get(session.vacation_days) || 0) + 1);
+    formDataList.forEach((formData) => {
+      if (formData.vacation_days !== null && formData.vacation_days !== undefined) {
+        vacationDaysMap.set(formData.vacation_days, (vacationDaysMap.get(formData.vacation_days) || 0) + 1);
       }
     });
     const vacationDaysDistribution = Array.from(vacationDaysMap.entries())
       .map(([vacation_days, count]) => ({ vacation_days, count }))
       .sort((a, b) => a.vacation_days - b.vacation_days);
 
-    // Calculate averages and rates
-    const validAges = sessionsData.filter(s => s.user_age).map(s => s.user_age);
+    // Calculate averages
+    const validAges = formDataList.filter(d => d.user_age).map(d => d.user_age);
     const avgAge = validAges.length > 0 ? validAges.reduce((a, b) => a + b, 0) / validAges.length : 0;
 
-    const validIncomes = sessionsData.filter(s => s.monthly_income).map(s => s.monthly_income);
+    const validIncomes = formDataList.filter(d => d.monthly_income).map(d => d.monthly_income);
     const avgIncome = validIncomes.length > 0 ? validIncomes.reduce((a, b) => a + b, 0) / validIncomes.length : 0;
 
-    const validTaxableBenefits = sessionsData.filter(s => s.taxable_benefit && s.taxable_benefit > 0).map(s => s.taxable_benefit);
+    const validTaxableBenefits = formDataList.filter(d => d.taxable_benefit && d.taxable_benefit > 0).map(d => d.taxable_benefit);
     const avgTaxableBenefit = validTaxableBenefits.length > 0 ? validTaxableBenefits.reduce((a, b) => a + b, 0) / validTaxableBenefits.length : 0;
 
-    const validVariableSalaries = sessionsData.filter(s => s.variable_salary && s.variable_salary > 0).map(s => s.variable_salary);
+    const validVariableSalaries = formDataList.filter(d => d.variable_salary && d.variable_salary > 0).map(d => d.variable_salary);
     const avgVariableSalary = validVariableSalaries.length > 0 ? validVariableSalaries.reduce((a, b) => a + b, 0) / validVariableSalaries.length : 0;
 
-    const validVacationDays = sessionsData.filter(s => s.vacation_days !== null && s.vacation_days !== undefined).map(s => s.vacation_days);
+    const validVacationDays = formDataList.filter(d => d.vacation_days !== null && d.vacation_days !== undefined).map(d => d.vacation_days);
     const avgVacationDays = validVacationDays.length > 0 ? validVacationDays.reduce((a, b) => a + b, 0) / validVacationDays.length : 0;
 
-    // Church membership calculations - count checkbox states
-    const churchCheckedCount = sessionsData.filter(s => s.includes_swedish_church === true).length;
-    const totalCalculationsWithChurchData = sessionsData.filter(s => typeof s.includes_swedish_church === 'boolean').length;
-    const churchMembershipRate = totalCalculationsWithChurchData > 0 ? (churchCheckedCount / totalCalculationsWithChurchData) * 100 : 0;
+    // Church membership: count calculations where the checkbox was checked vs total calculations
+    const churchCalculationsWithData = formDataList.filter(d => typeof d.includes_swedish_church === 'boolean');
+    const churchCheckedCount = churchCalculationsWithData.filter(d => d.includes_swedish_church === true).length;
+    const churchTotalCount = churchCalculationsWithData.length;
+    const churchMembershipRate = churchTotalCount > 0 ? (churchCheckedCount / churchTotalCount) * 100 : 0;
 
-    // Collective agreement calculations - count checkbox states
-    const collectiveCheckedCount = sessionsData.filter(s => s.has_collective_agreement === true).length;
-    const totalCalculationsWithCollectiveData = sessionsData.filter(s => typeof s.has_collective_agreement === 'boolean').length;
-    const collectiveAgreementRate = totalCalculationsWithCollectiveData > 0 ? (collectiveCheckedCount / totalCalculationsWithCollectiveData) * 100 : 0;
+    console.log('Church calculations:', { 
+      checked: churchCheckedCount, 
+      total: churchTotalCount, 
+      rate: churchMembershipRate 
+    });
+
+    // Collective agreement: count calculations where the checkbox was checked vs total calculations
+    const collectiveCalculationsWithData = formDataList.filter(d => typeof d.has_collective_agreement === 'boolean');
+    const collectiveCheckedCount = collectiveCalculationsWithData.filter(d => d.has_collective_agreement === true).length;
+    const collectiveTotalCount = collectiveCalculationsWithData.length;
+    const collectiveAgreementRate = collectiveTotalCount > 0 ? (collectiveCheckedCount / collectiveTotalCount) * 100 : 0;
+
+    console.log('Collective calculations:', { 
+      checked: collectiveCheckedCount, 
+      total: collectiveTotalCount, 
+      rate: collectiveAgreementRate 
+    });
 
     return {
       popularMunicipalities,
@@ -334,9 +367,9 @@ export const useEnhancedAnalytics = () => {
       churchMembershipRate: Math.round(churchMembershipRate * 10) / 10,
       collectiveAgreementRate: Math.round(collectiveAgreementRate * 10) / 10,
       churchMembershipCount: churchCheckedCount,
-      churchMembershipTotal: totalCalculationsWithChurchData,
+      churchMembershipTotal: churchTotalCount,
       collectiveAgreementCount: collectiveCheckedCount,
-      collectiveAgreementTotal: totalCalculationsWithCollectiveData
+      collectiveAgreementTotal: collectiveTotalCount
     };
   };
 

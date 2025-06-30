@@ -14,7 +14,7 @@ interface FormAnalyticsTrackerProps {
   variableSalary?: number;
   includesSvenskaKyrkan?: boolean;
   selectedYear?: number;
-  triggerTracking?: boolean; // New prop to control when to track
+  triggerTracking?: boolean; // When calculate button is clicked
 }
 
 export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
@@ -34,33 +34,41 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
   const { trackFormData } = useAnalyticsContext();
 
   useEffect(() => {
-    // Only track if explicitly triggered and we have meaningful data
-    if (triggerTracking && (municipality || parish || age || monthlyIncome || selectedYear)) {
-      const formData = {
+    // Only track when calculate button is clicked (triggerTracking = true)
+    if (triggerTracking) {
+      console.log('Tracking calculation with data:', {
+        municipality,
+        parish,
+        age,
+        monthlyIncome,
+        taxableBenefit,
+        incomeType,
+        hasCollectiveAgreement,
+        vacationDays,
+        variableSalary,
+        includesSvenskaKyrkan,
+        selectedYear
+      });
+
+      const calculationData = {
         municipality: municipality || undefined,
         parish: parish || undefined,
         user_age: age || undefined,
         monthly_income: monthlyIncome || undefined,
         taxable_benefit: taxableBenefit || undefined,
         income_type: incomeType || undefined,
-        has_collective_agreement: hasCollectiveAgreement || undefined,
+        has_collective_agreement: hasCollectiveAgreement, // Keep boolean values (true/false/undefined)
         vacation_days: vacationDays || undefined,
         variable_salary: variableSalary || undefined,
-        includes_swedish_church: includesSvenskaKyrkan || undefined,
+        includes_swedish_church: includesSvenskaKyrkan, // Keep boolean values (true/false/undefined)
         selected_year: selectedYear || undefined
       };
 
-      // Only send non-undefined values
-      const cleanedFormData = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== undefined)
-      );
-
-      if (Object.keys(cleanedFormData).length > 0) {
-        trackFormData(cleanedFormData);
-      }
+      console.log('Sending calculation data:', calculationData);
+      trackFormData(calculationData);
     }
   }, [
-    triggerTracking, // Add this as the first dependency
+    triggerTracking, // Most important dependency - when this changes to true, track the calculation
     municipality,
     parish,
     age,
