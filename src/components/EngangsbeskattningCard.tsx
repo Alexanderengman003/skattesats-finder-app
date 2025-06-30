@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EngangsbeskattningCardProps {
   engangsbeskattningAmount: number;
@@ -52,31 +54,33 @@ const EngangsbeskattningCard = ({
   vacationDays,
   variableSalary
 }: EngangsbeskattningCardProps) => {
+  const { t } = useLanguage();
+
   const getYearlyIncomeBreakdown = () => {
     const baseMonthlyIncome = monthlyIncome + taxableBenefit;
     const breakdown = [];
     
     if (adjustedSalary > 0 && adjustedMonths > 0 && adjustedMonths <= 12) {
       const remainingMonths = 12 - adjustedMonths;
-      breakdown.push(`Justerad inkomst: ${Math.round(adjustedSalary * adjustedMonths).toLocaleString()} kr`);
+      breakdown.push(`${t('adjustedIncome')} ${Math.round(adjustedSalary * adjustedMonths).toLocaleString()} kr`);
       if (remainingMonths > 0) {
-        breakdown.push(`Nuvarande inkomst: ${Math.round(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`);
+        breakdown.push(`${t('currentIncome')} ${Math.round(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`);
       }
     } else {
-      breakdown.push(`Månadsinkomst: ${Math.round(baseMonthlyIncome * 12).toLocaleString()} kr`);
+      breakdown.push(`${t('monthlyIncomeTotal')} ${Math.round(baseMonthlyIncome * 12).toLocaleString()} kr`);
     }
     
     const vacationPay = calculateVacationPay();
     if (vacationPay > 0) {
-      breakdown.push(`Semestertillägg: ${Math.round(vacationPay).toLocaleString()} kr`);
+      breakdown.push(`${t('vacationPayTotal')} ${Math.round(vacationPay).toLocaleString()} kr`);
     }
     
     if (additionalIncome > 0) {
-      breakdown.push(`Övrig inkomst: ${additionalIncome.toLocaleString()} kr`);
+      breakdown.push(`${t('additionalIncomeTotal')} ${additionalIncome.toLocaleString()} kr`);
     }
     
     if (engangsbeskattningAmount > 0) {
-      breakdown.push(`Engångsbelopp: ${engangsbeskattningAmount.toLocaleString()} kr`);
+      breakdown.push(`${t('engangsbeskattningTotal')} ${engangsbeskattningAmount.toLocaleString()} kr`);
     }
     
     return breakdown;
@@ -87,7 +91,7 @@ const EngangsbeskattningCard = ({
       <CardContent className="p-4 bg-blue-100 border border-blue-300 rounded-xl w-full">
         <div className="text-center mb-4">
           <div className="text-lg font-semibold text-blue-800">
-            Beskattning på engångsbelopp
+            {t('engangsbeskattning')}
           </div>
         </div>
         
@@ -96,7 +100,7 @@ const EngangsbeskattningCard = ({
           <div className="space-y-4 w-full">
             <div className="space-y-2">
               <Label htmlFor="engangsbeskattningAmount" className="flex items-center gap-2">
-                Engångsbelopp (kr)
+                {t('engangsbeskattningAmount')}
                 <TooltipProvider>
                   <UITooltip>
                     <TooltipTrigger asChild>
@@ -124,7 +128,7 @@ const EngangsbeskattningCard = ({
                 type="number"
                 value={engangsbeskattningAmount || ''}
                 onChange={onEngangsbeskattningAmountChange}
-                placeholder="Ange engångsbelopp"
+                placeholder={t('enterEngangsbeskattning')}
                 min="0"
                 max="1000000000"
                 className="w-full"
@@ -133,7 +137,7 @@ const EngangsbeskattningCard = ({
 
             <div className="space-y-2">
               <Label htmlFor="additionalIncome" className="flex items-center gap-2">
-                Övrig inkomst (kr)
+                {t('additionalIncomeLabel')}
                 <TooltipProvider>
                   <UITooltip>
                     <TooltipTrigger asChild>
@@ -150,7 +154,7 @@ const EngangsbeskattningCard = ({
                 type="number"
                 value={additionalIncome || ''}
                 onChange={onAdditionalIncomeChange}
-                placeholder="Ange övrig inkomst"
+                placeholder={t('enterAdditionalIncome')}
                 min="0"
                 max="1000000000"
                 className="w-full"
@@ -159,7 +163,7 @@ const EngangsbeskattningCard = ({
 
             <div className="space-y-2">
               <Label htmlFor="adjustedSalary" className="flex items-center gap-2">
-                Justera inkomst (kr)
+                {t('adjustedSalaryLabel')}
                 <TooltipProvider>
                   <UITooltip>
                     <TooltipTrigger asChild>
@@ -176,7 +180,7 @@ const EngangsbeskattningCard = ({
                 type="number"
                 value={adjustedSalary || ''}
                 onChange={onAdjustedSalaryChange}
-                placeholder="Ange justerad månadsinkomst"
+                placeholder={t('enterAdjustedSalary')}
                 min="0"
                 max="1000000000"
                 className="w-full"
@@ -185,7 +189,7 @@ const EngangsbeskattningCard = ({
 
             <div className="space-y-2">
               <Label htmlFor="adjustedMonths" className="flex items-center gap-2">
-                Antal månader
+                {t('adjustedMonthsLabel')}
                 <TooltipProvider>
                   <UITooltip>
                     <TooltipTrigger asChild>
@@ -202,7 +206,7 @@ const EngangsbeskattningCard = ({
                 type="number"
                 value={adjustedMonths || ''}
                 onChange={onAdjustedMonthsChange}
-                placeholder="Antal månader med justerad inkomst"
+                placeholder={t('enterAdjustedMonths')}
                 min="0"
                 max="12"
                 className="w-full"
@@ -213,36 +217,36 @@ const EngangsbeskattningCard = ({
           {/* Right Column - Results */}
           <div className="text-center w-full">
             {engangsbeskattningLoading ? (
-              <div className="text-gray-500">Beräknar...</div>
+              <div className="text-gray-500">{t('calculating')}</div>
             ) : engangsbeskattningError ? (
               <div className="text-red-600">
-                <div className="font-medium mb-1">Fel vid hämtning av data</div>
+                <div className="font-medium mb-1">{t('errorFetchingData')}</div>
                 <div className="text-sm">{engangsbeskattningError}</div>
               </div>
             ) : engangsbeskattningData.length > 0 ? (
               <div>
                 <div className="text-sm font-medium text-black mb-1">
-                  Du betalar
+                  {t('youPay')}
                 </div>
                 <div className="text-2xl font-bold text-black mb-1">
                   {getEngangsbeskattningRate()}%
                 </div>
                 <div className="text-sm font-medium text-black">
-                  I engångsskatt
+                  {t('payEngangsskatt')}
                 </div>
                 <div className="mt-3 pt-3 border-t border-blue-300">
                   <div className="text-sm text-gray-600 break-words">
-                    På ett engångsbelopp om {engangsbeskattningAmount.toLocaleString()} kr betalar du{' '}
+                    {t('onOneTimeAmount')} {engangsbeskattningAmount.toLocaleString()} kr {t('youPayInTax')}{' '}
                     <span className="font-bold">
                       {Math.round(calculateEngangsbeskattning(engangsbeskattningAmount)).toLocaleString()} kr
                     </span>{' '}
-                    i skatt
+                    {t('inTax')}
                   </div>
                   <div className="text-xs text-gray-500 mt-2 break-words">
-                    Baserat på total årsinkomst: {Math.round(calculateYearlyIncome()).toLocaleString()} kr
+                    {t('basedOnTotalYearlyIncome')} {Math.round(calculateYearlyIncome()).toLocaleString()} kr
                   </div>
                   <div className="text-xs text-gray-500 mt-3 text-left bg-white/60 p-3 rounded-lg border border-gray-200 shadow-sm">
-                    <div className="font-semibold mb-2 text-gray-700">Årsinkomsten inkluderar:</div>
+                    <div className="font-semibold mb-2 text-gray-700">{t('yearlyIncomeIncludes')}</div>
                     <div className="space-y-1.5">
                       {getYearlyIncomeBreakdown().map((item, index) => (
                         <div key={index} className="flex items-start gap-2 text-xs">
@@ -252,7 +256,7 @@ const EngangsbeskattningCard = ({
                       ))}
                       <div className="flex items-start gap-2 text-xs pt-2 border-t border-gray-300 font-bold text-gray-700">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 flex-shrink-0"></div>
-                        <span>Total årsinkomst: {Math.round(calculateYearlyIncome()).toLocaleString()} kr</span>
+                        <span>{t('totalYearlyIncome')} {Math.round(calculateYearlyIncome()).toLocaleString()} kr</span>
                       </div>
                     </div>
                   </div>
@@ -260,7 +264,7 @@ const EngangsbeskattningCard = ({
               </div>
             ) : (
               <div className="text-gray-500">
-                Ingen data tillgänglig för år {selectedYear}
+                {t('noDataAvailable')} {selectedYear}
               </div>
             )}
           </div>
