@@ -61,12 +61,7 @@ export const AnalyticsDashboard = () => {
           <CardDescription>Daily users, sessions, and interaction patterns</CardDescription>
         </CardHeader>
         <CardContent>
-          <AnalyticsCharts 
-            dailyUsers={data.dailyUsers}
-            topCountries={data.topCountries}
-            clickHeatmap={data.clickHeatmap}
-            browserStats={data.browserStats}
-          />
+          <AnalyticsCharts data={data} />
         </CardContent>
       </Card>
 
@@ -88,10 +83,7 @@ export const AnalyticsDashboard = () => {
           <CardDescription>Where our users are located</CardDescription>
         </CardHeader>
         <CardContent>
-          <GeographicInsights 
-            geographicData={data.geographicData}
-            totalSessions={data.geographicData.reduce((total, item) => total + item.count, 0)}
-          />
+          <GeographicInsights data={data} />
         </CardContent>
       </Card>
     </div>
