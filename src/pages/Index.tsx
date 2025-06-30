@@ -5,7 +5,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Search, Coins, MapPin, Calendar, List, HelpCircle, Calculator } from 'lucide-react';
+import { Search, Coins, MapPin, Calendar, List, HelpCircle, Calculator, BarChart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 import CollapsibleCard from '@/components/CollapsibleCard';
@@ -397,7 +398,23 @@ const Index = () => {
                 <p className="text-gray-600">{t('appSubtitle')}</p>
               </div>
             </div>
-            <LanguageSelector />
+            <div className="flex items-center gap-3">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to="/analytics">
+                      <Button variant="ghost" size="sm" className="p-2">
+                        <BarChart className="h-5 w-5" />
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Analytics</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <LanguageSelector />
+            </div>
           </div>
           
           {/* Info Text */}
