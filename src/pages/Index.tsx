@@ -416,14 +416,14 @@ const Index = () => {
 
                     <div className="space-y-3">
                       <Label htmlFor="age" className="flex items-center gap-2 text-sm font-medium">
-                        Age
+                        {t('age')}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs">
-                              <p>Enter your age to determine the correct tax column</p>
+                              <p>{t('ageTooltip')}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -433,7 +433,7 @@ const Index = () => {
                         type="number"
                         value={age || ''}
                         onChange={handleAgeChange}
-                        placeholder="Enter your age"
+                        placeholder={t('enterAge')}
                         min="0"
                         max="120"
                         className="w-full h-10"

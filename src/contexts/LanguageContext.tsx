@@ -28,6 +28,8 @@ const translations: Translations = {
   parish: { sv: 'Församling', en: 'Parish' },
   selectParish: { sv: 'Välj församling', en: 'Select Parish' },
   birthDate: { sv: 'Födelsedatum', en: 'Birth Date' },
+  age: { sv: 'Ålder', en: 'Age' },
+  enterAge: { sv: 'Ange din ålder', en: 'Enter your age' },
   selectBirthDate: { sv: 'Välj födelsedatum', en: 'Select birth date' },
   swedishChurchMember: { sv: 'Medlem i svenska kyrkan', en: 'Member of Swedish Church' },
   
@@ -121,11 +123,12 @@ const translations: Translations = {
   
   // Tooltips
   birthDateTooltip: { sv: 'Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång', en: 'This information is needed to correctly calculate the tax you should pay, which is based on birth year and age at the beginning of the year' },
-  swedishChurchTooltip: { sv: 'Ditt medlemskap i Svenska Kyrkan kan du hitta här: https://www.svenskakyrkan.se/medlem', en: 'You can find your membership in the Swedish Church here: https://www.svenskakyrkan.se/medlem' },
+  ageTooltip: { sv: 'Ange din ålder för att bestämma rätt skattetabell', en: 'Enter your age to determine the correct tax column' },
+  swedishChurchTooltip: { sv: 'Ditt medlemskap i Svenska Kyrkan kan du kontrollera', en: 'You can check your membership in the Swedish Church' },
   monthlyIncomeTooltip: { sv: 'Din bruttoinkomst per månad före skatt och andra avdrag. Detta inkluderar grundlön, fasta tillägg och andra regelbundna ersättningar.', en: 'Your gross income per month before tax and other deductions. This includes base salary, fixed allowances and other regular compensation.' },
   taxableBenefitTooltip: { sv: 'Förmåner från arbetsgivaren som är skattepliktiga, såsom bilförmån, friskvårdsförmån över gränsvärdet, eller subventionerad mat. Dessa räknas som beskattningsbar inkomst.', en: 'Benefits from the employer that are taxable, such as car benefits, wellness benefits above the limit, or subsidized food. These count as taxable income.' },
   incomeTypeTooltip: { sv: 'Typ av inkomst påverkar vilken skattetabell som används. Lön och arvoden använder en tabell, pensioner en annan, och olika ersättningar har sina egna tabeller med olika skattesatser.', en: 'Type of income affects which tax table is used. Salary and fees use one table, pensions another, and different benefits have their own tables with different tax rates.' },
-  collectiveAgreementTooltip: { sv: 'Med kollektivavtal: 0.8% för grundlön + 0.5% för rörlig lön\\nUtan kollektivavtal: 0.43% för grundlön + (12% / 25) för rörlig lön', en: 'With collective agreement: 0.8% for base salary + 0.5% for variable salary\\nWithout collective agreement: 0.43% for base salary + (12% / 25) for variable salary' },
+  collectiveAgreementTooltip: { sv: 'Med kollektivavtal: 0.8% för grundlön + 0.5% för rörlig lön\nUtan kollektivavtal: 0.43% för grundlön + (12% / 25) för rörlig lön', en: 'With collective agreement: 0.8% for base salary + 0.5% for variable salary\nWithout collective agreement: 0.43% for base salary + (12% / 25) for variable salary' },
   vacationDaysTooltip: { sv: 'Antalet betalda semesterdagar per år enligt din anställning. Standard är 25 dagar, men kan variera beroende på ålder, tjänstgöringstid eller kollektivavtal.', en: 'The number of paid vacation days per year according to your employment. Standard is 25 days, but may vary depending on age, length of service or collective agreement.' },
   variableSalaryTooltip: { sv: 'Genomsnittlig rörlig lön per månad såsom provision, bonus, övertidsersättning eller andra prestationsbaserade tillägg som inte ingår i grundlönen.', en: 'Average variable salary per month such as commission, bonus, overtime pay or other performance-based supplements not included in the base salary.' },
   parishTooltip: { sv: 'Alla som är skrivna i en svensk kommun tillhör en församling. Om du inte vet vilken församling du tillhör kan du hitta det här', en: 'Everyone registered in a Swedish municipality belongs to a parish. If you don\'t know which parish you belong to, you can find it here' }
