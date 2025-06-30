@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +23,7 @@ interface AnalyticsStats {
 export const AnalyticsDashboard: React.FC = () => {
   const [stats, setStats] = useState<AnalyticsStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentTab, setCurrentTab] = useState('charts');
   const { data: enhancedData, loading: enhancedLoading, refetch } = useEnhancedAnalytics();
 
   useEffect(() => {
@@ -192,7 +192,7 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="charts" className="space-y-4">
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-4">
         <div className="overflow-x-auto">
           <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 min-w-max md:min-w-0">
             <TabsTrigger value="charts" className="text-xs md:text-sm">Charts</TabsTrigger>
