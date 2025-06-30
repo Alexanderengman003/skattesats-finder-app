@@ -71,14 +71,16 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
 
   const deleteCalculation = async (id: string) => {
     try {
+      // Delete from analytics_events table where the calculation data is actually stored
       const { error } = await supabase
-        .from('analytics_sessions')
+        .from('analytics_events')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
 
       toast.success('Calculation deleted successfully');
+      // Trigger refresh by calling the callback
       if (onCalculationDeleted) {
         onCalculationDeleted();
       }
@@ -92,8 +94,9 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
     if (selectedIds.size === 0) return;
 
     try {
+      // Delete from analytics_events table where the calculation data is actually stored
       const { error } = await supabase
-        .from('analytics_sessions')
+        .from('analytics_events')
         .delete()
         .in('id', Array.from(selectedIds));
 
@@ -101,6 +104,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
 
       toast.success(`${selectedIds.size} calculation${selectedIds.size > 1 ? 's' : ''} deleted successfully`);
       setSelectedIds(new Set());
+      // Trigger refresh by calling the callback
       if (onCalculationDeleted) {
         onCalculationDeleted();
       }
