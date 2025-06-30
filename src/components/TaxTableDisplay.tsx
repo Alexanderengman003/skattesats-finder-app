@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -94,6 +95,75 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
     }
   };
 
+  const calculateTaxRate = (item: SkattetabellData, rowIndex: number): string => {
+    const columnKey = `Kolumn${selectedTaxColumn}`;
+    const taxValue = item[columnKey];
+    
+    if (!taxValue || taxValue === 'Ej tillgänglig') {
+      return 'Ej tillgänglig';
+    }
+    
+    const numericValue = parseFloat(taxValue.toString().replace(/[^\d.-]/g, ''));
+    
+    if (isNaN(numericValue)) {
+      return '0%';
+    }
+    
+    // If it's already a percentage value, return it
+    if (isPercentageValue(taxValue, rowIndex, columnKey)) {
+      return numericValue.toFixed(1) + '%';
+    } else {
+      // Calculate percentage from kr amount
+      const midpoint = (item.InkomstFrån + item.InkomstTill) / 2;
+      const percentage = (numericValue / midpoint) * 100;
+      return percentage.toFixed(1) + '%';
+    }
+  };
+
+  const calculateMarginalTax = (rowIndex: number): string => {
+    if (rowIndex >= skattetabellData.length - 1) {
+      // For the last row, marginal tax is the same as tax rate
+      return calculateTaxRate(skattetabellData[rowIndex], rowIndex);
+    }
+    
+    const currentItem = skattetabellData[rowIndex];
+    const nextItem = skattetabellData[rowIndex + 1];
+    
+    const currentTaxValue = parseFloat(currentItem[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    const nextTaxValue = parseFloat(nextItem[`Kolumn${selectedTaxColumn}`]?.replace(/[^\d.-]/g, '') || '0');
+    
+    if (isNaN(currentTaxValue) || isNaN(nextTaxValue)) {
+      return '0%';
+    }
+    
+    // If both are percentage values, return the current one
+    if (isPercentageValue(currentItem[`Kolumn${selectedTaxColumn}`], rowIndex, `Kolumn${selectedTaxColumn}`) && 
+        isPercentageValue(nextItem[`Kolumn${selectedTaxColumn}`], rowIndex + 1, `Kolumn${selectedTaxColumn}`)) {
+      return currentTaxValue.toFixed(1) + '%';
+    }
+    
+    // If current is kr and next is percentage (transition point), use percentage
+    if (!isPercentageValue(currentItem[`Kolumn${selectedTaxColumn}`], rowIndex, `Kolumn${selectedTaxColumn}`) && 
+        isPercentageValue(nextItem[`Kolumn${selectedTaxColumn}`], rowIndex + 1, `Kolumn${selectedTaxColumn}`)) {
+      return nextTaxValue.toFixed(1) + '%';
+    }
+    
+    // If both are kr values, calculate marginal rate
+    if (!isPercentageValue(currentItem[`Kolumn${selectedTaxColumn}`], rowIndex, `Kolumn${selectedTaxColumn}`) && 
+        !isPercentageValue(nextItem[`Kolumn${selectedTaxColumn}`], rowIndex + 1, `Kolumn${selectedTaxColumn}`)) {
+      
+      const incomeDiff = nextItem.InkomstFrån - currentItem.InkomstFrån;
+      const taxDiff = nextTaxValue - currentTaxValue;
+      
+      if (incomeDiff > 0) {
+        const marginalRate = (taxDiff / incomeDiff) * 100;
+        return Math.max(0, marginalRate).toFixed(1) + '%';
+      }
+    }
+    
+    return '0%';
+  };
+
   const isCurrentIncomeBracket = (item: SkattetabellData): boolean => {
     return currentIncome >= item.InkomstFrån && currentIncome <= item.InkomstTill;
   };
@@ -143,6 +213,12 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                 <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm">
                   Skatt
                 </TableHead>
+                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm">
+                  Skattesats
+                </TableHead>
+                <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm">
+                  Marginalskatt
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -171,6 +247,16 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                       isCurrentRow ? 'text-blue-900' : 'text-blue-700'
                     }`}>
                       {getTaxFromColumn(row, selectedTaxColumn, originalIndex)}
+                    </TableCell>
+                    <TableCell className={`text-center font-semibold py-1 text-sm px-3 ${
+                      isCurrentRow ? 'text-blue-900' : 'text-green-700'
+                    }`}>
+                      {calculateTaxRate(row, originalIndex)}
+                    </TableCell>
+                    <TableCell className={`text-center font-semibold py-1 text-sm px-3 ${
+                      isCurrentRow ? 'text-blue-900' : 'text-purple-700'
+                    }`}>
+                      {calculateMarginalTax(originalIndex)}
                     </TableCell>
                   </TableRow>
                 );
