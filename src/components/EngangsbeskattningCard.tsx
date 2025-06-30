@@ -58,39 +58,17 @@ const EngangsbeskattningCard = ({
     
     if (adjustedSalary > 0 && adjustedMonths > 0 && adjustedMonths <= 12) {
       const remainingMonths = 12 - adjustedMonths;
-      breakdown.push(`Justerad inkomst: ${adjustedSalary.toLocaleString()} kr × ${adjustedMonths} månader = ${Math.round(adjustedSalary * adjustedMonths).toLocaleString()} kr`);
+      breakdown.push(`Justerad inkomst: ${Math.round(adjustedSalary * adjustedMonths).toLocaleString()} kr`);
       if (remainingMonths > 0) {
-        breakdown.push(`Nuvarande inkomst: ${baseMonthlyIncome.toLocaleString()} kr × ${remainingMonths} månader = ${Math.round(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`);
+        breakdown.push(`Nuvarande inkomst: ${Math.round(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`);
       }
     } else {
-      breakdown.push(`Månadsinkomst: ${baseMonthlyIncome.toLocaleString()} kr × 12 månader = ${Math.round(baseMonthlyIncome * 12).toLocaleString()} kr`);
+      breakdown.push(`Månadsinkomst: ${Math.round(baseMonthlyIncome * 12).toLocaleString()} kr`);
     }
     
     const vacationPay = calculateVacationPay();
     if (vacationPay > 0) {
-      // Use actual parameters from the form
-      const baseSalary = monthlyIncome;
-      
-      let calculationText = '';
-      if (hasCollectiveAgreement) {
-        const baseVacationPay = vacationDays * 0.008 * baseSalary;
-        const variableVacationPay = vacationDays * 0.005 * variableSalary;
-        if (variableSalary > 0) {
-          calculationText = `${vacationDays} × 0.8% × ${baseSalary.toLocaleString()} kr + ${vacationDays} × 0.5% × ${variableSalary.toLocaleString()} kr`;
-        } else {
-          calculationText = `${vacationDays} × 0.8% × ${baseSalary.toLocaleString()} kr`;
-        }
-      } else {
-        const baseVacationPay = vacationDays * 0.0043 * baseSalary;
-        const variableVacationPay = vacationDays * ((0.12 * variableSalary) / 25);
-        if (variableSalary > 0) {
-          calculationText = `${vacationDays} × 0.43% × ${baseSalary.toLocaleString()} kr + ${vacationDays} × (12% × ${variableSalary.toLocaleString()} kr ÷ 25)`;
-        } else {
-          calculationText = `${vacationDays} × 0.43% × ${baseSalary.toLocaleString()} kr`;
-        }
-      }
-      
-      breakdown.push(`Semestertillägg: ${calculationText} = ${Math.round(vacationPay).toLocaleString()} kr`);
+      breakdown.push(`Semestertillägg: ${Math.round(vacationPay).toLocaleString()} kr`);
     }
     
     if (additionalIncome > 0) {

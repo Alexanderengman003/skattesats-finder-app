@@ -71,9 +71,11 @@ const Index = () => {
       try {
         const { data, years } = await fetchTaxData();
         setApiData(data);
-        setAvailableYears(years);
-        if (years.length > 0) {
-          setSelectedYear(years[0]); // Set most recent year as default
+        // Filter years to only include 2020 and later
+        const filteredYears = years.filter(year => year >= 2020);
+        setAvailableYears(filteredYears);
+        if (filteredYears.length > 0) {
+          setSelectedYear(filteredYears[0]); // Set most recent year as default
         }
       } catch (error) {
         console.error('Failed to load API data:', error);
