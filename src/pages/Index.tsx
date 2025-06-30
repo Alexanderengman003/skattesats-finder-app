@@ -43,7 +43,7 @@ const Index = () => {
   const [isPensionContributing, setIsPensionContributing] = useState(false);
   const [selectedTaxColumn, setSelectedTaxColumn] = useState(1);
   const [monthlyIncome, setMonthlyIncome] = useState(0);
-  const [birthday, setBirthday] = useState('');
+  const [age, setAge] = useState(0);
   const [taxableBenefit, setTaxableBenefit] = useState(0);
   const [hasCollectiveAgreement, setHasCollectiveAgreement] = useState(false);
   const [vacationDays, setVacationDays] = useState(25);
@@ -163,12 +163,10 @@ const Index = () => {
   };
 
   const getCurrentTaxColumn = (): number => {
-    if (!birthday) return 1;
+    if (!age || age === 0) return 1;
     
-    const birthDate = new Date(birthday);
     const currentYear = new Date().getFullYear();
-    const age = currentYear - birthDate.getFullYear();
-    const birthYear = birthDate.getFullYear();
+    const birthYear = currentYear - age;
     
     const isOver66 = age >= 66;
     const isBorn1937OrEarlier = birthYear <= 1937;
@@ -201,7 +199,7 @@ const Index = () => {
 
   useEffect(() => {
     setSelectedTaxColumn(getCurrentTaxColumn());
-  }, [birthday, incomeType, isPensionContributing]);
+  }, [age, incomeType, isPensionContributing]);
 
   const getTaxFromColumn = (item: any, column: number): string => {
     const columnKey = `Kolumn${column}`;
@@ -277,20 +275,11 @@ const Index = () => {
     }
   };
 
-  const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    
-    if (value && value.length === 10) {
-      const date = new Date(value);
-      const year = date.getFullYear();
-      const currentYear = new Date().getFullYear();
-      
-      if (year >= 1900 && year <= currentYear && !isNaN(date.getTime())) {
-        setBirthday(value);
-      }
-    } else {
-      setBirthday(value);
-    }
+    const numericValue = value === '' ? 0 : parseInt(value.replace(/^0+/, '') || '0');
+    const cappedValue = Math.min(Math.max(0, numericValue), 120);
+    setAge(cappedValue);
   };
 
   const getTotalIncome = (): number => {
@@ -328,10 +317,10 @@ const Index = () => {
 
   // Trigger calculation whenever relevant values change, including includeSvenskaKyrkan
   useEffect(() => {
-    if (kommun && (monthlyIncome > 0 || taxableBenefit > 0) && birthday) {
+    if (kommun && (monthlyIncome > 0 || taxableBenefit > 0) && age > 0) {
       triggerTaxCalculation();
     }
-  }, [birthday, incomeType, isPensionContributing, monthlyIncome, taxableBenefit, kommun, includeSvenskaKyrkan]);
+  }, [age, incomeType, isPensionContributing, monthlyIncome, taxableBenefit, kommun, includeSvenskaKyrkan]);
 
   const filteredTaxData = getFilteredSkattetabellData();
   const taxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
@@ -426,27 +415,27 @@ const Index = () => {
                     )}
 
                     <div className="space-y-3">
-                      <Label htmlFor="birthday" className="flex items-center gap-2 text-sm font-medium">
-                        {t('birthDate')}
+                      <Label htmlFor="age" className="flex items-center gap-2 text-sm font-medium">
+                        Age
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs">
-                              <p>{t('birthDateTooltip')}</p>
+                              <p>Enter your age to determine the correct tax column</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </Label>
                       <Input
-                        id="birthday"
-                        type="date"
-                        value={birthday}
-                        onChange={handleBirthdayChange}
-                        placeholder={t('selectBirthDate')}
-                        max={new Date().toISOString().split('T')[0]}
-                        min="1900-01-01"
+                        id="age"
+                        type="number"
+                        value={age || ''}
+                        onChange={handleAgeChange}
+                        placeholder="Enter your age"
+                        min="0"
+                        max="120"
                         className="w-full h-10"
                       />
                     </div>
@@ -468,7 +457,17 @@ const Index = () => {
                               <HelpCircle className="h-4 w-4 text-gray-500 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs">
-                              <p>{t('swedishChurchTooltip')}</p>
+                              <p>
+                                {t('swedishChurchTooltip')}{' '}
+                                <a 
+                                  href="https://www.svenskakyrkan.se/medlem" 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline hover:text-blue-800 transition-colors"
+                                >
+                                  här
+                                </a>
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -685,8 +684,8 @@ const Index = () => {
           {/* Results Section */}
           <div className="space-y-6 w-full">
             <TaxColumnSelector
-              age={0}
-              onAgeChange={() => {}}
+              age={age}
+              onAgeChange={setAge}
               incomeType={incomeType}
               onIncomeTypeChange={setIncomeType}
               isPensionContributing={isPensionContributing}
@@ -695,8 +694,8 @@ const Index = () => {
               onBirthYearChange={() => {}}
               monthlyIncome={monthlyIncome}
               onMonthlyIncomeChange={setMonthlyIncome}
-              birthday={birthday}
-              onBirthdayChange={setBirthday}
+              birthday=""
+              onBirthdayChange={() => {}}
               taxAmount={taxAmount}
               kommun={result.length > 0 ? result[0].Kommun : ''}
               selectedTaxColumn={selectedTaxColumn}
