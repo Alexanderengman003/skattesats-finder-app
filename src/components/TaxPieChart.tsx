@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TaxPieChartProps {
   netSalary: number;
@@ -8,14 +9,16 @@ interface TaxPieChartProps {
 }
 
 const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
+  const { t } = useLanguage();
+  
   const pieChartData = [
     {
-      name: 'Nettoinkomst',
+      name: t('netIncome'),
       value: Math.round(netSalary),
       color: '#3b82f6'
     },
     {
-      name: 'Skatt',
+      name: t('tax'),
       value: Math.round(taxAmount),
       color: '#60a5fa'
     }
@@ -26,15 +29,15 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
   return (
     <div className="text-center p-2 bg-blue-100 border border-blue-300 rounded-xl w-full">
       <div className="flex flex-col items-center w-full">
-        <div className="relative w-full max-w-xs" style={{ height: 200 }}>
+        <div className="relative w-full max-w-sm" style={{ height: 280 }}>
           <ResponsiveContainer width="100%" height="100%">
             <RechartsPieChart>
               <Pie
                 data={pieChartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={70}
-                outerRadius={90}
+                innerRadius={90}
+                outerRadius={120}
                 paddingAngle={0}
                 dataKey="value"
                 stroke="none"
@@ -61,21 +64,21 @@ const TaxPieChart = ({ netSalary, taxAmount }: TaxPieChartProps) => {
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-xl font-bold text-gray-900 break-words">
+              <div className="text-2xl font-bold text-gray-900 break-words">
                 {Math.round(netSalary).toLocaleString()} kr
               </div>
               <div className="text-sm font-medium text-gray-600 mt-1">
-                Nettoinkomst
+                {t('netIncome')}
               </div>
             </div>
           </div>
         </div>
         
-        {/* Legend - moved closer and tighter spacing */}
-        <div className="grid grid-cols-2 gap-2 text-center w-full mt-1 px-2">
+        {/* Legend - tighter spacing */}
+        <div className="grid grid-cols-2 gap-1 text-center w-full mt-2 px-2">
           {pieChartData.map((entry, index) => (
             <div key={entry.name} className="flex flex-col items-center">
-              <div className="flex items-center gap-1 mb-0.5">
+              <div className="flex items-center gap-1 mb-1">
                 <div 
                   className="w-3 h-3 rounded-full" 
                   style={{ backgroundColor: COLORS[index] }}

@@ -88,6 +88,11 @@ const translations: Translations = {
   swedish: { sv: 'Svenska', en: 'Swedish' },
   english: { sv: 'Engelska', en: 'English' },
   
+  // Tax table columns
+  skatt: { sv: 'Skatt', en: 'Tax' },
+  skattesats: { sv: 'Skattesats', en: 'Tax Rate' },
+  marginalskatt: { sv: 'Marginalskatt', en: 'Marginal Tax' },
+  
   // Tooltips
   birthDateTooltip: { sv: 'Denna information behövs för att korrekt kunna räkna ut den skatt du ska betala, vilket baseras på födelseår och ålder vid årets ingång', en: 'This information is needed to correctly calculate the tax you should pay, which is based on birth year and age at the beginning of the year' },
   swedishChurchTooltip: { sv: 'Ditt medlemskap i Svenska Kyrkan kan du hitta här: https://www.svenskakyrkan.se/medlem', en: 'You can find your membership in the Swedish Church here: https://www.svenskakyrkan.se/medlem' },
