@@ -309,15 +309,15 @@ export const useEnhancedAnalytics = () => {
     const validVacationDays = sessionsData.filter(s => s.vacation_days !== null && s.vacation_days !== undefined).map(s => s.vacation_days);
     const avgVacationDays = validVacationDays.length > 0 ? validVacationDays.reduce((a, b) => a + b, 0) / validVacationDays.length : 0;
 
-    // Church membership calculations with raw counts
-    const sessionsWithChurchData = sessionsData.filter(s => typeof s.includes_swedish_church === 'boolean');
-    const churchMembers = sessionsWithChurchData.filter(s => s.includes_swedish_church === true).length;
-    const churchMembershipRate = sessionsWithChurchData.length > 0 ? (churchMembers / sessionsWithChurchData.length) * 100 : 0;
+    // Church membership calculations - count checkbox states
+    const churchCheckedCount = sessionsData.filter(s => s.includes_swedish_church === true).length;
+    const totalCalculationsWithChurchData = sessionsData.filter(s => typeof s.includes_swedish_church === 'boolean').length;
+    const churchMembershipRate = totalCalculationsWithChurchData > 0 ? (churchCheckedCount / totalCalculationsWithChurchData) * 100 : 0;
 
-    // Collective agreement calculations with raw counts
-    const sessionsWithAgreementData = sessionsData.filter(s => typeof s.has_collective_agreement === 'boolean');
-    const agreementMembers = sessionsWithAgreementData.filter(s => s.has_collective_agreement === true).length;
-    const collectiveAgreementRate = sessionsWithAgreementData.length > 0 ? (agreementMembers / sessionsWithAgreementData.length) * 100 : 0;
+    // Collective agreement calculations - count checkbox states
+    const collectiveCheckedCount = sessionsData.filter(s => s.has_collective_agreement === true).length;
+    const totalCalculationsWithCollectiveData = sessionsData.filter(s => typeof s.has_collective_agreement === 'boolean').length;
+    const collectiveAgreementRate = totalCalculationsWithCollectiveData > 0 ? (collectiveCheckedCount / totalCalculationsWithCollectiveData) * 100 : 0;
 
     return {
       popularMunicipalities,
@@ -333,10 +333,10 @@ export const useEnhancedAnalytics = () => {
       avgVacationDays: Math.round(avgVacationDays * 10) / 10,
       churchMembershipRate: Math.round(churchMembershipRate * 10) / 10,
       collectiveAgreementRate: Math.round(collectiveAgreementRate * 10) / 10,
-      churchMembershipCount: churchMembers,
-      churchMembershipTotal: sessionsWithChurchData.length,
-      collectiveAgreementCount: agreementMembers,
-      collectiveAgreementTotal: sessionsWithAgreementData.length
+      churchMembershipCount: churchCheckedCount,
+      churchMembershipTotal: totalCalculationsWithChurchData,
+      collectiveAgreementCount: collectiveCheckedCount,
+      collectiveAgreementTotal: totalCalculationsWithCollectiveData
     };
   };
 
