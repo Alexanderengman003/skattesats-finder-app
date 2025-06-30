@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -19,6 +18,10 @@ interface FormInsights {
   avgVacationDays: number;
   churchMembershipRate: number;
   collectiveAgreementRate: number;
+  churchMembershipCount: number;
+  churchMembershipTotal: number;
+  collectiveAgreementCount: number;
+  collectiveAgreementTotal: number;
 }
 
 interface FormInsightsChartsProps {
@@ -100,7 +103,9 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{formInsights.churchMembershipRate}%</div>
-          <p className="text-xs text-muted-foreground">of users</p>
+          <p className="text-xs text-muted-foreground">
+            {formInsights.churchMembershipCount} of {formInsights.churchMembershipTotal} users
+          </p>
         </CardContent>
       </Card>
 
@@ -110,7 +115,9 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{formInsights.collectiveAgreementRate}%</div>
-          <p className="text-xs text-muted-foreground">have collective agreements</p>
+          <p className="text-xs text-muted-foreground">
+            {formInsights.collectiveAgreementCount} of {formInsights.collectiveAgreementTotal} users
+          </p>
         </CardContent>
       </Card>
 

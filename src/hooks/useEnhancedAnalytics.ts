@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -41,6 +40,10 @@ interface FormInsights {
   avgVacationDays: number;
   churchMembershipRate: number;
   collectiveAgreementRate: number;
+  churchMembershipCount: number;
+  churchMembershipTotal: number;
+  collectiveAgreementCount: number;
+  collectiveAgreementTotal: number;
 }
 
 interface EnhancedAnalyticsData {
@@ -306,11 +309,12 @@ export const useEnhancedAnalytics = () => {
     const validVacationDays = sessionsData.filter(s => s.vacation_days !== null && s.vacation_days !== undefined).map(s => s.vacation_days);
     const avgVacationDays = validVacationDays.length > 0 ? validVacationDays.reduce((a, b) => a + b, 0) / validVacationDays.length : 0;
 
-    // Fixed percentage calculations - only count sessions with actual boolean data
+    // Church membership calculations with raw counts
     const sessionsWithChurchData = sessionsData.filter(s => typeof s.includes_swedish_church === 'boolean');
     const churchMembers = sessionsWithChurchData.filter(s => s.includes_swedish_church === true).length;
     const churchMembershipRate = sessionsWithChurchData.length > 0 ? (churchMembers / sessionsWithChurchData.length) * 100 : 0;
 
+    // Collective agreement calculations with raw counts
     const sessionsWithAgreementData = sessionsData.filter(s => typeof s.has_collective_agreement === 'boolean');
     const agreementMembers = sessionsWithAgreementData.filter(s => s.has_collective_agreement === true).length;
     const collectiveAgreementRate = sessionsWithAgreementData.length > 0 ? (agreementMembers / sessionsWithAgreementData.length) * 100 : 0;
@@ -328,7 +332,11 @@ export const useEnhancedAnalytics = () => {
       avgVariableSalary: Math.round(avgVariableSalary),
       avgVacationDays: Math.round(avgVacationDays * 10) / 10,
       churchMembershipRate: Math.round(churchMembershipRate * 10) / 10,
-      collectiveAgreementRate: Math.round(collectiveAgreementRate * 10) / 10
+      collectiveAgreementRate: Math.round(collectiveAgreementRate * 10) / 10,
+      churchMembershipCount: churchMembers,
+      churchMembershipTotal: sessionsWithChurchData.length,
+      collectiveAgreementCount: agreementMembers,
+      collectiveAgreementTotal: sessionsWithAgreementData.length
     };
   };
 
