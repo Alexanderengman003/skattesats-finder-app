@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Shield, Calculator, PiggyBank } from 'lucide-react';
+import { useAnalyticsContext } from '@/contexts/AnalyticsContext';
 
 interface AdCardProps {
   className?: string;
@@ -19,6 +20,7 @@ export const AdCard: React.FC<AdCardProps> = ({
   className = '', 
   showFallback = true 
 }) => {
+  const { trackClick } = useAnalyticsContext();
   // Enable AdSense ads
   const showAd = true;
 
@@ -32,11 +34,19 @@ export const AdCard: React.FC<AdCardProps> = ({
     }
   }, [showAd]);
 
+  const handleAdClick = () => {
+    trackClick('ad_card', 'AdSense Card Click', {
+      ad_type: 'display',
+      ad_position: 'card',
+      ad_slot: '2320949496'
+    });
+  };
+
   if (showAd) {
     return (
       <Card className={className}>
         <CardContent className="p-4">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center" onClick={handleAdClick}>
             <ins 
               className="adsbygoogle"
               style={{ display: 'block' }}

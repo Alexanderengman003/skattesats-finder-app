@@ -7,6 +7,7 @@ import { AnalyticsCharts } from './AnalyticsCharts';
 import { GeographicInsights } from './GeographicInsights';
 import { FormInsightsCharts } from './FormInsightsCharts';
 import { CalculationsList } from './CalculationsList';
+import { AdAnalytics } from './AdAnalytics';
 import { useEnhancedAnalytics } from '@/hooks/useEnhancedAnalytics';
 
 interface AnalyticsStats {
@@ -180,8 +181,9 @@ export const AnalyticsDashboard: React.FC = () => {
 
       <Tabs defaultValue="charts" className="space-y-4">
         <div className="overflow-x-auto">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 min-w-max md:min-w-0">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 min-w-max md:min-w-0">
             <TabsTrigger value="charts" className="text-xs md:text-sm">Charts</TabsTrigger>
+            <TabsTrigger value="ads" className="text-xs md:text-sm">Ads</TabsTrigger>
             <TabsTrigger value="geography" className="text-xs md:text-sm">Geography</TabsTrigger>
             <TabsTrigger value="form-insights" className="text-xs md:text-sm">Form Insights</TabsTrigger>
             <TabsTrigger value="calculations" className="text-xs md:text-sm">Calculations</TabsTrigger>
@@ -197,6 +199,13 @@ export const AnalyticsDashboard: React.FC = () => {
             topCountries={enhancedData.topCountries}
             clickHeatmap={enhancedData.clickHeatmap}
             browserStats={enhancedData.browserStats}
+          />
+        </TabsContent>
+
+        <TabsContent value="ads" className="space-y-4">
+          <AdAnalytics
+            clickHeatmap={enhancedData.clickHeatmap}
+            topEvents={stats.topEvents}
           />
         </TabsContent>
 

@@ -1,6 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { ExternalLink, Calculator, TrendingUp } from 'lucide-react';
+import { useAnalyticsContext } from '@/contexts/AnalyticsContext';
 
 interface AdBannerProps {
   className?: string;
@@ -17,6 +18,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   className = '', 
   showFallback = true 
 }) => {
+  const { trackClick } = useAnalyticsContext();
   // Enable AdSense ads
   const showAd = true;
 
@@ -30,10 +32,18 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     }
   }, [showAd]);
 
+  const handleAdClick = () => {
+    trackClick('ad_banner', 'AdSense Banner Click', {
+      ad_type: 'display',
+      ad_position: 'banner',
+      ad_slot: '2320949496'
+    });
+  };
+
   if (showAd) {
     return (
       <div className={`bg-white border border-gray-200 rounded-lg shadow-sm p-4 ${className}`}>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center" onClick={handleAdClick}>
           <ins 
             className="adsbygoogle"
             style={{ display: 'block' }}
