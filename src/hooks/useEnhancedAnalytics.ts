@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -34,6 +35,8 @@ interface FormInsights {
   yearSelections: Array<{ year: number; count: number }>;
   avgAge: number;
   avgIncome: number;
+  avgTaxableBenefit: number;
+  avgVariableSalary: number;
   churchMembershipRate: number;
   collectiveAgreementRate: number;
 }
@@ -207,29 +210,45 @@ export const useEnhancedAnalytics = () => {
       }
     });
 
-    // Updated income ranges with more detail and no ceiling
+    // Updated income ranges - 5k increments starting from 0 with no upper bound
     const incomeRangeLabels = [
-      'Under 20k', '20k-30k', '30k-40k', '40k-50k', '50k-60k', 
-      '60k-70k', '70k-80k', '80k-90k', '90k-100k', '100k-150k', 
-      '150k-200k', '200k+'
+      '0-5k', '5k-10k', '10k-15k', '15k-20k', '20k-25k', '25k-30k', 
+      '30k-35k', '35k-40k', '40k-45k', '45k-50k', '50k-55k', '55k-60k',
+      '60k-65k', '65k-70k', '70k-75k', '75k-80k', '80k-85k', '85k-90k',
+      '90k-95k', '95k-100k', '100k-110k', '110k-120k', '120k-130k', 
+      '130k-140k', '140k-150k', '150k+'
     ];
     const incomeRanges = incomeRangeLabels.map(range => ({ income_range: range, count: 0 }));
     
     sessionsData.forEach((session) => {
       if (session.monthly_income) {
         const income = session.monthly_income;
-        if (income < 20000) incomeRanges[0].count++;
-        else if (income < 30000) incomeRanges[1].count++;
-        else if (income < 40000) incomeRanges[2].count++;
-        else if (income < 50000) incomeRanges[3].count++;
-        else if (income < 60000) incomeRanges[4].count++;
-        else if (income < 70000) incomeRanges[5].count++;
-        else if (income < 80000) incomeRanges[6].count++;
-        else if (income < 90000) incomeRanges[7].count++;
-        else if (income < 100000) incomeRanges[8].count++;
-        else if (income < 150000) incomeRanges[9].count++;
-        else if (income < 200000) incomeRanges[10].count++;
-        else incomeRanges[11].count++;
+        if (income < 5000) incomeRanges[0].count++;
+        else if (income < 10000) incomeRanges[1].count++;
+        else if (income < 15000) incomeRanges[2].count++;
+        else if (income < 20000) incomeRanges[3].count++;
+        else if (income < 25000) incomeRanges[4].count++;
+        else if (income < 30000) incomeRanges[5].count++;
+        else if (income < 35000) incomeRanges[6].count++;
+        else if (income < 40000) incomeRanges[7].count++;
+        else if (income < 45000) incomeRanges[8].count++;
+        else if (income < 50000) incomeRanges[9].count++;
+        else if (income < 55000) incomeRanges[10].count++;
+        else if (income < 60000) incomeRanges[11].count++;
+        else if (income < 65000) incomeRanges[12].count++;
+        else if (income < 70000) incomeRanges[13].count++;
+        else if (income < 75000) incomeRanges[14].count++;
+        else if (income < 80000) incomeRanges[15].count++;
+        else if (income < 85000) incomeRanges[16].count++;
+        else if (income < 90000) incomeRanges[17].count++;
+        else if (income < 95000) incomeRanges[18].count++;
+        else if (income < 100000) incomeRanges[19].count++;
+        else if (income < 110000) incomeRanges[20].count++;
+        else if (income < 120000) incomeRanges[21].count++;
+        else if (income < 130000) incomeRanges[22].count++;
+        else if (income < 140000) incomeRanges[23].count++;
+        else if (income < 150000) incomeRanges[24].count++;
+        else incomeRanges[25].count++;
       }
     });
 
@@ -262,13 +281,21 @@ export const useEnhancedAnalytics = () => {
     const validIncomes = sessionsData.filter(s => s.monthly_income).map(s => s.monthly_income);
     const avgIncome = validIncomes.length > 0 ? validIncomes.reduce((a, b) => a + b, 0) / validIncomes.length : 0;
 
-    const totalWithChurchData = sessionsData.filter(s => s.includes_swedish_church !== null).length;
-    const churchMembers = sessionsData.filter(s => s.includes_swedish_church === true).length;
-    const churchMembershipRate = totalWithChurchData > 0 ? (churchMembers / totalWithChurchData) * 100 : 0;
+    // Add new analytics calculations
+    const validTaxableBenefits = sessionsData.filter(s => s.taxable_benefit && s.taxable_benefit > 0).map(s => s.taxable_benefit);
+    const avgTaxableBenefit = validTaxableBenefits.length > 0 ? validTaxableBenefits.reduce((a, b) => a + b, 0) / validTaxableBenefits.length : 0;
 
-    const totalWithAgreementData = sessionsData.filter(s => s.has_collective_agreement !== null).length;
-    const agreementMembers = sessionsData.filter(s => s.has_collective_agreement === true).length;
-    const collectiveAgreementRate = totalWithAgreementData > 0 ? (agreementMembers / totalWithAgreementData) * 100 : 0;
+    const validVariableSalaries = sessionsData.filter(s => s.variable_salary && s.variable_salary > 0).map(s => s.variable_salary);
+    const avgVariableSalary = validVariableSalaries.length > 0 ? validVariableSalaries.reduce((a, b) => a + b, 0) / validVariableSalaries.length : 0;
+
+    // Fixed percentage calculations - only count sessions with actual data
+    const sessionsWithChurchData = sessionsData.filter(s => s.includes_swedish_church !== null && s.includes_swedish_church !== undefined);
+    const churchMembers = sessionsWithChurchData.filter(s => s.includes_swedish_church === true).length;
+    const churchMembershipRate = sessionsWithChurchData.length > 0 ? (churchMembers / sessionsWithChurchData.length) * 100 : 0;
+
+    const sessionsWithAgreementData = sessionsData.filter(s => s.has_collective_agreement !== null && s.has_collective_agreement !== undefined);
+    const agreementMembers = sessionsWithAgreementData.filter(s => s.has_collective_agreement === true).length;
+    const collectiveAgreementRate = sessionsWithAgreementData.length > 0 ? (agreementMembers / sessionsWithAgreementData.length) * 100 : 0;
 
     return {
       popularMunicipalities,
@@ -278,6 +305,8 @@ export const useEnhancedAnalytics = () => {
       yearSelections,
       avgAge: Math.round(avgAge),
       avgIncome: Math.round(avgIncome),
+      avgTaxableBenefit: Math.round(avgTaxableBenefit),
+      avgVariableSalary: Math.round(avgVariableSalary),
       churchMembershipRate: Math.round(churchMembershipRate * 10) / 10,
       collectiveAgreementRate: Math.round(collectiveAgreementRate * 10) / 10
     };

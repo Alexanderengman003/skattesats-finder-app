@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,8 @@ interface FormInsights {
   yearSelections: Array<{ year: number; count: number }>;
   avgAge: number;
   avgIncome: number;
+  avgTaxableBenefit: number;
+  avgVariableSalary: number;
   churchMembershipRate: number;
   collectiveAgreementRate: number;
 }
@@ -58,11 +60,45 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
 
       <Card>
         <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Average Taxable Benefit</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formInsights.avgTaxableBenefit ? `${formInsights.avgTaxableBenefit.toLocaleString()} kr` : 'N/A'}
+          </div>
+          <p className="text-xs text-muted-foreground">monthly</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Average Variable Salary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formInsights.avgVariableSalary ? `${formInsights.avgVariableSalary.toLocaleString()} kr` : 'N/A'}
+          </div>
+          <p className="text-xs text-muted-foreground">monthly</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Church Membership</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{formInsights.churchMembershipRate}%</div>
           <p className="text-xs text-muted-foreground">of users</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Collective Agreement</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{formInsights.collectiveAgreementRate}%</div>
+          <p className="text-xs text-muted-foreground">have collective agreements</p>
         </CardContent>
       </Card>
 
@@ -93,49 +129,51 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
         </CardContent>
       </Card>
 
-      {/* Age Distribution */}
+      {/* Age Distribution - Changed from pie chart to bar chart */}
       <Card>
         <CardHeader>
           <CardTitle>Age Distribution</CardTitle>
           <CardDescription>User age ranges</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={{}} className="h-[200px]">
+          <ChartContainer config={chartConfig} className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={formInsights.ageDistribution.filter(item => item.count > 0)}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="count"
-                  nameKey="age_range"
-                >
-                  {formInsights.ageDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
+              <BarChart data={formInsights.ageDistribution.filter(item => item.count > 0)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="age_range" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  fontSize={11}
+                />
+                <YAxis />
                 <Tooltip />
-              </PieChart>
+                <Bar dataKey="count" fill="var(--color-count)" />
+              </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
       </Card>
 
       {/* Income Ranges */}
-      <Card>
+      <Card className="col-span-1 md:col-span-2">
         <CardHeader>
           <CardTitle>Income Distribution</CardTitle>
-          <CardDescription>Monthly income ranges</CardDescription>
+          <CardDescription>Monthly income ranges (SEK)</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={formInsights.incomeRanges.filter(item => item.count > 0)}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="income_range" />
+                <XAxis 
+                  dataKey="income_range" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                  fontSize={11}
+                />
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="count" fill="var(--color-count)" />
@@ -178,17 +216,6 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Collective Agreement Rate */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Collective Agreement</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{formInsights.collectiveAgreementRate}%</div>
-          <p className="text-xs text-muted-foreground">have collective agreements</p>
         </CardContent>
       </Card>
     </div>
