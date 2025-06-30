@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -55,6 +54,23 @@ const Index = () => {
   const [calculationTriggered, setCalculationTriggered] = useState(false);
   const [hasCalculatedOnce, setHasCalculatedOnce] = useState(false);
 
+  // Frozen calculation states - these hold the values at the time of calculation
+  const [frozenResult, setFrozenResult] = useState<SkatteverketData[]>([]);
+  const [frozenSkattetabellData, setFrozenSkattetabellData] = useState<SkattetabellData[]>([]);
+  const [frozenKommun, setFrozenKommun] = useState('');
+  const [frozenForsamling, setFrozenForsamling] = useState('');
+  const [frozenMonthlyIncome, setFrozenMonthlyIncome] = useState(0);
+  const [frozenTaxableBenefit, setFrozenTaxableBenefit] = useState(0);
+  const [frozenAge, setFrozenAge] = useState(0);
+  const [frozenIncomeType, setFrozenIncomeType] = useState('salary');
+  const [frozenIsPensionContributing, setFrozenIsPensionContributing] = useState(false);
+  const [frozenSelectedTaxColumn, setFrozenSelectedTaxColumn] = useState(1);
+  const [frozenIncludeSvenskaKyrkan, setFrozenIncludeSvenskaKyrkan] = useState(false);
+  const [frozenSelectedYear, setFrozenSelectedYear] = useState<number | null>(null);
+  const [frozenHasCollectiveAgreement, setFrozenHasCollectiveAgreement] = useState(false);
+  const [frozenVacationDays, setFrozenVacationDays] = useState(25);
+  const [frozenVariableSalary, setFrozenVariableSalary] = useState(0);
+
   const getSkattetabell = (taxRate: number): number => {
     const decimal = taxRate % 1;
     let roundedRate: number;
@@ -98,7 +114,6 @@ const Index = () => {
       if (kommun && !municipalities.includes(kommun)) {
         setKommun('');
         setForsamling('');
-        // Only clear results if we haven't calculated once, or reset the hasCalculatedOnce flag
         if (hasCalculatedOnce) {
           setHasCalculatedOnce(false);
         }
@@ -118,7 +133,6 @@ const Index = () => {
         setForsamling('');
       }
       
-      // Only clear results if we haven't calculated once, or reset the hasCalculatedOnce flag
       if (hasCalculatedOnce) {
         setHasCalculatedOnce(false);
       }
@@ -131,8 +145,10 @@ const Index = () => {
     try {
       const data = await fetchSkattetabellData(year, tabell);
       setSkattetabellData(data);
+      return data;
     } catch (error) {
       console.error('Failed to load skattetabell data:', error);
+      return [];
     } finally {
       setSkattetabellLoading(false);
     }
@@ -263,7 +279,25 @@ const Index = () => {
       const firstResult = taxData[0];
       const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
       const skattetabell = getSkattetabell(taxRate);
-      loadSkattetabellData(selectedYear, skattetabell);
+      const skattetabellDataResult = await loadSkattetabellData(selectedYear, skattetabell);
+      
+      // Freeze all the calculation values
+      setFrozenResult(taxData);
+      setFrozenSkattetabellData(skattetabellDataResult);
+      setFrozenKommun(kommun);
+      setFrozenForsamling(forsamling);
+      setFrozenMonthlyIncome(monthlyIncome);
+      setFrozenTaxableBenefit(taxableBenefit);
+      setFrozenAge(age);
+      setFrozenIncomeType(incomeType);
+      setFrozenIsPensionContributing(isPensionContributing);
+      setFrozenSelectedTaxColumn(selectedTaxColumn);
+      setFrozenIncludeSvenskaKyrkan(includeSvenskaKyrkan);
+      setFrozenSelectedYear(selectedYear);
+      setFrozenHasCollectiveAgreement(hasCollectiveAgreement);
+      setFrozenVacationDays(vacationDays);
+      setFrozenVariableSalary(variableSalary);
+      
       setCalculationTriggered(true);
       setHasCalculatedOnce(true);
     } else {
@@ -313,21 +347,38 @@ const Index = () => {
   };
 
   const calculateVacationPay = (): number => {
-    const baseSalary = monthlyIncome;
+    const baseSalary = frozenMonthlyIncome;
     
-    if (hasCollectiveAgreement) {
-      const baseVacationPay = vacationDays * 0.008 * baseSalary;
-      const variableVacationPay = vacationDays * 0.005 * variableSalary;
+    if (frozenHasCollectiveAgreement) {
+      const baseVacationPay = frozenVacationDays * 0.008 * baseSalary;
+      const variableVacationPay = frozenVacationDays * 0.005 * frozenVariableSalary;
       return baseVacationPay + variableVacationPay;
     } else {
-      const baseVacationPay = vacationDays * 0.0043 * baseSalary;
-      const variableVacationPay = vacationDays * ((0.12 * variableSalary) / 25);
+      const baseVacationPay = frozenVacationDays * 0.0043 * baseSalary;
+      const variableVacationPay = frozenVacationDays * ((0.12 * frozenVariableSalary) / 25);
       return baseVacationPay + variableVacationPay;
     }
   };
 
-  const filteredTaxData = getFilteredSkattetabellData();
-  const taxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
+  // Use frozen data for tax calculations when displaying results
+  const filteredTaxData = hasCalculatedOnce ? (() => {
+    if (frozenSkattetabellData.length === 0) return null;
+    
+    const totalIncome = frozenMonthlyIncome + frozenTaxableBenefit;
+    if (totalIncome === 0) return null;
+    
+    let matchingBracket = frozenSkattetabellData.find(item => 
+      totalIncome >= item.InkomstFrån && totalIncome <= item.InkomstTill
+    );
+    
+    if (!matchingBracket) {
+      matchingBracket = frozenSkattetabellData[frozenSkattetabellData.length - 1];
+    }
+    
+    return matchingBracket;
+  })() : getFilteredSkattetabellData();
+
+  const taxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, hasCalculatedOnce ? frozenSelectedTaxColumn : selectedTaxColumn) : null;
 
   // Check if we can calculate (have required data)
   const canCalculate = kommun.trim() && selectedYear && (monthlyIncome > 0 || taxableBenefit > 0) && age > 0 && 
@@ -706,37 +757,37 @@ const Index = () => {
             </CollapsibleCard>
           </div>
 
-          {/* Results Section */}
+          {/* Results Section - Use frozen data when available */}
           <div className="space-y-6 w-full">
             <TaxColumnSelector
-              age={age}
+              age={hasCalculatedOnce ? frozenAge : age}
               onAgeChange={setAge}
-              incomeType={incomeType}
+              incomeType={hasCalculatedOnce ? frozenIncomeType : incomeType}
               onIncomeTypeChange={setIncomeType}
-              isPensionContributing={isPensionContributing}
+              isPensionContributing={hasCalculatedOnce ? frozenIsPensionContributing : isPensionContributing}
               onPensionContributingChange={setIsPensionContributing}
               birthYear={0}
               onBirthYearChange={() => {}}
-              monthlyIncome={monthlyIncome}
+              monthlyIncome={hasCalculatedOnce ? frozenMonthlyIncome : monthlyIncome}
               onMonthlyIncomeChange={setMonthlyIncome}
               birthday=""
               onBirthdayChange={() => {}}
               taxAmount={taxAmount}
-              kommun={result.length > 0 ? result[0].Kommun : ''}
-              selectedTaxColumn={selectedTaxColumn}
-              result={result}
-              includeSvenskaKyrkan={includeSvenskaKyrkan}
-              selectedYear={selectedYear}
+              kommun={hasCalculatedOnce ? frozenKommun : (result.length > 0 ? result[0].Kommun : '')}
+              selectedTaxColumn={hasCalculatedOnce ? frozenSelectedTaxColumn : selectedTaxColumn}
+              result={hasCalculatedOnce ? frozenResult : result}
+              includeSvenskaKyrkan={hasCalculatedOnce ? frozenIncludeSvenskaKyrkan : includeSvenskaKyrkan}
+              selectedYear={hasCalculatedOnce ? frozenSelectedYear : selectedYear}
               getSkattetabell={getSkattetabell}
               onTriggerCalculation={handleCalculate}
-              taxableBenefit={taxableBenefit}
+              taxableBenefit={hasCalculatedOnce ? frozenTaxableBenefit : taxableBenefit}
               onTaxableBenefitChange={setTaxableBenefit}
-              skattetabellData={skattetabellData}
-              hasCollectiveAgreement={hasCollectiveAgreement}
+              skattetabellData={hasCalculatedOnce ? frozenSkattetabellData : skattetabellData}
+              hasCollectiveAgreement={hasCalculatedOnce ? frozenHasCollectiveAgreement : hasCollectiveAgreement}
               setHasCollectiveAgreement={setHasCollectiveAgreement}
-              vacationDays={vacationDays}
+              vacationDays={hasCalculatedOnce ? frozenVacationDays : vacationDays}
               setVacationDays={setVacationDays}
-              variableSalary={variableSalary}
+              variableSalary={hasCalculatedOnce ? frozenVariableSalary : variableSalary}
               setVariableSalary={setVariableSalary}
               calculateVacationPay={calculateVacationPay}
             />
@@ -747,17 +798,17 @@ const Index = () => {
       {/* Only show FormAnalyticsTracker after calculation is triggered */}
       {calculationTriggered && (
         <FormAnalyticsTracker
-          municipality={kommun}
-          parish={forsamling}
-          age={age}
-          monthlyIncome={monthlyIncome}
-          taxableBenefit={taxableBenefit}
-          incomeType={incomeType}
-          hasCollectiveAgreement={hasCollectiveAgreement}
-          vacationDays={vacationDays}
-          variableSalary={variableSalary}
-          includesSvenskaKyrkan={includeSvenskaKyrkan}
-          selectedYear={selectedYear}
+          municipality={frozenKommun}
+          parish={frozenForsamling}
+          age={frozenAge}
+          monthlyIncome={frozenMonthlyIncome}
+          taxableBenefit={frozenTaxableBenefit}
+          incomeType={frozenIncomeType}
+          hasCollectiveAgreement={frozenHasCollectiveAgreement}
+          vacationDays={frozenVacationDays}
+          variableSalary={frozenVariableSalary}
+          includesSvenskaKyrkan={frozenIncludeSvenskaKyrkan}
+          selectedYear={frozenSelectedYear}
         />
       )}
     </div>
