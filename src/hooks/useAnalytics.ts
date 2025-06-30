@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -28,21 +29,6 @@ interface AnalyticsSession {
   selected_year?: number;
 }
 
-// Generate or retrieve anonymous user ID
-const getAnonymousUserId = (): string => {
-  const storageKey = 'analytics_anonymous_user_id';
-  let anonymousId = localStorage.getItem(storageKey);
-  
-  if (!anonymousId) {
-    // Generate a new anonymous ID using crypto.randomUUID or fallback
-    anonymousId = crypto.randomUUID ? crypto.randomUUID() : 
-      'anon_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-    localStorage.setItem(storageKey, anonymousId);
-  }
-  
-  return anonymousId;
-};
-
 export const useAnalytics = () => {
   const [sessionId, setSessionId] = useState<string>('');
   const [session, setSession] = useState<AnalyticsSession | null>(null);
@@ -54,9 +40,8 @@ export const useAnalytics = () => {
 
   const initializeSession = async () => {
     try {
-      // Get current user or use anonymous ID
+      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
-      const effectiveUserId = user?.id || getAnonymousUserId();
       
       // Get user agent and other browser info
       const userAgent = navigator.userAgent;
@@ -72,7 +57,7 @@ export const useAnalytics = () => {
       const { data: sessionData, error } = await supabase
         .from('analytics_sessions')
         .insert({
-          user_id: effectiveUserId,
+          user_id: user?.id || null,
           referrer,
           landing_page: landingPage,
           user_agent: userAgent,
@@ -114,7 +99,6 @@ export const useAnalytics = () => {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const effectiveUserId = user?.id || getAnonymousUserId();
       
       const eventData: AnalyticsEvent = {
         event_type: eventType,
@@ -126,7 +110,7 @@ export const useAnalytics = () => {
 
       await supabase.from('analytics_events').insert({
         session_id: sessionId,
-        user_id: effectiveUserId,
+        user_id: user?.id || null,
         ...eventData,
         referrer: document.referrer,
         user_agent: navigator.userAgent
@@ -164,15 +148,14 @@ export const useAnalytics = () => {
     if (!sessionId) return;
 
     try {
-      // Get current user or use anonymous ID
+      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
-      const effectiveUserId = user?.id || getAnonymousUserId();
       
       // Create a new session record for each calculation instead of updating the existing one
       const { data: newSessionData, error } = await supabase
         .from('analytics_sessions')
         .insert({
-          user_id: effectiveUserId,
+          user_id: user?.id || null,
           referrer: document.referrer,
           landing_page: window.location.href,
           user_agent: navigator.userAgent,
