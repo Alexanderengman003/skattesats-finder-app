@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -52,6 +53,7 @@ const Index = () => {
   const [vacationDays, setVacationDays] = useState(25);
   const [variableSalary, setVariableSalary] = useState(0);
   const [calculationTriggered, setCalculationTriggered] = useState(false);
+  const [hasCalculatedOnce, setHasCalculatedOnce] = useState(false);
 
   const getSkattetabell = (taxRate: number): number => {
     const decimal = taxRate % 1;
@@ -96,6 +98,10 @@ const Index = () => {
       if (kommun && !municipalities.includes(kommun)) {
         setKommun('');
         setForsamling('');
+        // Only clear results if we haven't calculated once, or reset the hasCalculatedOnce flag
+        if (hasCalculatedOnce) {
+          setHasCalculatedOnce(false);
+        }
         setResult([]);
       }
     }
@@ -112,6 +118,10 @@ const Index = () => {
         setForsamling('');
       }
       
+      // Only clear results if we haven't calculated once, or reset the hasCalculatedOnce flag
+      if (hasCalculatedOnce) {
+        setHasCalculatedOnce(false);
+      }
       setResult([]);
     }
   }, [kommun, selectedYear, apiData]);
@@ -255,6 +265,7 @@ const Index = () => {
       const skattetabell = getSkattetabell(taxRate);
       loadSkattetabellData(selectedYear, skattetabell);
       setCalculationTriggered(true);
+      setHasCalculatedOnce(true);
     } else {
       setError(t('noDataFound'));
     }
