@@ -34,6 +34,15 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
   const { trackEvent } = useAnalyticsContext();
 
   useEffect(() => {
+    console.log('FormAnalyticsTracker triggered:', { 
+      triggerTracking, 
+      municipality, 
+      age, 
+      monthlyIncome,
+      hasCollectiveAgreement,
+      includesSvenskaKyrkan 
+    });
+
     // Only track if explicitly triggered and we have meaningful data
     if (triggerTracking && (municipality || parish || age || monthlyIncome || selectedYear)) {
       const formData = {
@@ -54,6 +63,8 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
       const cleanedFormData = Object.fromEntries(
         Object.entries(formData).filter(([_, value]) => value !== undefined)
       );
+
+      console.log('Tracking calculation with data:', cleanedFormData);
 
       if (Object.keys(cleanedFormData).length > 0) {
         // Track as a calculation event instead of session data
