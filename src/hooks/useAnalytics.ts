@@ -148,17 +148,34 @@ export const useAnalytics = () => {
     if (!sessionId) return;
 
     try {
-      // Update session with form data
-      await supabase
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Create a new session record for each calculation instead of updating the existing one
+      const { data: newSessionData, error } = await supabase
         .from('analytics_sessions')
-        .update(formData)
-        .eq('id', sessionId);
+        .insert({
+          user_id: user?.id || null,
+          referrer: document.referrer,
+          landing_page: window.location.href,
+          user_agent: navigator.userAgent,
+          device_type: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop',
+          browser: getBrowserName(navigator.userAgent),
+          os: getOperatingSystem(navigator.userAgent),
+          page_views: 1,
+          events_count: 1,
+          ...formData
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating new analytics session:', error);
+        return;
+      }
 
       // Track form interaction event
-      await trackEvent('form_interaction', 'form_data_updated', {}, formData);
-
-      // Update local session state
-      setSession(prev => prev ? { ...prev, ...formData } : null);
+      await trackEvent('form_interaction', 'form_data_submitted', {}, formData);
 
     } catch (error) {
       console.error('Error tracking form data:', error);

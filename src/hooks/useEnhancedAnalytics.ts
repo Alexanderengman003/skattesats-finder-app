@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -208,18 +207,29 @@ export const useEnhancedAnalytics = () => {
       }
     });
 
-    // Income ranges
-    const incomeRangeLabels = ['Under 25k', '25k-35k', '35k-45k', '45k-55k', '55k+'];
+    // Updated income ranges with more detail and no ceiling
+    const incomeRangeLabels = [
+      'Under 20k', '20k-30k', '30k-40k', '40k-50k', '50k-60k', 
+      '60k-70k', '70k-80k', '80k-90k', '90k-100k', '100k-150k', 
+      '150k-200k', '200k+'
+    ];
     const incomeRanges = incomeRangeLabels.map(range => ({ income_range: range, count: 0 }));
     
     sessionsData.forEach((session) => {
       if (session.monthly_income) {
         const income = session.monthly_income;
-        if (income < 25000) incomeRanges[0].count++;
-        else if (income < 35000) incomeRanges[1].count++;
-        else if (income < 45000) incomeRanges[2].count++;
-        else if (income < 55000) incomeRanges[3].count++;
-        else incomeRanges[4].count++;
+        if (income < 20000) incomeRanges[0].count++;
+        else if (income < 30000) incomeRanges[1].count++;
+        else if (income < 40000) incomeRanges[2].count++;
+        else if (income < 50000) incomeRanges[3].count++;
+        else if (income < 60000) incomeRanges[4].count++;
+        else if (income < 70000) incomeRanges[5].count++;
+        else if (income < 80000) incomeRanges[6].count++;
+        else if (income < 90000) incomeRanges[7].count++;
+        else if (income < 100000) incomeRanges[8].count++;
+        else if (income < 150000) incomeRanges[9].count++;
+        else if (income < 200000) incomeRanges[10].count++;
+        else incomeRanges[11].count++;
       }
     });
 
