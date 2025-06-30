@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,6 +44,7 @@ export const AnalyticsDashboard: React.FC = () => {
       
       const totalPageViews = pageViewsData?.reduce((sum, session) => sum + session.page_views, 0) || 0;
 
+      // Updated unique users calculation to include anonymous users
       const { data: uniqueUsersData } = await supabase
         .from('analytics_sessions')
         .select('user_id')
