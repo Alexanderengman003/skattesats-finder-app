@@ -31,18 +31,9 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
   selectedYear,
   triggerTracking = false
 }) => {
-  const { trackEvent } = useAnalyticsContext();
+  const { trackFormData } = useAnalyticsContext();
 
   useEffect(() => {
-    console.log('FormAnalyticsTracker triggered:', { 
-      triggerTracking, 
-      municipality, 
-      age, 
-      monthlyIncome,
-      hasCollectiveAgreement,
-      includesSvenskaKyrkan 
-    });
-
     // Only track if explicitly triggered and we have meaningful data
     if (triggerTracking && (municipality || parish || age || monthlyIncome || selectedYear)) {
       const formData = {
@@ -52,10 +43,10 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
         monthly_income: monthlyIncome || undefined,
         taxable_benefit: taxableBenefit || undefined,
         income_type: incomeType || undefined,
-        has_collective_agreement: hasCollectiveAgreement,
+        has_collective_agreement: hasCollectiveAgreement || undefined,
         vacation_days: vacationDays || undefined,
         variable_salary: variableSalary || undefined,
-        includes_swedish_church: includesSvenskaKyrkan,
+        includes_swedish_church: includesSvenskaKyrkan || undefined,
         selected_year: selectedYear || undefined
       };
 
@@ -64,11 +55,8 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
         Object.entries(formData).filter(([_, value]) => value !== undefined)
       );
 
-      console.log('Tracking calculation with data:', cleanedFormData);
-
       if (Object.keys(cleanedFormData).length > 0) {
-        // Track as a calculation event instead of session data
-        trackEvent('tax_calculation', 'calculation_performed', cleanedFormData);
+        trackFormData(cleanedFormData);
       }
     }
   }, [
@@ -84,7 +72,7 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
     variableSalary,
     includesSvenskaKyrkan,
     selectedYear,
-    trackEvent
+    trackFormData
   ]);
 
   return null; // This component doesn't render anything
