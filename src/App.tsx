@@ -7,7 +7,6 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { AnalyticsProvider } from "./contexts/AnalyticsContext";
 import Index from "./pages/Index";
 import Analytics from "./pages/Analytics";
-import AdminAnalytics from "./pages/AdminAnalytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,7 +22,6 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/analytics" element={<Analytics />} />
-                <Route path="/admin/analytics" element={<AdminAnalytics />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
