@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -47,6 +46,22 @@ interface FormInsights {
   collectiveAgreementTotal: number;
 }
 
+interface CalculationData {
+  id: string;
+  created_at: string;
+  municipality?: string;
+  parish?: string;
+  user_age?: number;
+  monthly_income?: number;
+  taxable_benefit?: number;
+  income_type?: string;
+  has_collective_agreement?: boolean;
+  vacation_days?: number;
+  variable_salary?: number;
+  includes_swedish_church?: boolean;
+  selected_year?: number;
+}
+
 interface EnhancedAnalyticsData {
   dailyUsers: DailyUserData[];
   geographicData: GeographicData[];
@@ -54,6 +69,7 @@ interface EnhancedAnalyticsData {
   browserStats: BrowserData[];
   topCountries: Array<{ country: string; count: number }>;
   formInsights: FormInsights;
+  allCalculations: CalculationData[];
 }
 
 export const useEnhancedAnalytics = () => {
@@ -81,9 +97,10 @@ export const useEnhancedAnalytics = () => {
       // Get calculation events (form_data_submitted events) for form insights
       const { data: calculationEvents } = await supabase
         .from('analytics_events')
-        .select('form_data, created_at')
+        .select('form_data, created_at, id')
         .eq('event_name', 'form_data_submitted')
-        .gte('created_at', thirtyDaysAgo.toISOString());
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .order('created_at', { ascending: false });
 
       console.log('Calculation events found:', calculationEvents?.length);
       console.log('Sample calculation event:', calculationEvents?.[0]);
@@ -180,13 +197,21 @@ export const useEnhancedAnalytics = () => {
       // Process form insights from calculation events
       const formInsights = processFormInsights(calculationEvents || []);
 
+      // Process all calculations for the detailed list
+      const allCalculations: CalculationData[] = calculationEvents?.map(event => ({
+        id: event.id,
+        created_at: event.created_at,
+        ...event.form_data
+      })) || [];
+
       setData({
         dailyUsers,
         geographicData,
         clickHeatmap,
         browserStats,
         topCountries,
-        formInsights
+        formInsights,
+        allCalculations
       });
 
     } catch (err) {

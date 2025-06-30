@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { AnalyticsCharts } from './AnalyticsCharts';
 import { GeographicInsights } from './GeographicInsights';
 import { FormInsightsCharts } from './FormInsightsCharts';
+import { CalculationsList } from './CalculationsList';
 import { useEnhancedAnalytics } from '@/hooks/useEnhancedAnalytics';
 
 interface AnalyticsStats {
@@ -175,6 +176,7 @@ export const AnalyticsDashboard: React.FC = () => {
           <TabsTrigger value="charts">Charts & Trends</TabsTrigger>
           <TabsTrigger value="geography">Geography</TabsTrigger>
           <TabsTrigger value="form-insights">Form Insights</TabsTrigger>
+          <TabsTrigger value="calculations">All Calculations</TabsTrigger>
           <TabsTrigger value="events">Top Events</TabsTrigger>
           <TabsTrigger value="pages">Top Pages</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
@@ -198,6 +200,10 @@ export const AnalyticsDashboard: React.FC = () => {
 
         <TabsContent value="form-insights" className="space-y-4">
           <FormInsightsCharts formInsights={enhancedData.formInsights} />
+        </TabsContent>
+
+        <TabsContent value="calculations" className="space-y-4">
+          <CalculationsList calculations={enhancedData.allCalculations} />
         </TabsContent>
         
         <TabsContent value="events" className="space-y-4">
