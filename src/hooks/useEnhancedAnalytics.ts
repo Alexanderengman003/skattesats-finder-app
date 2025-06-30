@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -53,6 +54,7 @@ interface EnhancedAnalyticsData {
   browserStats: BrowserData[];
   topCountries: Array<{ country: string; count: number }>;
   formInsights: FormInsights;
+  totalSessions: number;
 }
 
 export const useEnhancedAnalytics = () => {
@@ -79,6 +81,7 @@ export const useEnhancedAnalytics = () => {
         clickHeatmap: [],
         browserStats: [],
         topCountries: [],
+        totalSessions: 0,
         formInsights: {
           popularMunicipalities: [],
           ageDistribution: [],
@@ -214,7 +217,7 @@ export const useEnhancedAnalytics = () => {
         .map(([browser, count]) => ({ browser, count }))
         .sort((a, b) => b.count - a.count);
 
-      // Process form insights with unique users only
+      // Process form insights - track every calculation, not unique users
       const formInsights = processFormInsights(sessionsData || []);
 
       setData({
@@ -223,6 +226,7 @@ export const useEnhancedAnalytics = () => {
         clickHeatmap,
         browserStats,
         topCountries,
+        totalSessions,
         formInsights
       });
 
@@ -235,40 +239,19 @@ export const useEnhancedAnalytics = () => {
   };
 
   const processFormInsights = (sessionsData: any[]): FormInsights => {
-    console.log('Processing form insights for sessions:', sessionsData.length);
+    console.log('Processing form insights for all calculations:', sessionsData.length);
     
-    // Filter to get only the latest session per user (for users with form data)
-    const userLatestSessionMap = new Map<string, any>();
-    
-    // First, collect sessions with form data
-    const sessionsWithFormData = sessionsData.filter(session => 
+    // Use ALL sessions with form data (every calculation)
+    const allCalculations = sessionsData.filter(session => 
       session.municipality || session.user_age || session.monthly_income || 
       session.selected_year || session.vacation_days !== null
     );
 
-    console.log('Sessions with form data:', sessionsWithFormData.length);
-
-    // For each user, keep only their latest session
-    sessionsWithFormData.forEach(session => {
-      if (session.user_id) {
-        const existingSession = userLatestSessionMap.get(session.user_id);
-        if (!existingSession || new Date(session.session_start) > new Date(existingSession.session_start)) {
-          userLatestSessionMap.set(session.user_id, session);
-        }
-      } else {
-        // For sessions without user_id, include them all (anonymous users)
-        const anonymousKey = `anonymous_${session.id}`;
-        userLatestSessionMap.set(anonymousKey, session);
-      }
-    });
-
-    const uniqueUserSessions = Array.from(userLatestSessionMap.values());
-    console.log('Unique user sessions after deduplication:', uniqueUserSessions.length);
-    console.log('Sample unique session:', uniqueUserSessions[0]);
+    console.log('All calculations tracked:', allCalculations.length);
 
     // Popular municipalities
     const municipalityMap = new Map<string, number>();
-    uniqueUserSessions.forEach((session) => {
+    allCalculations.forEach((session) => {
       if (session.municipality) {
         municipalityMap.set(session.municipality, (municipalityMap.get(session.municipality) || 0) + 1);
       }
@@ -280,7 +263,7 @@ export const useEnhancedAnalytics = () => {
 
     // Age distribution - 5-year increments with no upper bound
     const ageMap = new Map<string, number>();
-    uniqueUserSessions.forEach((session) => {
+    allCalculations.forEach((session) => {
       if (session.user_age) {
         const age = session.user_age;
         const ageGroup = Math.floor(age / 5) * 5;
@@ -307,7 +290,7 @@ export const useEnhancedAnalytics = () => {
     ];
     const incomeRanges = incomeRangeLabels.map(range => ({ income_range: range, count: 0 }));
     
-    uniqueUserSessions.forEach((session) => {
+    allCalculations.forEach((session) => {
       if (session.monthly_income) {
         const income = session.monthly_income;
         if (income < 5000) incomeRanges[0].count++;
@@ -341,7 +324,7 @@ export const useEnhancedAnalytics = () => {
 
     // Income types
     const incomeTypeMap = new Map<string, number>();
-    uniqueUserSessions.forEach((session) => {
+    allCalculations.forEach((session) => {
       if (session.income_type) {
         incomeTypeMap.set(session.income_type, (incomeTypeMap.get(session.income_type) || 0) + 1);
       }
@@ -352,7 +335,7 @@ export const useEnhancedAnalytics = () => {
 
     // Year selections
     const yearMap = new Map<number, number>();
-    uniqueUserSessions.forEach((session) => {
+    allCalculations.forEach((session) => {
       if (session.selected_year) {
         yearMap.set(session.selected_year, (yearMap.get(session.selected_year) || 0) + 1);
       }
@@ -363,7 +346,7 @@ export const useEnhancedAnalytics = () => {
 
     // Vacation days distribution
     const vacationDaysMap = new Map<number, number>();
-    uniqueUserSessions.forEach((session) => {
+    allCalculations.forEach((session) => {
       if (session.vacation_days !== null && session.vacation_days !== undefined) {
         vacationDaysMap.set(session.vacation_days, (vacationDaysMap.get(session.vacation_days) || 0) + 1);
       }
@@ -372,29 +355,28 @@ export const useEnhancedAnalytics = () => {
       .map(([vacation_days, count]) => ({ vacation_days, count }))
       .sort((a, b) => a.vacation_days - b.vacation_days);
 
-    // Calculate averages and rates using unique user sessions
-    const validAges = uniqueUserSessions.filter(s => s.user_age).map(s => s.user_age);
+    // Calculate averages from all calculations
+    const validAges = allCalculations.filter(s => s.user_age).map(s => s.user_age);
     const avgAge = validAges.length > 0 ? validAges.reduce((a, b) => a + b, 0) / validAges.length : 0;
 
-    const validIncomes = uniqueUserSessions.filter(s => s.monthly_income).map(s => s.monthly_income);
+    const validIncomes = allCalculations.filter(s => s.monthly_income).map(s => s.monthly_income);
     const avgIncome = validIncomes.length > 0 ? validIncomes.reduce((a, b) => a + b, 0) / validIncomes.length : 0;
 
-    const validTaxableBenefits = uniqueUserSessions.filter(s => s.taxable_benefit && s.taxable_benefit > 0).map(s => s.taxable_benefit);
+    const validTaxableBenefits = allCalculations.filter(s => s.taxable_benefit && s.taxable_benefit > 0).map(s => s.taxable_benefit);
     const avgTaxableBenefit = validTaxableBenefits.length > 0 ? validTaxableBenefits.reduce((a, b) => a + b, 0) / validTaxableBenefits.length : 0;
 
-    const validVariableSalaries = uniqueUserSessions.filter(s => s.variable_salary && s.variable_salary > 0).map(s => s.variable_salary);
+    const validVariableSalaries = allCalculations.filter(s => s.variable_salary && s.variable_salary > 0).map(s => s.variable_salary);
     const avgVariableSalary = validVariableSalaries.length > 0 ? validVariableSalaries.reduce((a, b) => a + b, 0) / validVariableSalaries.length : 0;
 
-    const validVacationDays = uniqueUserSessions.filter(s => s.vacation_days !== null && s.vacation_days !== undefined).map(s => s.vacation_days);
+    const validVacationDays = allCalculations.filter(s => s.vacation_days !== null && s.vacation_days !== undefined).map(s => s.vacation_days);
     const avgVacationDays = validVacationDays.length > 0 ? validVacationDays.reduce((a, b) => a + b, 0) / validVacationDays.length : 0;
 
-    // Church membership calculations with raw counts using unique users
-    const sessionsWithChurchData = uniqueUserSessions.filter(s => typeof s.includes_swedish_church === 'boolean');
+    // Church membership and collective agreement: count each calculation, not unique users
+    const sessionsWithChurchData = allCalculations.filter(s => typeof s.includes_swedish_church === 'boolean');
     const churchMembers = sessionsWithChurchData.filter(s => s.includes_swedish_church === true).length;
     const churchMembershipRate = sessionsWithChurchData.length > 0 ? (churchMembers / sessionsWithChurchData.length) * 100 : 0;
 
-    // Collective agreement calculations with raw counts using unique users
-    const sessionsWithAgreementData = uniqueUserSessions.filter(s => typeof s.has_collective_agreement === 'boolean');
+    const sessionsWithAgreementData = allCalculations.filter(s => typeof s.has_collective_agreement === 'boolean');
     const agreementMembers = sessionsWithAgreementData.filter(s => s.has_collective_agreement === true).length;
     const collectiveAgreementRate = sessionsWithAgreementData.length > 0 ? (agreementMembers / sessionsWithAgreementData.length) * 100 : 0;
 

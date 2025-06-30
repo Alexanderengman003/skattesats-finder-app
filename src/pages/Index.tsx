@@ -48,16 +48,18 @@ const Index = () => {
   const [churchMember, setChurchMember] = useState(false);
   const [collectiveAgreement, setCollectiveAgreement] = useState(false);
   const [taxCalculation, setTaxCalculation] = useState<number | null>(null);
+  const [engangsbeskattningAmount, setEngangsbeskattningAmount] = useState("");
+  const [additionalIncome, setAdditionalIncome] = useState("");
 
   const handleKommunSelect = (kommun: Kommun) => {
     setSelectedKommun(kommun);
     setSelectedForsamling(null); // Reset forsamling when kommun changes
-    trackEvent('select_municipality', { municipality: kommun.namn });
+    trackEvent('select_municipality', 'municipality_selected', { municipality: kommun.namn });
   };
 
   const handleForsamlingSelect = (forsamling: Forsamling) => {
     setSelectedForsamling(forsamling);
-    trackEvent('select_congregation', { congregation: forsamling.namn, taxRate: forsamling.tax_rate });
+    trackEvent('select_congregation', 'congregation_selected', { congregation: forsamling.namn, taxRate: forsamling.tax_rate });
   };
 
   const calculateTax = () => {
@@ -102,7 +104,7 @@ const Index = () => {
     calculatedTax += variableSalaryValue * taxRate;
 
     setTaxCalculation(calculatedTax);
-    trackEvent('calculate_tax', { age: ageValue, income: incomeValue, taxRate: selectedForsamling.tax_rate });
+    trackEvent('calculate_tax', 'tax_calculation', { age: ageValue, income: incomeValue, taxRate: selectedForsamling.tax_rate });
   };
 
   return (
@@ -118,6 +120,7 @@ const Index = () => {
         variableSalary={parseFloat(variableSalary) || undefined}
         includesSvenskaKyrkan={churchMember}
         hasCollectiveAgreement={collectiveAgreement}
+        triggerTracking={taxCalculation !== null}
       />
       
       <div className="max-w-4xl mx-auto space-y-6">
@@ -149,11 +152,11 @@ const Index = () => {
             <CardDescription>{t('appSubtitle')}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <KommunSearch onKommunSelect={handleKommunSelect} />
+            <KommunSearch onSelect={handleKommunSelect} />
             {selectedKommun && (
               <ForsamlingSelect
-                kommunId={selectedKommun.id}
-                onForsamlingSelect={handleForsamlingSelect}
+                kommun={selectedKommun}
+                onSelect={handleForsamlingSelect}
               />
             )}
 
@@ -280,7 +283,36 @@ const Index = () => {
           monthlyIncome={parseFloat(monthlyIncome) || 0}
         />
 
-        <EngangsbeskattningCard />
+        <EngangsbeskattningCard 
+          engangsbeskattningAmount={parseFloat(engangsbeskattningAmount) || 0}
+          onEngangsbeskattningAmountChange={(amount) => setEngangsbeskattningAmount(amount.toString())}
+          additionalIncome={parseFloat(additionalIncome) || 0}
+          onAdditionalIncomeChange={(income) => setAdditionalIncome(income.toString())}
+          taxRate={selectedForsamling ? selectedForsamling.tax_rate : 0}
+          onTaxRateChange={() => {}}
+          grossAmount={0}
+          onGrossAmountChange={() => {}}
+          netAmount={0}
+          onNetAmountChange={() => {}}
+          taxAmount={0}
+          onTaxAmountChange={() => {}}
+          preliminaryTax={0}
+          onPreliminaryTaxChange={() => {}}
+          finalTax={0}
+          onFinalTaxChange={() => {}}
+          taxDifference={0}
+          onTaxDifferenceChange={() => {}}
+          isRefund={false}
+          onIsRefundChange={() => {}}
+          paymentDate=""
+          onPaymentDateChange={() => {}}
+          taxYear={new Date().getFullYear()}
+          onTaxYearChange={() => {}}
+          comments=""
+          onCommentsChange={() => {}}
+          municipality={selectedKommun?.namn || ""}
+          onMunicipalityChange={() => {}}
+        />
 
         <CollapsibleCard title={t('taxRateFor')}>
           {selectedKommun ? (
