@@ -40,231 +40,228 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
   };
 
   return (
-    <div className="space-y-4">
-      {/* Key Metrics Cards - All on one row */}
-      <div className="grid grid-cols-7 gap-2">
-        <Card className="col-span-1">
-          <CardHeader className="pb-1 pt-2 px-2">
-            <CardTitle className="text-xs font-medium">Avg Age</CardTitle>
-          </CardHeader>
-          <CardContent className="px-2 pb-2">
-            <div className="text-lg font-bold">{formInsights.avgAge || 'N/A'}</div>
-          </CardContent>
-        </Card>
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      {/* Key Metrics Cards - Compact */}
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Average Age</CardTitle>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">{formInsights.avgAge || 'N/A'}</div>
+          <p className="text-xs text-muted-foreground">years</p>
+        </CardContent>
+      </Card>
 
-        <Card className="col-span-1">
-          <CardHeader className="pb-1 pt-2 px-2">
-            <CardTitle className="text-xs font-medium">Avg Income</CardTitle>
-          </CardHeader>
-          <CardContent className="px-2 pb-2">
-            <div className="text-lg font-bold">
-              {formInsights.avgIncome ? `${Math.round(formInsights.avgIncome / 1000)}k` : 'N/A'}
-            </div>
-          </CardContent>
-        </Card>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Avg Income</CardTitle>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">
+            {formInsights.avgIncome ? `${Math.round(formInsights.avgIncome / 1000)}k` : 'N/A'}
+          </div>
+          <p className="text-xs text-muted-foreground">SEK/month</p>
+        </CardContent>
+      </Card>
 
-        <Card className="col-span-1">
-          <CardHeader className="pb-1 pt-2 px-2">
-            <CardTitle className="text-xs font-medium">Avg Benefit</CardTitle>
-          </CardHeader>
-          <CardContent className="px-2 pb-2">
-            <div className="text-lg font-bold">
-              {formInsights.avgTaxableBenefit ? `${Math.round(formInsights.avgTaxableBenefit / 1000)}k` : 'N/A'}
-            </div>
-          </CardContent>
-        </Card>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Avg Benefit</CardTitle>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">
+            {formInsights.avgTaxableBenefit ? `${Math.round(formInsights.avgTaxableBenefit / 1000)}k` : 'N/A'}
+          </div>
+          <p className="text-xs text-muted-foreground">SEK/month</p>
+        </CardContent>
+      </Card>
 
-        <Card className="col-span-1">
-          <CardHeader className="pb-1 pt-2 px-2">
-            <CardTitle className="text-xs font-medium">Avg Variable</CardTitle>
-          </CardHeader>
-          <CardContent className="px-2 pb-2">
-            <div className="text-lg font-bold">
-              {formInsights.avgVariableSalary ? `${Math.round(formInsights.avgVariableSalary / 1000)}k` : 'N/A'}
-            </div>
-          </CardContent>
-        </Card>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Avg Variable</CardTitle>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">
+            {formInsights.avgVariableSalary ? `${Math.round(formInsights.avgVariableSalary / 1000)}k` : 'N/A'}
+          </div>
+          <p className="text-xs text-muted-foreground">SEK/month</p>
+        </CardContent>
+      </Card>
 
-        <Card className="col-span-1">
-          <CardHeader className="pb-1 pt-2 px-2">
-            <CardTitle className="text-xs font-medium">Avg Vacation</CardTitle>
-          </CardHeader>
-          <CardContent className="px-2 pb-2">
-            <div className="text-lg font-bold">{formInsights.avgVacationDays || 'N/A'}</div>
-          </CardContent>
-        </Card>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Avg Vacation</CardTitle>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">{formInsights.avgVacationDays || 'N/A'}</div>
+          <p className="text-xs text-muted-foreground">days/year</p>
+        </CardContent>
+      </Card>
 
-        <Card className="col-span-1">
-          <CardHeader className="pb-1 pt-2 px-2">
-            <CardTitle className="text-xs font-medium">Church</CardTitle>
-          </CardHeader>
-          <CardContent className="px-2 pb-2">
-            <div className="text-sm font-bold">{formInsights.churchMembershipRate}%</div>
-            <div className="text-xs text-muted-foreground">
-              {formInsights.churchMembershipCount}/{formInsights.churchMembershipTotal}
-            </div>
-          </CardContent>
-        </Card>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Church</CardTitle>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">{formInsights.churchMembershipRate}%</div>
+          <p className="text-xs text-muted-foreground">
+            {formInsights.churchMembershipCount}/{formInsights.churchMembershipTotal}
+          </p>
+        </CardContent>
+      </Card>
 
-        <Card className="col-span-1">
-          <CardHeader className="pb-1 pt-2 px-2">
-            <CardTitle className="text-xs font-medium">Collective</CardTitle>
-          </CardHeader>
-          <CardContent className="px-2 pb-2">
-            <div className="text-sm font-bold">{formInsights.collectiveAgreementRate}%</div>
-            <div className="text-xs text-muted-foreground">
-              {formInsights.collectiveAgreementCount}/{formInsights.collectiveAgreementTotal}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Collective</CardTitle>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">{formInsights.collectiveAgreementRate}%</div>
+          <p className="text-xs text-muted-foreground">
+            {formInsights.collectiveAgreementCount}/{formInsights.collectiveAgreementTotal}
+          </p>
+        </CardContent>
+      </Card>
 
-      {/* Charts - All on one row, bigger */}
-      <div className="grid grid-cols-4 gap-4">
-        {/* Popular Municipalities */}
-        <Card className="col-span-1">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <CardTitle className="text-sm">Popular Municipalities</CardTitle>
-            <CardDescription className="text-xs">Most searched municipalities</CardDescription>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <ChartContainer config={chartConfig} className="h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={formInsights.popularMunicipalities.slice(0, 8)}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="municipality" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                    fontSize={10}
-                  />
-                  <YAxis fontSize={10} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="var(--color-count)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+      {/* Popular Municipalities */}
+      <Card className="col-span-2 md:col-span-3">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Popular Municipalities</CardTitle>
+          <CardDescription className="text-xs">Most searched municipalities</CardDescription>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <ChartContainer config={chartConfig} className="h-[150px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={formInsights.popularMunicipalities.slice(0, 8)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="municipality" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={50}
+                  fontSize={10}
+                />
+                <YAxis fontSize={10} />
+                <Tooltip />
+                <Bar dataKey="count" fill="var(--color-count)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
 
-        {/* Age Distribution */}
-        <Card className="col-span-1">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <CardTitle className="text-sm">Age Distribution</CardTitle>
-            <CardDescription className="text-xs">User age ranges</CardDescription>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <ChartContainer config={chartConfig} className="h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={formInsights.ageDistribution.filter(item => item.count > 0)}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="age_range" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                    fontSize={10}
-                  />
-                  <YAxis fontSize={10} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="var(--color-count)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+      {/* Age Distribution */}
+      <Card className="col-span-2 md:col-span-3">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Age Distribution</CardTitle>
+          <CardDescription className="text-xs">User age ranges (5-year increments)</CardDescription>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <ChartContainer config={chartConfig} className="h-[150px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={formInsights.ageDistribution.filter(item => item.count > 0)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="age_range" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={50}
+                  fontSize={10}
+                />
+                <YAxis fontSize={10} />
+                <Tooltip />
+                <Bar dataKey="count" fill="var(--color-count)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
 
-        {/* Vacation Days Distribution */}
-        <Card className="col-span-1">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <CardTitle className="text-sm">Vacation Days</CardTitle>
-            <CardDescription className="text-xs">Days per year</CardDescription>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <ChartContainer config={chartConfig} className="h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={formInsights.vacationDaysDistribution.filter(item => item.count > 0)}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="vacation_days" 
-                    fontSize={10}
-                  />
-                  <YAxis fontSize={10} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="var(--color-count)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+      {/* Vacation Days Distribution */}
+      <Card className="col-span-2 md:col-span-3">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Vacation Days Distribution</CardTitle>
+          <CardDescription className="text-xs">Distribution of vacation days per year</CardDescription>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <ChartContainer config={chartConfig} className="h-[150px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={formInsights.vacationDaysDistribution.filter(item => item.count > 0)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="vacation_days" 
+                  fontSize={10}
+                />
+                <YAxis fontSize={10} />
+                <Tooltip />
+                <Bar dataKey="count" fill="var(--color-count)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
 
-        {/* Income Ranges */}
-        <Card className="col-span-1">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <CardTitle className="text-sm">Income Distribution</CardTitle>
-            <CardDescription className="text-xs">Monthly income (SEK)</CardDescription>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <ChartContainer config={chartConfig} className="h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={formInsights.incomeRanges.filter(item => item.count > 0)}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="income_range" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                    fontSize={10}
-                  />
-                  <YAxis fontSize={10} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="var(--color-count)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Income Ranges */}
+      <Card className="col-span-2 md:col-span-3">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Income Distribution</CardTitle>
+          <CardDescription className="text-xs">Monthly income ranges (SEK)</CardDescription>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <ChartContainer config={chartConfig} className="h-[150px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={formInsights.incomeRanges.filter(item => item.count > 0)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="income_range" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  fontSize={10}
+                />
+                <YAxis fontSize={10} />
+                <Tooltip />
+                <Bar dataKey="count" fill="var(--color-count)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
 
-      {/* Input Selects - All on one row */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Income Types */}
-        <Card className="col-span-1">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <CardTitle className="text-sm">Income Types</CardTitle>
-            <CardDescription className="text-xs">Distribution of income sources</CardDescription>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="space-y-1">
-              {formInsights.incomeTypes.map((type, index) => (
-                <div key={type.income_type} className="flex items-center justify-between">
-                  <span className="text-xs font-medium capitalize">{type.income_type || 'Unknown'}</span>
-                  <Badge variant="secondary" className="text-xs px-2 py-0">{type.count}</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Income Types */}
+      <Card className="col-span-1 md:col-span-2">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Income Types</CardTitle>
+          <CardDescription className="text-xs">Distribution of income sources</CardDescription>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <div className="space-y-1">
+            {formInsights.incomeTypes.map((type, index) => (
+              <div key={type.income_type} className="flex items-center justify-between">
+                <span className="text-xs font-medium capitalize">{type.income_type || 'Unknown'}</span>
+                <Badge variant="secondary" className="text-xs px-2 py-0">{type.count}</Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Year Selections */}
-        <Card className="col-span-1">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <CardTitle className="text-sm">Selected Years</CardTitle>
-            <CardDescription className="text-xs">Tax years users are looking up</CardDescription>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="space-y-1">
-              {formInsights.yearSelections.map((year, index) => (
-                <div key={year.year} className="flex items-center justify-between">
-                  <span className="text-xs font-medium">{year.year}</span>
-                  <Badge variant="secondary" className="text-xs px-2 py-0">{year.count}</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Year Selections */}
+      <Card className="col-span-1 md:col-span-2">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Selected Years</CardTitle>
+          <CardDescription className="text-xs">Tax years users are looking up</CardDescription>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <div className="space-y-1">
+            {formInsights.yearSelections.map((year, index) => (
+              <div key={year.year} className="flex items-center justify-between">
+                <span className="text-xs font-medium">{year.year}</span>
+                <Badge variant="secondary" className="text-xs px-2 py-0">{year.count}</Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
