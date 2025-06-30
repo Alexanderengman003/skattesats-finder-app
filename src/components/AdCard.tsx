@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Shield, Calculator, PiggyBank } from 'lucide-react';
@@ -9,19 +9,42 @@ interface AdCardProps {
   showFallback?: boolean;
 }
 
+declare global {
+  interface Window {
+    adsbygoogle: any[];
+  }
+}
+
 export const AdCard: React.FC<AdCardProps> = ({ 
   className = '', 
   showFallback = true 
 }) => {
-  // For now, we'll show fallback content. Later you can integrate with AdSense
-  const showAd = false; // Set to true when you have ads to display
+  // Enable AdSense ads
+  const showAd = true;
+
+  useEffect(() => {
+    if (showAd) {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (err) {
+        console.error('AdSense error:', err);
+      }
+    }
+  }, [showAd]);
 
   if (showAd) {
     return (
       <Card className={className}>
         <CardContent className="p-4">
-          <div className="flex items-center justify-center min-h-[200px] bg-gray-50 rounded">
-            <p className="text-gray-500 text-sm">Advertisement Space</p>
+          <div className="flex items-center justify-center">
+            <ins 
+              className="adsbygoogle"
+              style={{ display: 'block' }}
+              data-ad-client="ca-pub-7512261773678420"
+              data-ad-slot="9876543210"
+              data-ad-format="rectangle"
+              data-full-width-responsive="true"
+            />
           </div>
         </CardContent>
       </Card>

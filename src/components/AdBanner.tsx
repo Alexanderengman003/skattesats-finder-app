@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ExternalLink, Calculator, TrendingUp } from 'lucide-react';
 
 interface AdBannerProps {
@@ -7,18 +7,41 @@ interface AdBannerProps {
   showFallback?: boolean;
 }
 
+declare global {
+  interface Window {
+    adsbygoogle: any[];
+  }
+}
+
 export const AdBanner: React.FC<AdBannerProps> = ({ 
   className = '', 
   showFallback = true 
 }) => {
-  // For now, we'll show fallback content. Later you can integrate with AdSense
-  const showAd = false; // Set to true when you have ads to display
+  // Enable AdSense ads
+  const showAd = true;
+
+  useEffect(() => {
+    if (showAd) {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (err) {
+        console.error('AdSense error:', err);
+      }
+    }
+  }, [showAd]);
 
   if (showAd) {
     return (
       <div className={`bg-white border border-gray-200 rounded-lg shadow-sm p-4 ${className}`}>
-        <div className="flex items-center justify-center min-h-[100px] bg-gray-50 rounded">
-          <p className="text-gray-500 text-sm">Advertisement Space</p>
+        <div className="flex items-center justify-center">
+          <ins 
+            className="adsbygoogle"
+            style={{ display: 'block' }}
+            data-ad-client="ca-pub-7512261773678420"
+            data-ad-slot="1234567890"
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+          />
         </div>
       </div>
     );
