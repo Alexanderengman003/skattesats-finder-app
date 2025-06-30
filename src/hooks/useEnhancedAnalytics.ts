@@ -64,6 +64,51 @@ export const useEnhancedAnalytics = () => {
     loadEnhancedAnalytics();
   }, []);
 
+  const clearAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      
+      // Delete all analytics data
+      await supabase.from('analytics_events').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      await supabase.from('analytics_sessions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // Reset the data state
+      setData({
+        dailyUsers: [],
+        geographicData: [],
+        clickHeatmap: [],
+        browserStats: [],
+        topCountries: [],
+        formInsights: {
+          popularMunicipalities: [],
+          ageDistribution: [],
+          incomeRanges: [],
+          incomeTypes: [],
+          yearSelections: [],
+          vacationDaysDistribution: [],
+          avgAge: 0,
+          avgIncome: 0,
+          avgTaxableBenefit: 0,
+          avgVariableSalary: 0,
+          avgVacationDays: 0,
+          churchMembershipRate: 0,
+          collectiveAgreementRate: 0,
+          churchMembershipCount: 0,
+          churchMembershipTotal: 0,
+          collectiveAgreementCount: 0,
+          collectiveAgreementTotal: 0,
+        }
+      });
+      
+      console.log('Analytics data cleared successfully');
+    } catch (err) {
+      console.error('Error clearing analytics data:', err);
+      setError('Failed to clear analytics data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadEnhancedAnalytics = async () => {
     try {
       setLoading(true);
@@ -76,6 +121,9 @@ export const useEnhancedAnalytics = () => {
         .from('analytics_sessions')
         .select('*')
         .gte('session_start', thirtyDaysAgo.toISOString());
+
+      console.log('Total sessions retrieved:', sessionsData?.length);
+      console.log('Sample session data:', sessionsData?.[0]);
 
       // Process daily users data
       const dailyUsersMap = new Map<string, { users: Set<string>, sessions: number }>();
@@ -187,6 +235,8 @@ export const useEnhancedAnalytics = () => {
   };
 
   const processFormInsights = (sessionsData: any[]): FormInsights => {
+    console.log('Processing form insights for sessions:', sessionsData.length);
+    
     // Filter to get only the latest session per user (for users with form data)
     const userLatestSessionMap = new Map<string, any>();
     
@@ -195,6 +245,8 @@ export const useEnhancedAnalytics = () => {
       session.municipality || session.user_age || session.monthly_income || 
       session.selected_year || session.vacation_days !== null
     );
+
+    console.log('Sessions with form data:', sessionsWithFormData.length);
 
     // For each user, keep only their latest session
     sessionsWithFormData.forEach(session => {
@@ -211,6 +263,8 @@ export const useEnhancedAnalytics = () => {
     });
 
     const uniqueUserSessions = Array.from(userLatestSessionMap.values());
+    console.log('Unique user sessions after deduplication:', uniqueUserSessions.length);
+    console.log('Sample unique session:', uniqueUserSessions[0]);
 
     // Popular municipalities
     const municipalityMap = new Map<string, number>();
@@ -365,5 +419,5 @@ export const useEnhancedAnalytics = () => {
     };
   };
 
-  return { data, loading, error, refetch: loadEnhancedAnalytics };
+  return { data, loading, error, refetch: loadEnhancedAnalytics, clearAnalyticsData };
 };
