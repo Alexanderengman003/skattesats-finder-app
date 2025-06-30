@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -71,18 +72,27 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
 
   const deleteCalculation = async (id: string) => {
     try {
+      console.log('Attempting to delete calculation with ID:', id);
+      
       // Delete from analytics_events table where the calculation data is actually stored
       const { error } = await supabase
         .from('analytics_events')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase delete error:', error);
+        throw error;
+      }
 
+      console.log('Delete successful, calling refresh callback');
       toast.success('Calculation deleted successfully');
+      
       // Trigger refresh by calling the callback
       if (onCalculationDeleted) {
         onCalculationDeleted();
+      } else {
+        console.warn('No onCalculationDeleted callback provided');
       }
     } catch (error) {
       console.error('Error deleting calculation:', error);
@@ -94,19 +104,28 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
     if (selectedIds.size === 0) return;
 
     try {
+      console.log('Attempting to delete calculations with IDs:', Array.from(selectedIds));
+      
       // Delete from analytics_events table where the calculation data is actually stored
       const { error } = await supabase
         .from('analytics_events')
         .delete()
         .in('id', Array.from(selectedIds));
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase bulk delete error:', error);
+        throw error;
+      }
 
+      console.log('Bulk delete successful, calling refresh callback');
       toast.success(`${selectedIds.size} calculation${selectedIds.size > 1 ? 's' : ''} deleted successfully`);
       setSelectedIds(new Set());
+      
       // Trigger refresh by calling the callback
       if (onCalculationDeleted) {
         onCalculationDeleted();
+      } else {
+        console.warn('No onCalculationDeleted callback provided');
       }
     } catch (error) {
       console.error('Error deleting calculations:', error);
