@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Download, Eye, EyeOff, Filter, X, Trash2, Loader2 } from 'lucide-react';
+import { Download, Eye, EyeOff, Filter, X, Trash2, Loader2, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -30,6 +30,7 @@ interface CalculationData {
 interface CalculationsListProps {
   calculations: CalculationData[];
   onCalculationDeleted?: () => void;
+  onRefresh?: () => void;
 }
 
 type ColumnKey = keyof CalculationData;
@@ -64,18 +65,38 @@ const DEFAULT_VISIBLE_COLUMNS: ColumnKey[] = [
   'has_collective_agreement'
 ];
 
-export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations, onCalculationDeleted }) => {
+export const CalculationsList: React.FC<CalculationsListProps> = ({ 
+  calculations, 
+  onCalculationDeleted, 
+  onRefresh 
+}) => {
   const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(DEFAULT_VISIBLE_COLUMNS);
   const [filters, setFilters] = useState<Record<ColumnKey, string>>({} as Record<ColumnKey, string>);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [localCalculations, setLocalCalculations] = useState<CalculationData[]>(calculations);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Update local calculations when props change
   React.useEffect(() => {
     setLocalCalculations(calculations);
   }, [calculations]);
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+      toast.success('Analytics data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      toast.error('Failed to refresh data');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const deleteCalculation = async (id: string) => {
     console.log('Starting delete operation for calculation ID:', id);
@@ -535,6 +556,25 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
               </CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button 
+                onClick={handleRefresh} 
+                variant="outline" 
+                size="sm" 
+                className="w-full sm:w-auto" 
+                disabled={isRefreshing}
+              >
+                {isRefreshing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Refreshing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh Data
+                  </>
+                )}
+              </Button>
               {selectedIds.size > 0 && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>

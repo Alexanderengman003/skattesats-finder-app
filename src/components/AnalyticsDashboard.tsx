@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -128,6 +129,18 @@ export const AnalyticsDashboard: React.FC = () => {
     loadAnalyticsStats();
   };
 
+  const handleComprehensiveRefresh = async () => {
+    console.log('Starting comprehensive refresh of all analytics data...');
+    
+    // Refetch enhanced analytics data
+    await refetch();
+    
+    // Reload basic analytics stats
+    await loadAnalyticsStats();
+    
+    console.log('Comprehensive refresh completed');
+  };
+
   if (loading || enhancedLoading) {
     return <div className="p-4 md:p-6">Loading analytics...</div>;
   }
@@ -224,6 +237,7 @@ export const AnalyticsDashboard: React.FC = () => {
           <CalculationsList 
             calculations={enhancedData.allCalculations} 
             onCalculationDeleted={handleCalculationDeleted}
+            onRefresh={handleComprehensiveRefresh}
           />
         </TabsContent>
         
