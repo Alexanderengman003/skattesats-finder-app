@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Download } from 'lucide-react';
+import { Download, Eye, EyeOff } from 'lucide-react';
 
 interface CalculationData {
   id: string;
@@ -81,7 +81,13 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
   };
 
   const formatValueForDisplay = (key: ColumnKey, value: any) => {
-    if (value === null || value === undefined) return '-';
+    if (value === null || value === undefined) {
+      // For boolean fields, show "No" instead of "-"
+      if (key === 'includes_swedish_church' || key === 'has_collective_agreement') {
+        return 'No';
+      }
+      return '-';
+    }
     
     switch (key) {
       case 'created_at':
@@ -92,7 +98,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
         return formatCurrency(value);
       case 'includes_swedish_church':
       case 'has_collective_agreement':
-        return typeof value === 'boolean' ? (value ? 'Yes' : 'No') : '-';
+        return typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 'No';
       case 'income_type':
         return value;
       default:
@@ -101,14 +107,20 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
   };
 
   const formatValueForCSV = (key: ColumnKey, value: any) => {
-    if (value === null || value === undefined) return '';
+    if (value === null || value === undefined) {
+      // For boolean fields, show "No" instead of empty
+      if (key === 'includes_swedish_church' || key === 'has_collective_agreement') {
+        return 'No';
+      }
+      return '';
+    }
     
     switch (key) {
       case 'created_at':
         return formatDate(value);
       case 'includes_swedish_church':
       case 'has_collective_agreement':
-        return typeof value === 'boolean' ? (value ? 'Yes' : 'No') : '';
+        return typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 'No';
       default:
         return value.toString();
     }
@@ -168,10 +180,11 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
       );
     }
     
-    if ((key === 'includes_swedish_church' || key === 'has_collective_agreement') && typeof value === 'boolean') {
+    if (key === 'includes_swedish_church' || key === 'has_collective_agreement') {
+      const displayValue = value === null || value === undefined ? 'No' : (typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 'No');
       return (
-        <Badge variant={value ? "default" : "secondary"}>
-          {value ? 'Yes' : 'No'}
+        <Badge variant={displayValue === 'Yes' ? "default" : "secondary"}>
+          {displayValue}
         </Badge>
       );
     }
@@ -190,27 +203,44 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
                 Complete list of all tax calculations performed ({calculations.length} total)
               </CardDescription>
             </div>
-            <div className="flex gap-2">
-              <Select onValueChange={(value) => toggleColumn(value as ColumnKey)}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Toggle columns" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(COLUMN_LABELS).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {visibleColumns.includes(key as ColumnKey) ? '✓ ' : ''}{label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button onClick={exportToCSV} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export CSV
-              </Button>
-            </div>
+            <Button onClick={exportToCSV} variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
+          {/* Column Visibility Controls */}
+          <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+            <h4 className="text-sm font-medium mb-3">Column Visibility</h4>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(COLUMN_LABELS).map(([key, label]) => {
+                const isVisible = visibleColumns.includes(key as ColumnKey);
+                return (
+                  <Button
+                    key={key}
+                    variant={isVisible ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => toggleColumn(key as ColumnKey)}
+                    className="text-xs"
+                  >
+                    {isVisible ? (
+                      <>
+                        <Eye className="h-3 w-3 mr-1" />
+                        {label}
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3 mr-1" />
+                        {label}
+                      </>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
