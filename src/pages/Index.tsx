@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Search, Coins, MapPin, Calendar, List, HelpCircle } from 'lucide-react';
+import { Search, Coins, MapPin, Calendar, List, HelpCircle, Calculator } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 import CollapsibleCard from '@/components/CollapsibleCard';
@@ -15,6 +15,7 @@ import TaxColumnSelector from '@/components/TaxColumnSelector';
 import TaxTableDisplay from '@/components/TaxTableDisplay';
 import VacationPayCard from '@/components/VacationPayCard';
 import { FormAnalyticsTracker } from '@/components/FormAnalyticsTracker';
+import { useAnalyticsContext } from '@/contexts/AnalyticsContext';
 import { 
   fetchTaxData, 
   findTaxRateFromAPI, 
@@ -27,6 +28,7 @@ import {
 
 const Index = () => {
   const { t } = useLanguage();
+  const { trackFormData, trackEvent } = useAnalyticsContext();
   const [kommun, setKommun] = useState('');
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [forsamling, setForsamling] = useState('');
@@ -49,10 +51,9 @@ const Index = () => {
   const [hasCollectiveAgreement, setHasCollectiveAgreement] = useState(false);
   const [vacationDays, setVacationDays] = useState(25);
   const [variableSalary, setVariableSalary] = useState(0);
+  const [calculationTriggered, setCalculationTriggered] = useState(false);
 
   const getSkattetabell = (taxRate: number): number => {
-    // Round to nearest integer according to Swedish tax authority rules
-    // 0.50 and above rounds up, below 0.50 rounds down
     const decimal = taxRate % 1;
     let roundedRate: number;
     
@@ -62,7 +63,6 @@ const Index = () => {
       roundedRate = Math.floor(taxRate);
     }
     
-    // Ensure the table number is within the valid range (29-34)
     return Math.max(29, Math.min(34, roundedRate));
   };
 
@@ -72,11 +72,10 @@ const Index = () => {
       try {
         const { data, years } = await fetchTaxData();
         setApiData(data);
-        // Filter years to only include 2020 and later
         const filteredYears = years.filter(year => year >= 2020);
         setAvailableYears(filteredYears);
         if (filteredYears.length > 0) {
-          setSelectedYear(filteredYears[0]); // Set most recent year as default
+          setSelectedYear(filteredYears[0]);
         }
       } catch (error) {
         console.error('Failed to load API data:', error);
@@ -94,7 +93,6 @@ const Index = () => {
       const municipalities = getAvailableMunicipalities(apiData, selectedYear);
       setAvailableMunicipalities(municipalities);
       
-      // Only clear kommun if it's not available in the new year
       if (kommun && !municipalities.includes(kommun)) {
         setKommun('');
         setForsamling('');
@@ -108,7 +106,6 @@ const Index = () => {
       const forsamlingar = getAvailableForsamlingar(apiData, kommun, selectedYear);
       setAvailableForsamlingar(forsamlingar);
       
-      // Auto-select first församling if there are multiple options
       if (forsamlingar.length > 1 && !forsamling) {
         setForsamling(forsamlingar[0]);
       } else if (forsamlingar.length <= 1) {
@@ -118,38 +115,6 @@ const Index = () => {
       setResult([]);
     }
   }, [kommun, selectedYear, apiData]);
-
-  // New useEffect for automatic tax calculation
-  useEffect(() => {
-    const performAutomaticLookup = () => {
-      if (!kommun.trim() || !selectedYear) {
-        return;
-      }
-
-      // If there are multiple församlingar, wait for one to be selected
-      if (availableForsamlingar.length > 1 && !forsamling) {
-        return;
-      }
-
-      setError('');
-      setResult([]);
-      setSkattetabellData([]);
-
-      const taxData = findTaxRateFromAPI(apiData, kommun.trim(), selectedYear, forsamling);
-      
-      if (taxData.length > 0) {
-        setResult(taxData);
-        const firstResult = taxData[0];
-        const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
-        const skattetabell = getSkattetabell(taxRate);
-        loadSkattetabellData(selectedYear, skattetabell);
-      } else {
-        setError(t('noDataFound'));
-      }
-    };
-
-    performAutomaticLookup();
-  }, [kommun, selectedYear, forsamling, availableForsamlingar, apiData, includeSvenskaKyrkan, t]);
 
   const loadSkattetabellData = async (year: number, tabell: number) => {
     setSkattetabellLoading(true);
@@ -206,7 +171,6 @@ const Index = () => {
     const columnKey = `Kolumn${column}`;
     const taxValue = item[columnKey];
     if (!taxValue || taxValue === 'Ej tillgänglig') {
-      // If no tax value found and this is for high income, use the highest available tax rate
       if (skattetabellData.length > 0) {
         const lastBracket = skattetabellData[skattetabellData.length - 1];
         const lastTaxValue = lastBracket[columnKey];
@@ -223,12 +187,10 @@ const Index = () => {
     const totalIncome = monthlyIncome + taxableBenefit;
     if (totalIncome === 0) return null;
     
-    // Find matching bracket or use the last one if income exceeds maximum
     let matchingBracket = skattetabellData.find(item => 
       totalIncome >= item.InkomstFrån && totalIncome <= item.InkomstTill
     );
     
-    // If no bracket found (income too high), use the last bracket
     if (!matchingBracket) {
       matchingBracket = skattetabellData[skattetabellData.length - 1];
     }
@@ -236,17 +198,54 @@ const Index = () => {
     return matchingBracket;
   };
 
-  const triggerTaxCalculation = () => {
+  const handleCalculate = async () => {
     const totalIncome = monthlyIncome + taxableBenefit;
     
     if (!kommun.trim() || !selectedYear || totalIncome === 0) {
+      setError('Vänligen fyll i kommun, år och inkomst för att beräkna skatt.');
       return;
     }
 
     if (availableForsamlingar.length > 1 && !forsamling) {
+      setError('Vänligen välj en församling.');
       return;
     }
 
+    setError('');
+    setResult([]);
+    setSkattetabellData([]);
+
+    // Track analytics when user explicitly calculates
+    const formData = {
+      municipality: kommun || undefined,
+      parish: forsamling || undefined,
+      user_age: age || undefined,
+      monthly_income: monthlyIncome || undefined,
+      taxable_benefit: taxableBenefit || undefined,
+      income_type: incomeType || undefined,
+      has_collective_agreement: hasCollectiveAgreement || undefined,
+      vacation_days: vacationDays || undefined,
+      variable_salary: variableSalary || undefined,
+      includes_swedish_church: includeSvenskaKyrkan || undefined,
+      selected_year: selectedYear || undefined
+    };
+
+    // Track the calculation event
+    await trackEvent('calculation', 'tax_calculated', {
+      total_income: totalIncome,
+      has_form_data: Object.keys(formData).length > 0
+    }, formData);
+
+    // Track form data
+    const cleanedFormData = Object.fromEntries(
+      Object.entries(formData).filter(([_, value]) => value !== undefined)
+    );
+    
+    if (Object.keys(cleanedFormData).length > 0) {
+      await trackFormData(cleanedFormData);
+    }
+
+    // Perform the actual calculation
     const taxData = findTaxRateFromAPI(apiData, kommun.trim(), selectedYear, forsamling);
     
     if (taxData.length > 0) {
@@ -255,6 +254,9 @@ const Index = () => {
       const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
       const skattetabell = getSkattetabell(taxRate);
       loadSkattetabellData(selectedYear, skattetabell);
+      setCalculationTriggered(true);
+    } else {
+      setError(t('noDataFound'));
     }
   };
 
@@ -267,12 +269,11 @@ const Index = () => {
 
   const handleTaxableBenefitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow empty string to be converted to 0, and handle leading zeros properly
     if (value === '') {
       setTaxableBenefit(0);
     } else {
       const numericValue = parseInt(value) || 0;
-      setTaxableBenefit(Math.max(0, numericValue)); // Ensure non-negative
+      setTaxableBenefit(Math.max(0, numericValue));
     }
   };
 
@@ -304,27 +305,22 @@ const Index = () => {
     const baseSalary = monthlyIncome;
     
     if (hasCollectiveAgreement) {
-      // Med kollektivavtal: 0.8% för grundlön + 0.5% för rörlig lön
       const baseVacationPay = vacationDays * 0.008 * baseSalary;
       const variableVacationPay = vacationDays * 0.005 * variableSalary;
       return baseVacationPay + variableVacationPay;
     } else {
-      // Utan kollektivavtal: 0.43% för grundlön + (12% / 25) för rörlig lön
       const baseVacationPay = vacationDays * 0.0043 * baseSalary;
       const variableVacationPay = vacationDays * ((0.12 * variableSalary) / 25);
       return baseVacationPay + variableVacationPay;
     }
   };
 
-  // Trigger calculation whenever relevant values change, including includeSvenskaKyrkan
-  useEffect(() => {
-    if (kommun && (monthlyIncome > 0 || taxableBenefit > 0) && age > 0) {
-      triggerTaxCalculation();
-    }
-  }, [age, incomeType, isPensionContributing, monthlyIncome, taxableBenefit, kommun, includeSvenskaKyrkan]);
-
   const filteredTaxData = getFilteredSkattetabellData();
   const taxAmount = filteredTaxData ? getTaxFromColumn(filteredTaxData, selectedTaxColumn) : null;
+
+  // Check if we can calculate (have required data)
+  const canCalculate = kommun.trim() && selectedYear && (monthlyIncome > 0 || taxableBenefit > 0) && age > 0 && 
+    (availableForsamlingar.length <= 1 || forsamling);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-full overflow-x-hidden">
@@ -576,7 +572,6 @@ const Index = () => {
                       </div>
                     )}
 
-                    {/* Semestertillägg Section */}
                     {monthlyIncome > 0 && (
                       <div className="space-y-4 pt-4 border-t border-blue-200">
                         <h4 className="font-semibold flex items-center gap-2">
@@ -673,6 +668,24 @@ const Index = () => {
                 </div>
               </div>
 
+              {/* Calculate Button */}
+              <div className="mt-8 pt-6 border-t border-blue-200">
+                <Button 
+                  onClick={handleCalculate}
+                  disabled={!canCalculate || loading}
+                  className="w-full h-12 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Calculator className="h-5 w-5 mr-2" />
+                  {loading ? 'Beräknar...' : 'Beräkna skatt'}
+                </Button>
+                
+                {!canCalculate && (
+                  <p className="text-sm text-gray-500 mt-2 text-center">
+                    Fyll i kommun, år, ålder och inkomst för att beräkna
+                  </p>
+                )}
+              </div>
+
               {/* Error */}
               {error && (
                 <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
@@ -704,7 +717,7 @@ const Index = () => {
               includeSvenskaKyrkan={includeSvenskaKyrkan}
               selectedYear={selectedYear}
               getSkattetabell={getSkattetabell}
-              onTriggerCalculation={triggerTaxCalculation}
+              onTriggerCalculation={handleCalculate}
               taxableBenefit={taxableBenefit}
               onTaxableBenefitChange={setTaxableBenefit}
               skattetabellData={skattetabellData}
@@ -720,20 +733,22 @@ const Index = () => {
         </div>
       </div>
       
-      {/* Add form tracking */}
-      <FormAnalyticsTracker
-        municipality={kommun}
-        parish={forsamling}
-        age={age}
-        monthlyIncome={monthlyIncome}
-        taxableBenefit={taxableBenefit}
-        incomeType={incomeType}
-        hasCollectiveAgreement={hasCollectiveAgreement}
-        vacationDays={vacationDays}
-        variableSalary={variableSalary}
-        includesSvenskaKyrkan={includeSvenskaKyrkan}
-        selectedYear={selectedYear}
-      />
+      {/* Only show FormAnalyticsTracker after calculation is triggered */}
+      {calculationTriggered && (
+        <FormAnalyticsTracker
+          municipality={kommun}
+          parish={forsamling}
+          age={age}
+          monthlyIncome={monthlyIncome}
+          taxableBenefit={taxableBenefit}
+          incomeType={incomeType}
+          hasCollectiveAgreement={hasCollectiveAgreement}
+          vacationDays={vacationDays}
+          variableSalary={variableSalary}
+          includesSvenskaKyrkan={includeSvenskaKyrkan}
+          selectedYear={selectedYear}
+        />
+      )}
     </div>
   );
 };

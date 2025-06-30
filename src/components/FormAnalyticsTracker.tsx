@@ -14,6 +14,7 @@ interface FormAnalyticsTrackerProps {
   variableSalary?: number;
   includesSvenskaKyrkan?: boolean;
   selectedYear?: number;
+  triggerTracking?: boolean; // New prop to control when to track
 }
 
 export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
@@ -27,13 +28,14 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
   vacationDays,
   variableSalary,
   includesSvenskaKyrkan,
-  selectedYear
+  selectedYear,
+  triggerTracking = false
 }) => {
   const { trackFormData } = useAnalyticsContext();
 
   useEffect(() => {
-    // Only track if we have meaningful data
-    if (municipality || parish || age || monthlyIncome || selectedYear) {
+    // Only track if explicitly triggered and we have meaningful data
+    if (triggerTracking && (municipality || parish || age || monthlyIncome || selectedYear)) {
       const formData = {
         municipality: municipality || undefined,
         parish: parish || undefined,
@@ -58,6 +60,7 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
       }
     }
   }, [
+    triggerTracking, // Add this as the first dependency
     municipality,
     parish,
     age,
