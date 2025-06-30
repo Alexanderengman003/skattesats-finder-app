@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -208,7 +207,6 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
           <Table>
             <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
               <TableRow className="bg-blue-50 h-7">
-                <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-1 text-sm">Inkomst från</TableHead>
                 <TableHead className="font-semibold text-blue-900 sticky top-0 bg-blue-50 py-1 text-sm">Inkomst till</TableHead>
                 <TableHead className="font-semibold text-blue-900 text-center sticky top-0 bg-blue-50 py-1 text-sm">
                   Skatt
@@ -237,9 +235,6 @@ const TaxTableDisplay = ({ skattetabellData, selectedTaxColumn, currentIncome }:
                         : 'bg-gray-50 hover:bg-blue-50'
                     }`}
                   >
-                    <TableCell className={`font-medium py-1 text-sm px-3 ${isCurrentRow ? 'text-blue-900' : 'text-gray-900'}`}>
-                      {formatIncome(row.InkomstFrån)}
-                    </TableCell>
                     <TableCell className={`py-1 text-sm px-3 ${isCurrentRow ? 'text-blue-900' : 'text-gray-600'}`}>
                       {formatIncome(row.InkomstTill)}
                     </TableCell>

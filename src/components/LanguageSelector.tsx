@@ -1,25 +1,40 @@
 
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Languages } from 'lucide-react';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const LanguageSelector = () => {
   const { language, setLanguage, t } = useLanguage();
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2">
-      <Languages className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 flex-shrink-0" />
-      <Select value={language} onValueChange={(value: 'sv' | 'en') => setLanguage(value)}>
-        <SelectTrigger className="w-20 sm:w-32 h-8 sm:h-10 text-xs sm:text-sm">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent className="min-w-[80px] sm:min-w-[128px]">
-          <SelectItem value="sv" className="text-xs sm:text-sm">{t('swedish')}</SelectItem>
-          <SelectItem value="en" className="text-xs sm:text-sm">{t('english')}</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Globe className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem 
+          onClick={() => setLanguage('sv')}
+          className={language === 'sv' ? 'bg-blue-50' : ''}
+        >
+          {t('swedish')}
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={() => setLanguage('en')}
+          className={language === 'en' ? 'bg-blue-50' : ''}
+        >
+          {t('english')}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
