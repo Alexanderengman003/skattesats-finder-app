@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -39,96 +40,96 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* Key Metrics Cards */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Average Age</CardTitle>
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      {/* Key Metrics Cards - Compact */}
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Average Age</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{formInsights.avgAge || 'N/A'}</div>
-          <p className="text-xs text-muted-foreground">years old</p>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">{formInsights.avgAge || 'N/A'}</div>
+          <p className="text-xs text-muted-foreground">years</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Average Income</CardTitle>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Avg Income</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {formInsights.avgIncome ? `${formInsights.avgIncome.toLocaleString()} kr` : 'N/A'}
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">
+            {formInsights.avgIncome ? `${Math.round(formInsights.avgIncome / 1000)}k` : 'N/A'}
           </div>
-          <p className="text-xs text-muted-foreground">monthly</p>
+          <p className="text-xs text-muted-foreground">SEK/month</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Average Taxable Benefit</CardTitle>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Avg Benefit</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {formInsights.avgTaxableBenefit ? `${formInsights.avgTaxableBenefit.toLocaleString()} kr` : 'N/A'}
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">
+            {formInsights.avgTaxableBenefit ? `${Math.round(formInsights.avgTaxableBenefit / 1000)}k` : 'N/A'}
           </div>
-          <p className="text-xs text-muted-foreground">monthly</p>
+          <p className="text-xs text-muted-foreground">SEK/month</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Average Variable Salary</CardTitle>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Avg Variable</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {formInsights.avgVariableSalary ? `${formInsights.avgVariableSalary.toLocaleString()} kr` : 'N/A'}
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">
+            {formInsights.avgVariableSalary ? `${Math.round(formInsights.avgVariableSalary / 1000)}k` : 'N/A'}
           </div>
-          <p className="text-xs text-muted-foreground">monthly</p>
+          <p className="text-xs text-muted-foreground">SEK/month</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Average Vacation Days</CardTitle>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Avg Vacation</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{formInsights.avgVacationDays || 'N/A'}</div>
-          <p className="text-xs text-muted-foreground">days per year</p>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">{formInsights.avgVacationDays || 'N/A'}</div>
+          <p className="text-xs text-muted-foreground">days/year</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Church Membership</CardTitle>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Church</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{formInsights.churchMembershipRate}%</div>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">{formInsights.churchMembershipRate}%</div>
           <p className="text-xs text-muted-foreground">
-            {formInsights.churchMembershipCount} of {formInsights.churchMembershipTotal} users
+            {formInsights.churchMembershipCount}/{formInsights.churchMembershipTotal}
           </p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Collective Agreement</CardTitle>
+      <Card className="col-span-1">
+        <CardHeader className="pb-1 pt-3 px-3">
+          <CardTitle className="text-xs font-medium">Collective</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{formInsights.collectiveAgreementRate}%</div>
+        <CardContent className="px-3 pb-3">
+          <div className="text-lg font-bold">{formInsights.collectiveAgreementRate}%</div>
           <p className="text-xs text-muted-foreground">
-            {formInsights.collectiveAgreementCount} of {formInsights.collectiveAgreementTotal} users
+            {formInsights.collectiveAgreementCount}/{formInsights.collectiveAgreementTotal}
           </p>
         </CardContent>
       </Card>
 
       {/* Popular Municipalities */}
-      <Card className="col-span-1 md:col-span-2">
-        <CardHeader>
-          <CardTitle>Popular Municipalities</CardTitle>
-          <CardDescription>Most searched municipalities</CardDescription>
+      <Card className="col-span-2 md:col-span-3">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Popular Municipalities</CardTitle>
+          <CardDescription className="text-xs">Most searched municipalities</CardDescription>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[200px]">
+        <CardContent className="px-3 pb-3">
+          <ChartContainer config={chartConfig} className="h-[150px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={formInsights.popularMunicipalities.slice(0, 8)}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -136,10 +137,10 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
                   dataKey="municipality" 
                   angle={-45}
                   textAnchor="end"
-                  height={80}
-                  fontSize={12}
+                  height={50}
+                  fontSize={10}
                 />
-                <YAxis />
+                <YAxis fontSize={10} />
                 <Tooltip />
                 <Bar dataKey="count" fill="var(--color-count)" />
               </BarChart>
@@ -149,13 +150,13 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
       </Card>
 
       {/* Age Distribution */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Age Distribution</CardTitle>
-          <CardDescription>User age ranges (5-year increments)</CardDescription>
+      <Card className="col-span-2 md:col-span-3">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Age Distribution</CardTitle>
+          <CardDescription className="text-xs">User age ranges (5-year increments)</CardDescription>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[200px]">
+        <CardContent className="px-3 pb-3">
+          <ChartContainer config={chartConfig} className="h-[150px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={formInsights.ageDistribution.filter(item => item.count > 0)}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -163,10 +164,10 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
                   dataKey="age_range" 
                   angle={-45}
                   textAnchor="end"
-                  height={60}
-                  fontSize={11}
+                  height={50}
+                  fontSize={10}
                 />
-                <YAxis />
+                <YAxis fontSize={10} />
                 <Tooltip />
                 <Bar dataKey="count" fill="var(--color-count)" />
               </BarChart>
@@ -176,21 +177,21 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
       </Card>
 
       {/* Vacation Days Distribution */}
-      <Card className="col-span-1 md:col-span-2">
-        <CardHeader>
-          <CardTitle>Vacation Days Distribution</CardTitle>
-          <CardDescription>Distribution of vacation days per year</CardDescription>
+      <Card className="col-span-2 md:col-span-3">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Vacation Days Distribution</CardTitle>
+          <CardDescription className="text-xs">Distribution of vacation days per year</CardDescription>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[200px]">
+        <CardContent className="px-3 pb-3">
+          <ChartContainer config={chartConfig} className="h-[150px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={formInsights.vacationDaysDistribution.filter(item => item.count > 0)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="vacation_days" 
-                  fontSize={11}
+                  fontSize={10}
                 />
-                <YAxis />
+                <YAxis fontSize={10} />
                 <Tooltip />
                 <Bar dataKey="count" fill="var(--color-count)" />
               </BarChart>
@@ -200,13 +201,13 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
       </Card>
 
       {/* Income Ranges */}
-      <Card className="col-span-1 md:col-span-2">
-        <CardHeader>
-          <CardTitle>Income Distribution</CardTitle>
-          <CardDescription>Monthly income ranges (SEK)</CardDescription>
+      <Card className="col-span-2 md:col-span-3">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Income Distribution</CardTitle>
+          <CardDescription className="text-xs">Monthly income ranges (SEK)</CardDescription>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[200px]">
+        <CardContent className="px-3 pb-3">
+          <ChartContainer config={chartConfig} className="h-[150px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={formInsights.incomeRanges.filter(item => item.count > 0)}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -214,10 +215,10 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
                   dataKey="income_range" 
                   angle={-45}
                   textAnchor="end"
-                  height={80}
-                  fontSize={11}
+                  height={60}
+                  fontSize={10}
                 />
-                <YAxis />
+                <YAxis fontSize={10} />
                 <Tooltip />
                 <Bar dataKey="count" fill="var(--color-count)" />
               </BarChart>
@@ -227,17 +228,17 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
       </Card>
 
       {/* Income Types */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Income Types</CardTitle>
-          <CardDescription>Distribution of income sources</CardDescription>
+      <Card className="col-span-1 md:col-span-2">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Income Types</CardTitle>
+          <CardDescription className="text-xs">Distribution of income sources</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
+        <CardContent className="px-3 pb-3">
+          <div className="space-y-1">
             {formInsights.incomeTypes.map((type, index) => (
               <div key={type.income_type} className="flex items-center justify-between">
-                <span className="font-medium capitalize">{type.income_type || 'Unknown'}</span>
-                <Badge variant="secondary">{type.count}</Badge>
+                <span className="text-xs font-medium capitalize">{type.income_type || 'Unknown'}</span>
+                <Badge variant="secondary" className="text-xs px-2 py-0">{type.count}</Badge>
               </div>
             ))}
           </div>
@@ -245,17 +246,17 @@ export const FormInsightsCharts: React.FC<FormInsightsChartsProps> = ({ formInsi
       </Card>
 
       {/* Year Selections */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Selected Years</CardTitle>
-          <CardDescription>Tax years users are looking up</CardDescription>
+      <Card className="col-span-1 md:col-span-2">
+        <CardHeader className="pb-2 pt-3 px-3">
+          <CardTitle className="text-sm">Selected Years</CardTitle>
+          <CardDescription className="text-xs">Tax years users are looking up</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
+        <CardContent className="px-3 pb-3">
+          <div className="space-y-1">
             {formInsights.yearSelections.map((year, index) => (
               <div key={year.year} className="flex items-center justify-between">
-                <span className="font-medium">{year.year}</span>
-                <Badge variant="secondary">{year.count}</Badge>
+                <span className="text-xs font-medium">{year.year}</span>
+                <Badge variant="secondary" className="text-xs px-2 py-0">{year.count}</Badge>
               </div>
             ))}
           </div>
