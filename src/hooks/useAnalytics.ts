@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { rateLimiter, RATE_LIMITS } from '@/utils/rateLimiter';
 
 interface AnalyticsEvent {
   event_type: string;
@@ -123,6 +124,17 @@ export const useAnalytics = () => {
   ) => {
     if (!sessionId) return;
 
+    // Rate limit check
+    const rateLimitKey = `${eventType}_${sessionId}`;
+    const config = eventType === 'click' ? RATE_LIMITS.clicks : 
+                   eventType === 'page_view' ? RATE_LIMITS.pageViews : 
+                   RATE_LIMITS.formData;
+
+    if (!rateLimiter.isAllowed(rateLimitKey, config)) {
+      console.warn(`Rate limit exceeded for ${eventType}. Try again later.`);
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -173,6 +185,13 @@ export const useAnalytics = () => {
   }) => {
     if (!sessionId) return;
 
+    // Rate limit check for form submissions
+    const rateLimitKey = `form_data_${sessionId}`;
+    if (!rateLimiter.isAllowed(rateLimitKey, RATE_LIMITS.formData)) {
+      console.warn('Rate limit exceeded for form submissions. Try again later.');
+      return;
+    }
+
     try {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
@@ -214,6 +233,7 @@ export const useAnalytics = () => {
   }, [sessionId, trackEvent]);
 
   const trackClick = useCallback((elementType: string, elementText: string, additionalProps: Record<string, any> = {}) => {
+    // Rate limit is handled in trackEvent
     trackEvent('click', 'element_click', {
       element_type: elementType,
       element_text: elementText,
@@ -222,6 +242,7 @@ export const useAnalytics = () => {
   }, [trackEvent]);
 
   const trackPageView = useCallback((pagePath: string) => {
+    // Rate limit is handled in trackEvent
     trackEvent('page_view', 'page_change', {
       page_url: pagePath,
       page_title: document.title
