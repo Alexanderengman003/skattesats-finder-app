@@ -61,7 +61,12 @@ export const AnalyticsDashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <AnalyticsCharts data={data} />
+          <AnalyticsCharts 
+            dailyUsers={data.dailyUsers}
+            topCountries={data.topCountries}
+            clickHeatmap={data.clickHeatmap}
+            browserStats={data.browserStats}
+          />
         </TabsContent>
 
         <TabsContent value="form-insights" className="space-y-6">
@@ -71,12 +76,15 @@ export const AnalyticsDashboard = () => {
         <TabsContent value="geographic" className="space-y-6">
           <GeographicInsights 
             geographicData={data.geographicData}
-            topCountries={data.topCountries}
+            totalSessions={data.geographicData.reduce((sum, item) => sum + item.count, 0)}
           />
         </TabsContent>
 
         <TabsContent value="ads" className="space-y-6">
-          <AdAnalytics />
+          <AdAnalytics 
+            clickHeatmap={data.clickHeatmap}
+            topEvents={[]}
+          />
         </TabsContent>
 
         <TabsContent value="calculations" className="space-y-6">
