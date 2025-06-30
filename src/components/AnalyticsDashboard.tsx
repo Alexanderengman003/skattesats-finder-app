@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +22,7 @@ interface AnalyticsStats {
 export const AnalyticsDashboard: React.FC = () => {
   const [stats, setStats] = useState<AnalyticsStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const { data: enhancedData, loading: enhancedLoading } = useEnhancedAnalytics();
+  const { data: enhancedData, loading: enhancedLoading, refetch } = useEnhancedAnalytics();
 
   useEffect(() => {
     loadAnalyticsStats();
@@ -120,6 +119,14 @@ export const AnalyticsDashboard: React.FC = () => {
     }
   };
 
+  const handleCalculationDeleted = () => {
+    console.log('Calculation deleted, refreshing data...');
+    // Refetch the enhanced analytics data which includes the calculations
+    refetch();
+    // Also reload the basic stats to ensure everything is in sync
+    loadAnalyticsStats();
+  };
+
   if (loading || enhancedLoading) {
     return <div className="p-4 md:p-6">Loading analytics...</div>;
   }
@@ -205,7 +212,10 @@ export const AnalyticsDashboard: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="calculations" className="space-y-4">
-          <CalculationsList calculations={enhancedData.allCalculations} />
+          <CalculationsList 
+            calculations={enhancedData.allCalculations} 
+            onCalculationDeleted={handleCalculationDeleted}
+          />
         </TabsContent>
         
         <TabsContent value="events" className="space-y-4">
