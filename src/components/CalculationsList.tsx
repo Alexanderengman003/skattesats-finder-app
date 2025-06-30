@@ -102,7 +102,8 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           ));
         }
-        throw error;
+        toast.error(`Failed to delete calculation: ${error.message}`);
+        return;
       }
 
       console.log('Delete operation completed. Rows affected:', count);
@@ -163,7 +164,8 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
         setLocalCalculations(prev => [...prev, ...originalCalcs].sort((a, b) => 
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         ));
-        throw error;
+        toast.error(`Failed to delete calculations: ${error.message}`);
+        return;
       }
 
       console.log('Bulk delete operation completed. Rows affected:', count);
@@ -504,6 +506,18 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
 
   const activeFiltersCount = Object.keys(filters).length;
 
+  const handleSingleDelete = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    deleteCalculation(id);
+  };
+
+  const handleBulkDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    deleteSelectedCalculations();
+  };
+
   return (
     <div className="space-y-4">
       <Card>
@@ -547,7 +561,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={deleteSelectedCalculations}>
+                      <AlertDialogAction onClick={handleBulkDelete}>
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -663,7 +677,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteCalculation(calc.id)}>
+                            <AlertDialogAction onClick={(e) => handleSingleDelete(e, calc.id)}>
                               Delete
                             </AlertDialogAction>
                           </AlertDialogFooter>
