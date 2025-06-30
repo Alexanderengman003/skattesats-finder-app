@@ -1,15 +1,16 @@
+
 import { useState } from "react";
-import { useTranslation } from "@/contexts/LanguageContext";
-import { useAnalytics } from "@/contexts/AnalyticsContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { FormAnalyticsTracker } from "@/components/FormAnalyticsTracker";
-import { LanguageSelector } from "@/components/LanguageSelector";
-import { KommunSearch } from "@/components/KommunSearch";
-import { ForsamlingSelect } from "@/components/ForsamlingSelect";
-import { TaxRateDisplay } from "@/components/TaxRateDisplay";
-import { TaxCalculationDisplay } from "@/components/TaxCalculationDisplay";
-import { VacationPayCard } from "@/components/VacationPayCard";
-import { EngangsbeskattningCard } from "@/components/EngangsbeskattningCard";
-import { CollapsibleCard } from "@/components/CollapsibleCard";
+import LanguageSelector from "@/components/LanguageSelector";
+import KommunSearch from "@/components/KommunSearch";
+import ForsamlingSelect from "@/components/ForsamlingSelect";
+import TaxRateDisplay from "@/components/TaxRateDisplay";
+import TaxCalculationDisplay from "@/components/TaxCalculationDisplay";
+import VacationPayCard from "@/components/VacationPayCard";
+import EngangsbeskattningCard from "@/components/EngangsbeskattningCard";
+import CollapsibleCard from "@/components/CollapsibleCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,8 +34,8 @@ interface Forsamling {
 }
 
 const Index = () => {
-  const { t } = useTranslation();
-  const { trackEvent } = useAnalytics();
+  const { t } = useLanguage();
+  const { trackEvent } = useAnalyticsContext();
   const [selectedKommun, setSelectedKommun] = useState<Kommun | null>(null);
   const [selectedForsamling, setSelectedForsamling] = useState<Forsamling | null>(null);
   const [age, setAge] = useState("");
@@ -61,12 +62,12 @@ const Index = () => {
 
   const calculateTax = () => {
     if (!selectedForsamling) {
-      toast.error(t.no_congregation_selected);
+      toast.error(t('no_congregation_selected'));
       return;
     }
 
     if (!age || !monthlyIncome) {
-      toast.error(t.missing_age_income);
+      toast.error(t('missing_age_income'));
       return;
     }
 
@@ -78,7 +79,7 @@ const Index = () => {
 		const selectedYearValue = parseInt(selectedYear);
 
     if (isNaN(ageValue) || isNaN(incomeValue)) {
-      toast.error(t.invalid_age_income);
+      toast.error(t('invalid_age_income'));
       return;
     }
 
@@ -107,18 +108,16 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <FormAnalyticsTracker 
-        formData={{
-          municipality: selectedKommun?.namn || '',
-          age: parseInt(age) || 0,
-          income: parseFloat(monthlyIncome) || 0,
-          incomeType,
-          year: parseInt(selectedYear),
-          vacationDays: parseInt(vacationDays) || 0,
-          taxableBenefit: parseFloat(taxableBenefit) || 0,
-          variableSalary: parseFloat(variableSalary) || 0,
-          churchMember,
-          collectiveAgreement
-        }}
+        municipality={selectedKommun?.namn}
+        age={parseInt(age) || undefined}
+        monthlyIncome={parseFloat(monthlyIncome) || undefined}
+        incomeType={incomeType}
+        selectedYear={parseInt(selectedYear)}
+        vacationDays={parseInt(vacationDays) || undefined}
+        taxableBenefit={parseFloat(taxableBenefit) || undefined}
+        variableSalary={parseFloat(variableSalary) || undefined}
+        includesSvenskaKyrkan={churchMember}
+        hasCollectiveAgreement={collectiveAgreement}
       />
       
       <div className="max-w-4xl mx-auto space-y-6">
@@ -126,10 +125,10 @@ const Index = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              {t.title}
+              {t('appTitle')}
             </h1>
             <p className="text-gray-600 text-lg">
-              {t.subtitle}
+              {t('appSubtitle')}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -146,8 +145,8 @@ const Index = () => {
         {/* Main Tax Calculator Card */}
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle>{t.tax_calculator}</CardTitle>
-            <CardDescription>{t.tax_description}</CardDescription>
+            <CardTitle>{t('taxCalculation')}</CardTitle>
+            <CardDescription>{t('appSubtitle')}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <KommunSearch onKommunSelect={handleKommunSelect} />
@@ -160,7 +159,7 @@ const Index = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="age">{t.age}</Label>
+                <Label htmlFor="age">{t('age')}</Label>
                 <Input
                   type="number"
                   id="age"
@@ -169,7 +168,7 @@ const Index = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="monthlyIncome">{t.monthly_income}</Label>
+                <Label htmlFor="monthlyIncome">{t('monthlyIncome')}</Label>
                 <Input
                   type="number"
                   id="monthlyIncome"
@@ -180,24 +179,24 @@ const Index = () => {
             </div>
 
             <div>
-              <Label htmlFor="incomeType">{t.income_type}</Label>
+              <Label htmlFor="incomeType">{t('incomeType')}</Label>
               <Select value={incomeType} onValueChange={setIncomeType}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t.select_income_type} />
+                  <SelectValue placeholder={t('selectIncomeType')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="salary">{t.salary}</SelectItem>
-                  <SelectItem value="pension">{t.pension}</SelectItem>
-                  <SelectItem value="other">{t.other}</SelectItem>
+                  <SelectItem value="salary">{t('salary')}</SelectItem>
+                  <SelectItem value="pension">{t('pension')}</SelectItem>
+                  <SelectItem value="other">{t('other')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
 						<div>
-              <Label htmlFor="selectedYear">{t.tax_year}</Label>
+              <Label htmlFor="selectedYear">{t('incomeYear')}</Label>
               <Select value={selectedYear} onValueChange={setSelectedYear}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t.select_tax_year} />
+                  <SelectValue placeholder={t('selectYear')} />
                 </SelectTrigger>
                 <SelectContent>
 									{Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
@@ -209,7 +208,7 @@ const Index = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="vacationDays">{t.vacation_days}</Label>
+                <Label htmlFor="vacationDays">{t('vacationDays')}</Label>
                 <Input
                   type="number"
                   id="vacationDays"
@@ -218,7 +217,7 @@ const Index = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="taxableBenefit">{t.taxable_benefit}</Label>
+                <Label htmlFor="taxableBenefit">{t('taxableBenefit')}</Label>
                 <Input
                   type="number"
                   id="taxableBenefit"
@@ -229,7 +228,7 @@ const Index = () => {
             </div>
 
             <div>
-              <Label htmlFor="variableSalary">{t.variable_salary}</Label>
+              <Label htmlFor="variableSalary">{t('variableSalary')}</Label>
               <Input
                 type="number"
                 id="variableSalary"
@@ -242,42 +241,56 @@ const Index = () => {
               <Checkbox
                 id="churchMember"
                 checked={churchMember}
-                onCheckedChange={(checked) => setChurchMember(checked || false)}
+                onCheckedChange={(checked) => setChurchMember(checked === true)}
               />
-              <Label htmlFor="churchMember">{t.church_member}</Label>
+              <Label htmlFor="churchMember">{t('swedishChurchMember')}</Label>
             </div>
 
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="collectiveAgreement"
                 checked={collectiveAgreement}
-                onCheckedChange={(checked) => setCollectiveAgreement(checked || false)}
+                onCheckedChange={(checked) => setCollectiveAgreement(checked === true)}
               />
-              <Label htmlFor="collectiveAgreement">{t.collective_agreement}</Label>
+              <Label htmlFor="collectiveAgreement">{t('collectiveAgreement')}</Label>
             </div>
 
-            <Button onClick={calculateTax}>{t.calculate_tax}</Button>
+            <Button onClick={calculateTax}>{t('taxCalculation')}</Button>
           </CardContent>
         </Card>
 
         {/* Results Section */}
         {taxCalculation !== null && (
-          <TaxCalculationDisplay taxCalculation={taxCalculation} />
+          <TaxCalculationDisplay 
+            totalIncome={parseFloat(monthlyIncome) || 0}
+            actualTaxAmount={taxCalculation}
+            taxPercentage={selectedForsamling ? selectedForsamling.tax_rate.toString() : "0"}
+            marginalTaxRate={selectedForsamling ? selectedForsamling.tax_rate.toString() : "0"}
+          />
         )}
 
-        <VacationPayCard monthlyIncome={parseFloat(monthlyIncome) || 0} />
+        <VacationPayCard 
+          hasCollectiveAgreement={collectiveAgreement}
+          onHasCollectiveAgreementChange={setCollectiveAgreement}
+          vacationDays={parseInt(vacationDays) || 0}
+          onVacationDaysChange={(days) => setVacationDays(days.toString())}
+          variableSalary={parseFloat(variableSalary) || 0}
+          onVariableSalaryChange={(salary) => setVariableSalary(salary.toString())}
+          vacationPayAmount={0}
+          monthlyIncome={parseFloat(monthlyIncome) || 0}
+        />
 
         <EngangsbeskattningCard />
 
-        <CollapsibleCard title={t.tax_rates_by_municipality}>
+        <CollapsibleCard title={t('taxRateFor')}>
           {selectedKommun ? (
             <TaxRateDisplay
-              kommunNamn={selectedKommun.namn}
-              forsamlingNamn={selectedForsamling?.namn || ""}
-              taxRate={selectedForsamling?.tax_rate || 0}
+              result={[]}
+              includeSvenskaKyrkan={churchMember}
+              getSkattetabell={() => 1}
             />
           ) : (
-            <p>{t.select_municipality_to_view_tax_rate}</p>
+            <p>{t('enterMunicipality')}</p>
           )}
         </CollapsibleCard>
       </div>
