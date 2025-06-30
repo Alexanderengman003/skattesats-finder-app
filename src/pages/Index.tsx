@@ -26,6 +26,7 @@ import {
   SkatteverketData,
   SkattetabellData
 } from '@/utils/taxData';
+import { AdBanner } from '@/components/AdBanner';
 
 const Index = () => {
   const { t } = useLanguage();
@@ -408,6 +409,11 @@ const Index = () => {
             <p className="text-gray-700 leading-relaxed">
               {t('infoText')}
             </p>
+          </div>
+
+          {/* Ad Banner - strategically placed after info but before main content */}
+          <div className="mt-6">
+            <AdBanner className="max-w-4xl mx-auto" />
           </div>
         </div>
       </div>
