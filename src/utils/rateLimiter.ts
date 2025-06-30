@@ -63,7 +63,7 @@ export const rateLimiter = new RateLimiter();
 
 // Rate limit configurations
 export const RATE_LIMITS = {
-  clicks: { maxRequests: 60, windowMs: 60 * 1000 }, // 60 clicks per minute
+  clicks: { maxRequests: 10, windowMs: 60 * 1000 }, // 10 clicks per minute
   pageViews: { maxRequests: 30, windowMs: 60 * 1000 }, // 30 page views per minute
   formData: { maxRequests: 10, windowMs: 60 * 1000 }, // 10 form submissions per minute
 };
