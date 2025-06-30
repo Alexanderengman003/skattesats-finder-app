@@ -31,7 +31,7 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
   selectedYear,
   triggerTracking = false
 }) => {
-  const { trackFormData } = useAnalyticsContext();
+  const { trackEvent } = useAnalyticsContext();
 
   useEffect(() => {
     // Only track if explicitly triggered and we have meaningful data
@@ -43,10 +43,10 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
         monthly_income: monthlyIncome || undefined,
         taxable_benefit: taxableBenefit || undefined,
         income_type: incomeType || undefined,
-        has_collective_agreement: hasCollectiveAgreement || undefined,
+        has_collective_agreement: hasCollectiveAgreement,
         vacation_days: vacationDays || undefined,
         variable_salary: variableSalary || undefined,
-        includes_swedish_church: includesSvenskaKyrkan || undefined,
+        includes_swedish_church: includesSvenskaKyrkan,
         selected_year: selectedYear || undefined
       };
 
@@ -56,7 +56,8 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
       );
 
       if (Object.keys(cleanedFormData).length > 0) {
-        trackFormData(cleanedFormData);
+        // Track as a calculation event instead of session data
+        trackEvent('tax_calculation', 'calculation_performed', cleanedFormData);
       }
     }
   }, [
@@ -72,7 +73,7 @@ export const FormAnalyticsTracker: React.FC<FormAnalyticsTrackerProps> = ({
     variableSalary,
     includesSvenskaKyrkan,
     selectedYear,
-    trackFormData
+    trackEvent
   ]);
 
   return null; // This component doesn't render anything

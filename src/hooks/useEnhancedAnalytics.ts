@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -166,8 +167,15 @@ export const useEnhancedAnalytics = () => {
         .map(([browser, count]) => ({ browser, count }))
         .sort((a, b) => b.count - a.count);
 
-      // Process form insights
-      const formInsights = processFormInsights(sessionsData || []);
+      // Get calculation events for form insights
+      const { data: calculationEvents } = await supabase
+        .from('analytics_events')
+        .select('properties')
+        .eq('event_name', 'calculation_performed')
+        .gte('created_at', thirtyDaysAgo.toISOString());
+
+      // Process form insights from calculation events
+      const formInsights = processFormInsights(calculationEvents || []);
 
       setData({
         dailyUsers,
@@ -186,12 +194,15 @@ export const useEnhancedAnalytics = () => {
     }
   };
 
-  const processFormInsights = (sessionsData: any[]): FormInsights => {
+  const processFormInsights = (calculationEvents: any[]): FormInsights => {
+    // Extract properties from calculation events
+    const calculations = calculationEvents.map(event => event.properties || {});
+
     // Popular municipalities
     const municipalityMap = new Map<string, number>();
-    sessionsData.forEach((session) => {
-      if (session.municipality) {
-        municipalityMap.set(session.municipality, (municipalityMap.get(session.municipality) || 0) + 1);
+    calculations.forEach((calc) => {
+      if (calc.municipality) {
+        municipalityMap.set(calc.municipality, (municipalityMap.get(calc.municipality) || 0) + 1);
       }
     });
     const popularMunicipalities = Array.from(municipalityMap.entries())
@@ -201,9 +212,9 @@ export const useEnhancedAnalytics = () => {
 
     // Age distribution - Fixed to use 5-year increments with no upper bound
     const ageMap = new Map<string, number>();
-    sessionsData.forEach((session) => {
-      if (session.user_age) {
-        const age = session.user_age;
+    calculations.forEach((calc) => {
+      if (calc.user_age) {
+        const age = calc.user_age;
         const ageGroup = Math.floor(age / 5) * 5;
         const ageRange = `${ageGroup}-${ageGroup + 4}`;
         ageMap.set(ageRange, (ageMap.get(ageRange) || 0) + 1);
@@ -228,9 +239,9 @@ export const useEnhancedAnalytics = () => {
     ];
     const incomeRanges = incomeRangeLabels.map(range => ({ income_range: range, count: 0 }));
     
-    sessionsData.forEach((session) => {
-      if (session.monthly_income) {
-        const income = session.monthly_income;
+    calculations.forEach((calc) => {
+      if (calc.monthly_income) {
+        const income = calc.monthly_income;
         if (income < 5000) incomeRanges[0].count++;
         else if (income < 10000) incomeRanges[1].count++;
         else if (income < 15000) incomeRanges[2].count++;
@@ -262,9 +273,9 @@ export const useEnhancedAnalytics = () => {
 
     // Income types
     const incomeTypeMap = new Map<string, number>();
-    sessionsData.forEach((session) => {
-      if (session.income_type) {
-        incomeTypeMap.set(session.income_type, (incomeTypeMap.get(session.income_type) || 0) + 1);
+    calculations.forEach((calc) => {
+      if (calc.income_type) {
+        incomeTypeMap.set(calc.income_type, (incomeTypeMap.get(calc.income_type) || 0) + 1);
       }
     });
     const incomeTypes = Array.from(incomeTypeMap.entries())
@@ -273,9 +284,9 @@ export const useEnhancedAnalytics = () => {
 
     // Year selections
     const yearMap = new Map<number, number>();
-    sessionsData.forEach((session) => {
-      if (session.selected_year) {
-        yearMap.set(session.selected_year, (yearMap.get(session.selected_year) || 0) + 1);
+    calculations.forEach((calc) => {
+      if (calc.selected_year) {
+        yearMap.set(calc.selected_year, (yearMap.get(calc.selected_year) || 0) + 1);
       }
     });
     const yearSelections = Array.from(yearMap.entries())
@@ -284,9 +295,9 @@ export const useEnhancedAnalytics = () => {
 
     // Vacation days distribution
     const vacationDaysMap = new Map<number, number>();
-    sessionsData.forEach((session) => {
-      if (session.vacation_days !== null && session.vacation_days !== undefined) {
-        vacationDaysMap.set(session.vacation_days, (vacationDaysMap.get(session.vacation_days) || 0) + 1);
+    calculations.forEach((calc) => {
+      if (calc.vacation_days !== null && calc.vacation_days !== undefined) {
+        vacationDaysMap.set(calc.vacation_days, (vacationDaysMap.get(calc.vacation_days) || 0) + 1);
       }
     });
     const vacationDaysDistribution = Array.from(vacationDaysMap.entries())
@@ -294,29 +305,29 @@ export const useEnhancedAnalytics = () => {
       .sort((a, b) => a.vacation_days - b.vacation_days);
 
     // Calculate averages and rates
-    const validAges = sessionsData.filter(s => s.user_age).map(s => s.user_age);
+    const validAges = calculations.filter(c => c.user_age).map(c => c.user_age);
     const avgAge = validAges.length > 0 ? validAges.reduce((a, b) => a + b, 0) / validAges.length : 0;
 
-    const validIncomes = sessionsData.filter(s => s.monthly_income).map(s => s.monthly_income);
+    const validIncomes = calculations.filter(c => c.monthly_income).map(c => c.monthly_income);
     const avgIncome = validIncomes.length > 0 ? validIncomes.reduce((a, b) => a + b, 0) / validIncomes.length : 0;
 
-    const validTaxableBenefits = sessionsData.filter(s => s.taxable_benefit && s.taxable_benefit > 0).map(s => s.taxable_benefit);
+    const validTaxableBenefits = calculations.filter(c => c.taxable_benefit && c.taxable_benefit > 0).map(c => c.taxable_benefit);
     const avgTaxableBenefit = validTaxableBenefits.length > 0 ? validTaxableBenefits.reduce((a, b) => a + b, 0) / validTaxableBenefits.length : 0;
 
-    const validVariableSalaries = sessionsData.filter(s => s.variable_salary && s.variable_salary > 0).map(s => s.variable_salary);
+    const validVariableSalaries = calculations.filter(c => c.variable_salary && c.variable_salary > 0).map(c => c.variable_salary);
     const avgVariableSalary = validVariableSalaries.length > 0 ? validVariableSalaries.reduce((a, b) => a + b, 0) / validVariableSalaries.length : 0;
 
-    const validVacationDays = sessionsData.filter(s => s.vacation_days !== null && s.vacation_days !== undefined).map(s => s.vacation_days);
+    const validVacationDays = calculations.filter(c => c.vacation_days !== null && c.vacation_days !== undefined).map(c => c.vacation_days);
     const avgVacationDays = validVacationDays.length > 0 ? validVacationDays.reduce((a, b) => a + b, 0) / validVacationDays.length : 0;
 
-    // Church membership calculations - count checkbox states
-    const churchCheckedCount = sessionsData.filter(s => s.includes_swedish_church === true).length;
-    const totalCalculationsWithChurchData = sessionsData.filter(s => typeof s.includes_swedish_church === 'boolean').length;
+    // Church membership calculations - count checkbox states per calculation
+    const churchCheckedCount = calculations.filter(c => c.includes_swedish_church === true).length;
+    const totalCalculationsWithChurchData = calculations.filter(c => typeof c.includes_swedish_church === 'boolean').length;
     const churchMembershipRate = totalCalculationsWithChurchData > 0 ? (churchCheckedCount / totalCalculationsWithChurchData) * 100 : 0;
 
-    // Collective agreement calculations - count checkbox states
-    const collectiveCheckedCount = sessionsData.filter(s => s.has_collective_agreement === true).length;
-    const totalCalculationsWithCollectiveData = sessionsData.filter(s => typeof s.has_collective_agreement === 'boolean').length;
+    // Collective agreement calculations - count checkbox states per calculation
+    const collectiveCheckedCount = calculations.filter(c => c.has_collective_agreement === true).length;
+    const totalCalculationsWithCollectiveData = calculations.filter(c => typeof c.has_collective_agreement === 'boolean').length;
     const collectiveAgreementRate = totalCalculationsWithCollectiveData > 0 ? (collectiveCheckedCount / totalCalculationsWithCollectiveData) * 100 : 0;
 
     return {
