@@ -103,7 +103,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
       case 'income_type':
         return value;
       default:
-        return value.toString();
+        return String(value);
     }
   };
 
@@ -123,7 +123,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
       case 'has_collective_agreement':
         return typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 'No';
       default:
-        return value.toString();
+        return String(value);
     }
   };
 
@@ -139,13 +139,13 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
         // Handle different data types
         switch (columnKey) {
           case 'created_at':
-            const formattedDate = formatDate(cellValue);
+            const formattedDate = formatDate(String(cellValue));
             return formattedDate.toLowerCase().includes(filterValue.toLowerCase());
           
           case 'municipality':
           case 'parish':
           case 'income_type':
-            const stringValue = cellValue?.toString() || '';
+            const stringValue = cellValue ? String(cellValue) : '';
             return stringValue.toLowerCase().includes(filterValue.toLowerCase());
           
           case 'user_age':
@@ -155,7 +155,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
           case 'variable_salary':
           case 'selected_year':
             if (!cellValue && cellValue !== 0) return filterValue === '';
-            return cellValue.toString().includes(filterValue);
+            return String(cellValue).includes(filterValue);
           
           case 'includes_swedish_church':
           case 'has_collective_agreement':
@@ -163,7 +163,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
             return boolValue.toLowerCase().includes(filterValue.toLowerCase());
           
           default:
-            const defaultValue = cellValue?.toString() || '';
+            const defaultValue = cellValue ? String(cellValue) : '';
             return defaultValue.toLowerCase().includes(filterValue.toLowerCase());
         }
       });
@@ -197,7 +197,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
         visibleColumns.map(col => {
           const value = formatValueForCSV(col, calc[col]);
           // Escape commas and quotes in CSV values
-          return `"${value.toString().replace(/"/g, '""')}"`;
+          return `"${String(value).replace(/"/g, '""')}"`;
         }).join(',')
       )
     ].join('\n');
@@ -263,7 +263,7 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
         const boolValue = value === null || value === undefined ? 'No' : (value ? 'Yes' : 'No');
         values.add(boolValue);
       } else if (value !== null && value !== undefined && value !== '') {
-        values.add(value.toString());
+        values.add(String(value));
       }
     });
     return Array.from(values).sort();
