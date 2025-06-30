@@ -1,11 +1,11 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Download, Eye, EyeOff } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Download, Eye, EyeOff, Filter, X } from 'lucide-react';
 
 interface CalculationData {
   id: string;
@@ -61,6 +61,7 @@ const DEFAULT_VISIBLE_COLUMNS: ColumnKey[] = [
 
 export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations }) => {
   const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(DEFAULT_VISIBLE_COLUMNS);
+  const [filters, setFilters] = useState<Record<ColumnKey, string>>({} as Record<ColumnKey, string>);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('sv-SE', {
@@ -126,11 +127,73 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
     }
   };
 
+  // Filter calculations based on active filters
+  const filteredCalculations = useMemo(() => {
+    return calculations.filter(calc => {
+      return Object.entries(filters).every(([key, filterValue]) => {
+        if (!filterValue) return true; // No filter applied
+        
+        const columnKey = key as ColumnKey;
+        const cellValue = calc[columnKey];
+        
+        // Handle different data types
+        switch (columnKey) {
+          case 'created_at':
+            const formattedDate = formatDate(cellValue);
+            return formattedDate.toLowerCase().includes(filterValue.toLowerCase());
+          
+          case 'municipality':
+          case 'parish':
+          case 'income_type':
+            const stringValue = cellValue?.toString() || '';
+            return stringValue.toLowerCase().includes(filterValue.toLowerCase());
+          
+          case 'user_age':
+          case 'monthly_income':
+          case 'taxable_benefit':
+          case 'vacation_days':
+          case 'variable_salary':
+          case 'selected_year':
+            if (!cellValue && cellValue !== 0) return filterValue === '';
+            return cellValue.toString().includes(filterValue);
+          
+          case 'includes_swedish_church':
+          case 'has_collective_agreement':
+            const boolValue = cellValue === null || cellValue === undefined ? 'No' : (cellValue ? 'Yes' : 'No');
+            return boolValue.toLowerCase().includes(filterValue.toLowerCase());
+          
+          default:
+            const defaultValue = cellValue?.toString() || '';
+            return defaultValue.toLowerCase().includes(filterValue.toLowerCase());
+        }
+      });
+    });
+  }, [calculations, filters]);
+
+  const setFilter = (columnKey: ColumnKey, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [columnKey]: value
+    }));
+  };
+
+  const clearFilter = (columnKey: ColumnKey) => {
+    setFilters(prev => {
+      const newFilters = { ...prev };
+      delete newFilters[columnKey];
+      return newFilters;
+    });
+  };
+
+  const clearAllFilters = () => {
+    setFilters({} as Record<ColumnKey, string>);
+  };
+
   const exportToCSV = () => {
     const headers = visibleColumns.map(col => COLUMN_LABELS[col]);
     const csvContent = [
       headers.join(','),
-      ...calculations.map(calc => 
+      ...filteredCalculations.map(calc => 
         visibleColumns.map(col => {
           const value = formatValueForCSV(col, calc[col]);
           // Escape commas and quotes in CSV values
@@ -192,6 +255,106 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
     return formatValueForDisplay(key, value);
   };
 
+  const getUniqueValues = (columnKey: ColumnKey) => {
+    const values = new Set<string>();
+    calculations.forEach(calc => {
+      const value = calc[columnKey];
+      if (columnKey === 'includes_swedish_church' || columnKey === 'has_collective_agreement') {
+        const boolValue = value === null || value === undefined ? 'No' : (value ? 'Yes' : 'No');
+        values.add(boolValue);
+      } else if (value !== null && value !== undefined && value !== '') {
+        values.add(value.toString());
+      }
+    });
+    return Array.from(values).sort();
+  };
+
+  const renderColumnFilter = (columnKey: ColumnKey) => {
+    const currentFilter = filters[columnKey] || '';
+    
+    // For boolean columns, use a select dropdown
+    if (columnKey === 'includes_swedish_church' || columnKey === 'has_collective_agreement') {
+      return (
+        <div className="flex items-center gap-1">
+          <Select value={currentFilter} onValueChange={(value) => setFilter(columnKey, value === 'all' ? '' : value)}>
+            <SelectTrigger className="h-8 w-20">
+              <SelectValue placeholder="All" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="Yes">Yes</SelectItem>
+              <SelectItem value="No">No</SelectItem>
+            </SelectContent>
+          </Select>
+          {currentFilter && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => clearFilter(columnKey)}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      );
+    }
+
+    // For income_type, use a select dropdown with unique values
+    if (columnKey === 'income_type') {
+      const uniqueValues = getUniqueValues(columnKey);
+      return (
+        <div className="flex items-center gap-1">
+          <Select value={currentFilter} onValueChange={(value) => setFilter(columnKey, value === 'all' ? '' : value)}>
+            <SelectTrigger className="h-8 w-24">
+              <SelectValue placeholder="All" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              {uniqueValues.map(value => (
+                <SelectItem key={value} value={value}>{value}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {currentFilter && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => clearFilter(columnKey)}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      );
+    }
+
+    // For other columns, use text input
+    return (
+      <div className="flex items-center gap-1">
+        <Input
+          placeholder="Filter..."
+          value={currentFilter}
+          onChange={(e) => setFilter(columnKey, e.target.value)}
+          className="h-8 w-24"
+        />
+        {currentFilter && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => clearFilter(columnKey)}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        )}
+      </div>
+    );
+  };
+
+  const activeFiltersCount = Object.keys(filters).length;
+
   return (
     <div className="space-y-4">
       <Card>
@@ -200,13 +363,26 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
             <div>
               <CardTitle>All Calculations</CardTitle>
               <CardDescription>
-                Complete list of all tax calculations performed ({calculations.length} total)
+                Complete list of all tax calculations performed ({filteredCalculations.length} of {calculations.length} total)
+                {activeFiltersCount > 0 && (
+                  <span className="ml-2 text-blue-600">
+                    • {activeFiltersCount} filter{activeFiltersCount !== 1 ? 's' : ''} applied
+                  </span>
+                )}
               </CardDescription>
             </div>
-            <Button onClick={exportToCSV} variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
+            <div className="flex gap-2">
+              {activeFiltersCount > 0 && (
+                <Button onClick={clearAllFilters} variant="outline" size="sm">
+                  <X className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
+              <Button onClick={exportToCSV} variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -246,14 +422,19 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
               <TableHeader>
                 <TableRow>
                   {visibleColumns.map((columnKey) => (
-                    <TableHead key={columnKey}>
-                      {COLUMN_LABELS[columnKey]}
+                    <TableHead key={columnKey} className="space-y-2">
+                      <div className="font-medium">
+                        {COLUMN_LABELS[columnKey]}
+                      </div>
+                      <div className="font-normal">
+                        {renderColumnFilter(columnKey)}
+                      </div>
                     </TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {calculations.map((calc, index) => (
+                {filteredCalculations.map((calc, index) => (
                   <TableRow key={calc.id || index}>
                     {visibleColumns.map((columnKey) => (
                       <TableCell key={columnKey} className={columnKey === 'created_at' ? 'font-mono text-sm' : ''}>
@@ -265,6 +446,11 @@ export const CalculationsList: React.FC<CalculationsListProps> = ({ calculations
               </TableBody>
             </Table>
           </div>
+          {filteredCalculations.length === 0 && calculations.length > 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No calculations match the current filters
+            </div>
+          )}
           {calculations.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               No calculations found
