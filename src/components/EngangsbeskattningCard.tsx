@@ -61,30 +61,51 @@ const EngangsbeskattningCard = ({
     
     if (adjustedSalary > 0 && adjustedMonths > 0 && adjustedMonths <= 12) {
       const remainingMonths = 12 - adjustedMonths;
-      breakdown.push(`${t('adjustedIncome')} ${Math.round(adjustedSalary * adjustedMonths).toLocaleString()} kr`);
+      breakdown.push({
+        label: `${t('adjustedIncome')}:`,
+        value: `${Math.round(adjustedSalary * adjustedMonths).toLocaleString()} kr`
+      });
       if (remainingMonths > 0) {
-        breakdown.push(`${t('currentIncome')} ${Math.round(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`);
+        breakdown.push({
+          label: `${t('currentIncome')}:`,
+          value: `${Math.round(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`
+        });
       }
     } else {
-      breakdown.push(`${t('monthlyIncomeTotal')} ${Math.round(baseMonthlyIncome * 12).toLocaleString()} kr`);
+      breakdown.push({
+        label: `${t('monthlyIncomeTotal')}:`,
+        value: `${Math.round(baseMonthlyIncome * 12).toLocaleString()} kr`
+      });
     }
     
     // Add variable salary as annual amount
     if (variableSalary > 0) {
-      breakdown.push(`Rörlig lön: ${Math.round(variableSalary * 12).toLocaleString()} kr`);
+      breakdown.push({
+        label: 'Rörlig lön:',
+        value: `${Math.round(variableSalary * 12).toLocaleString()} kr`
+      });
     }
     
     const vacationPay = calculateVacationPay();
     if (vacationPay > 0) {
-      breakdown.push(`${t('vacationPayTotal')} ${Math.round(vacationPay).toLocaleString()} kr`);
+      breakdown.push({
+        label: `${t('vacationPayTotal')}:`,
+        value: `${Math.round(vacationPay).toLocaleString()} kr`
+      });
     }
     
     if (additionalIncome > 0) {
-      breakdown.push(`${t('additionalIncomeTotal')} ${additionalIncome.toLocaleString()} kr`);
+      breakdown.push({
+        label: `${t('additionalIncomeTotal')}:`,
+        value: `${additionalIncome.toLocaleString()} kr`
+      });
     }
     
     if (engangsbeskattningAmount > 0) {
-      breakdown.push(`${t('engangsbeskattningTotal')} ${engangsbeskattningAmount.toLocaleString()} kr`);
+      breakdown.push({
+        label: `${t('engangsbeskattningTotal')}:`,
+        value: `${engangsbeskattningAmount.toLocaleString()} kr`
+      });
     }
     
     return breakdown;
@@ -255,12 +276,18 @@ const EngangsbeskattningCard = ({
                       {getYearlyIncomeBreakdown().map((item, index) => (
                         <div key={index} className="flex items-start gap-2 text-xs">
                           <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></div>
-                          <span className="text-gray-600">{item}</span>
+                          <div className="flex justify-between w-full">
+                            <span className="text-gray-600">{item.label}</span>
+                            <span className="text-gray-600 font-medium">{item.value}</span>
+                          </div>
                         </div>
                       ))}
                       <div className="flex items-start gap-2 text-xs pt-2 border-t border-gray-300 font-bold text-gray-700">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 flex-shrink-0"></div>
-                        <span>{t('totalYearlyIncome')} {Math.round(calculateYearlyIncome()).toLocaleString()} kr</span>
+                        <div className="flex justify-between w-full">
+                          <span>{t('totalYearlyIncome')}:</span>
+                          <span>{Math.round(calculateYearlyIncome()).toLocaleString()} kr</span>
+                        </div>
                       </div>
                     </div>
                   </div>
