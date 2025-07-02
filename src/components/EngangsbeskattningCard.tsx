@@ -69,9 +69,9 @@ const EngangsbeskattningCard = ({
       breakdown.push(`${t('monthlyIncomeTotal')} ${Math.round(baseMonthlyIncome * 12).toLocaleString()} kr`);
     }
     
-    // Add variable salary per month if it exists
+    // Add variable salary without calculation
     if (variableSalary > 0) {
-      breakdown.push(`Rörlig lön per månad ${variableSalary.toLocaleString()} kr × 12 = ${Math.round(variableSalary * 12).toLocaleString()} kr`);
+      breakdown.push(`Rörlig lön: ${variableSalary.toLocaleString()} kr`);
     }
     
     const vacationPay = calculateVacationPay();
