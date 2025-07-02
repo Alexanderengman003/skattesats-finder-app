@@ -56,6 +56,11 @@ const Index = () => {
   const [calculationTriggered, setCalculationTriggered] = useState(false);
   const [hasCalculatedOnce, setHasCalculatedOnce] = useState(false);
 
+  // Cache for pre-loaded skattetabell data
+  const [skattetabellCache, setSkattetabellCache] = useState<Map<string, SkattetabellData[]>>(new Map());
+  const [currentCacheKey, setCurrentCacheKey] = useState<string>('');
+  const [preloadingTaxTable, setPreloadingTaxTable] = useState(false);
+
   // Frozen calculation states - these hold the values at the time of calculation
   const [frozenResult, setFrozenResult] = useState<SkatteverketData[]>([]);
   const [frozenSkattetabellData, setFrozenSkattetabellData] = useState<SkattetabellData[]>([]);
@@ -142,10 +147,25 @@ const Index = () => {
     }
   }, [kommun, selectedYear, apiData]);
 
-  const loadSkattetabellData = async (year: number, tabell: number) => {
+  const loadSkattetabellData = async (year: number, tabell: number): Promise<SkattetabellData[]> => {
+    const cacheKey = `${year}-${tabell}`;
+    
+    // Check cache first
+    if (skattetabellCache.has(cacheKey)) {
+      const cachedData = skattetabellCache.get(cacheKey)!;
+      setSkattetabellData(cachedData);
+      return cachedData;
+    }
+    
     setSkattetabellLoading(true);
     try {
       const data = await fetchSkattetabellData(year, tabell);
+      
+      // Cache the data
+      const newCache = new Map(skattetabellCache);
+      newCache.set(cacheKey, data);
+      setSkattetabellCache(newCache);
+      
       setSkattetabellData(data);
       return data;
     } catch (error) {
@@ -155,6 +175,42 @@ const Index = () => {
       setSkattetabellLoading(false);
     }
   };
+
+  // Pre-load skattetabell data when conditions are met
+  useEffect(() => {
+    const preloadSkattetabellData = async () => {
+      if (!kommun || !selectedYear || !age || getTotalIncome() === 0) {
+        return;
+      }
+
+      // Calculate what skattetabell we'll need
+      const taxData = findTaxRateFromAPI(apiData, kommun.trim(), selectedYear, forsamling);
+      if (taxData.length === 0) return;
+
+      const firstResult = taxData[0];
+      const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
+      const skattetabell = getSkattetabell(taxRate);
+      const cacheKey = `${selectedYear}-${skattetabell}`;
+      
+      // Only preload if we don't have this data cached and it's different from current
+      if (!skattetabellCache.has(cacheKey) && cacheKey !== currentCacheKey) {
+        setCurrentCacheKey(cacheKey);
+        setPreloadingTaxTable(true);
+        
+        try {
+          await loadSkattetabellData(selectedYear, skattetabell);
+        } catch (error) {
+          console.error('Failed to preload skattetabell data:', error);
+        } finally {
+          setPreloadingTaxTable(false);
+        }
+      }
+    };
+
+    // Debounce the preloading to avoid too many requests
+    const timer = setTimeout(preloadSkattetabellData, 500);
+    return () => clearTimeout(timer);
+  }, [kommun, selectedYear, forsamling, age, monthlyIncome, taxableBenefit, includeSvenskaKyrkan, apiData, skattetabellCache, currentCacheKey]);
 
   const getCurrentTaxColumn = (): number => {
     if (!age || age === 0) return 1;
@@ -241,7 +297,6 @@ const Index = () => {
 
     setError('');
     setResult([]);
-    setSkattetabellData([]);
 
     // Track analytics when user explicitly calculates
     const formData = {
@@ -281,7 +336,16 @@ const Index = () => {
       const firstResult = taxData[0];
       const taxRate = includeSvenskaKyrkan ? firstResult.SummaInklKyrkoavgift : firstResult.Skattesats;
       const skattetabell = getSkattetabell(taxRate);
-      const skattetabellDataResult = await loadSkattetabellData(selectedYear, skattetabell);
+      const cacheKey = `${selectedYear}-${skattetabell}`;
+      
+      // Use cached data if available, otherwise load it
+      let skattetabellDataResult: SkattetabellData[];
+      if (skattetabellCache.has(cacheKey)) {
+        skattetabellDataResult = skattetabellCache.get(cacheKey)!;
+        setSkattetabellData(skattetabellDataResult);
+      } else {
+        skattetabellDataResult = await loadSkattetabellData(selectedYear, skattetabell);
+      }
       
       // Freeze all the calculation values
       setFrozenResult(taxData);
@@ -753,6 +817,13 @@ const Index = () => {
                 {!canCalculate && (
                   <p className="text-sm text-gray-500 mt-2 text-center">
                     Fyll i kommun, år, ålder och inkomst för att beräkna
+                  </p>
+                )}
+                
+                {/* Show preloading status */}
+                {preloadingTaxTable && (
+                  <p className="text-xs text-blue-600 mt-1 text-center">
+                    Förbereder skattetabell...
                   </p>
                 )}
               </div>

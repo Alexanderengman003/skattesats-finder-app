@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -68,6 +67,11 @@ const EngangsbeskattningCard = ({
       }
     } else {
       breakdown.push(`${t('monthlyIncomeTotal')} ${Math.round(baseMonthlyIncome * 12).toLocaleString()} kr`);
+    }
+    
+    // Add variable salary per month if it exists
+    if (variableSalary > 0) {
+      breakdown.push(`Rörlig lön per månad ${variableSalary.toLocaleString()} kr × 12 = ${Math.round(variableSalary * 12).toLocaleString()} kr`);
     }
     
     const vacationPay = calculateVacationPay();
