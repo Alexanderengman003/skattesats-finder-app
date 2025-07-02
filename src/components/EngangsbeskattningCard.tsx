@@ -62,18 +62,18 @@ const EngangsbeskattningCard = ({
     if (adjustedSalary > 0 && adjustedMonths > 0 && adjustedMonths <= 12) {
       const remainingMonths = 12 - adjustedMonths;
       breakdown.push({
-        label: `${t('adjustedIncome')}:`,
+        label: `${t('adjustedIncome')}`,
         value: `${Math.round(adjustedSalary * adjustedMonths).toLocaleString()} kr`
       });
       if (remainingMonths > 0) {
         breakdown.push({
-          label: `${t('currentIncome')}:`,
+          label: `${t('currentIncome')}`,
           value: `${Math.round(baseMonthlyIncome * remainingMonths).toLocaleString()} kr`
         });
       }
     } else {
       breakdown.push({
-        label: `${t('monthlyIncomeTotal')}:`,
+        label: `${t('monthlyIncomeTotal')}`,
         value: `${Math.round(baseMonthlyIncome * 12).toLocaleString()} kr`
       });
     }
@@ -89,21 +89,21 @@ const EngangsbeskattningCard = ({
     const vacationPay = calculateVacationPay();
     if (vacationPay > 0) {
       breakdown.push({
-        label: `${t('vacationPayTotal')}:`,
+        label: `${t('vacationPayTotal')}`,
         value: `${Math.round(vacationPay).toLocaleString()} kr`
       });
     }
     
     if (additionalIncome > 0) {
       breakdown.push({
-        label: `${t('additionalIncomeTotal')}:`,
+        label: `${t('additionalIncomeTotal')}`,
         value: `${additionalIncome.toLocaleString()} kr`
       });
     }
     
     if (engangsbeskattningAmount > 0) {
       breakdown.push({
-        label: `${t('engangsbeskattningTotal')}:`,
+        label: `${t('engangsbeskattningTotal')}`,
         value: `${engangsbeskattningAmount.toLocaleString()} kr`
       });
     }
