@@ -97,7 +97,10 @@ export const useTaxCalculations = ({
       yearlyIncome = baseMonthlyIncome * 12;
     }
     
-    return yearlyIncome + additionalIncome + engangsbeskattningAmount + vacationPay;
+    // Add variable salary as annual amount
+    const annualVariableSalary = variableSalary * 12;
+    
+    return yearlyIncome + additionalIncome + engangsbeskattningAmount + vacationPay + annualVariableSalary;
   };
 
   const isPercentageValue = (value: number, income: number): boolean => {
